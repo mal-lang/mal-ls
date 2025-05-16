@@ -5,7 +5,7 @@ description = "Language server for MAL"
 readme = "README.md"
 requires-python = ">=3.13"
 
-authors = { "Tobiky" = "me@tobiky.dev" }
+authors = [{ "Tobiky" = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
 [project.scripts]
