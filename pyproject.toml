@@ -1,5 +1,5 @@
 [project]
-name = "mal-ls"
+name = "malls"
 version = "0.1.0"
 description = "Language server for MAL"
 readme = "README.md"
@@ -9,7 +9,7 @@ authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
 [project.scripts]
-mal-ls = "mal_ls:__main__.main"
+malls = "malls:__main__.main"
 
 [dependency-groups]
 dev = [
