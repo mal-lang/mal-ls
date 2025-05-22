@@ -1,6 +1,9 @@
 import argparse
+import logging
 import pathlib
 import sys
+
+from . import __LOG_FORMAT__
 
 
 def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool = False):
@@ -60,10 +63,40 @@ def fileio(args: argparse.Namespace):
             else sys.stdout.buffer
     return in_file, out_file
 
+def configure_logging(args: argparse.Namespace) -> None:
+    root_logger = logging.root
+    verbosity: int = args.verbose
+    log_file: pathlib.Path = argparse.log_file
+
+    formatter = logging.Formatter(__LOG_FORMAT__)
+    if log_file:
+        log_handler = logging.handlers.RotatingFileHandler(
+                log_file,
+                mode="a",
+                maxBytes=50 * 1024 * 1024,
+                backupCount=10,
+                encoding="utf8",
+                delay=0)
+    else:
+        log_handler = logging.StreamHandler()
+    log_handler.setFormatter(formatter)
+    root_logger.addHandler(log_handler)
+
+    if verbosity == 0:
+        level = logging.WARNING
+    elif verbosity == 1:
+        level = logging.INFO
+    elif verbosity >= 2:
+        level = logging.DEBUG
+
+    root_logger.setLevel(level)
+
 def main():
     parser = argparse.ArgumentParser()
     configure_argument_parser(parser)
     args = parser.parse_args()
+
+    configure_logging(args)
 
     if uses_fileio(args):
         i, o = fileio(args)
