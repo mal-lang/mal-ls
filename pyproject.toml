@@ -8,13 +8,19 @@ requires-python = ">=3.13"
 authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
-[project.scripts]
-malls = "malls:__main__.main"
+dependencies = []
 
 [dependency-groups]
 dev = [
     "ruff>=0.11.10",
 ]
+
+[project.scripts]
+malls = "malls:__main__.main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 # Based off of pylsp https://github.com/python-lsp/python-lsp-server/blob/de15a88451e223cd7ae704e47631a0c34438c314/pyproject.toml#L88-L167
 [tool.ruff]
