@@ -91,10 +91,11 @@ def configure_logging(args: argparse.Namespace) -> None:
 
     root_logger.setLevel(level)
 
-def main():
-    parser = argparse.ArgumentParser()
-    configure_argument_parser(parser)
-    args = parser.parse_args()
+def main(args: argparse.Namespace | None = None):
+    if not args:
+        parser = argparse.ArgumentParser()
+        configure_argument_parser(parser)
+        args = parser.parse_args()
 
     configure_logging(args)
 
