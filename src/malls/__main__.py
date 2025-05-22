@@ -4,6 +4,7 @@ import pathlib
 import sys
 
 from . import __LOG_FORMAT__
+from .mal_lsp import start_fileio_server
 
 
 def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool = False):
@@ -106,6 +107,7 @@ def main(args: argparse.Namespace | None = None):
 
     if uses_fileio(args):
         i, o = fileio(args)
+        start_fileio_server(i, o)
 
 if __name__ == "__main__":
     main()
