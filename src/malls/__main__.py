@@ -2,12 +2,6 @@ import argparse
 import sys
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    configure_argument_parser(parser)
-    parser.parse_args(sys.argv[1:])
-
-
 def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool = False):
     """
     Configures the parser for usage with the MAL Language Server. If the parser is already used
@@ -51,6 +45,10 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     logging.add_argument("--log-file", type=argparse.FileType("w", encoding="utf8"))
     # logging.add_argument("--version", "-V", action="version", version="%(prog)s v" + __version__)
 
+def main():
+    parser = argparse.ArgumentParser()
+    configure_argument_parser(parser)
+    parser.parse_args(sys.argv[1:])
 
 if __name__ == "__main__":
     main()
