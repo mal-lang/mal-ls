@@ -47,27 +47,30 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")
     logging.add_argument(
-        "-v", "--verbose", action="count", default=0,
-        help=("Increases the verbosity of the logging."
-              " None (0)  = Warning |"
-              " -v (1)  = Info |"
-              " -vv (2+) = Debug"
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Increases the verbosity of the logging."
+            " None (0)  = Warning |"
+            " -v (1)  = Info |"
+            " -vv (2+) = Debug"
         ),
     )
     logging.add_argument("--log-file", type=argparse.FileType("w", encoding="utf8"))
     # logging.add_argument("--version", "-V", action="version", version="%(prog)s v" + __version__)
 
+
 def uses_fileio(args: argparse.Namespace) -> bool:
-   return bool(args.stdio or args.in_file_path or args.out_file_path)
+    return bool(args.stdio or args.in_file_path or args.out_file_path)
+
 
 def fileio(args: argparse.Namespace):
-    in_file = open(args.in_file_path, "rb") \
-            if args.in_file_path \
-            else sys.stdin.buffer
-    out_file = open(args.out_file_path, "wb") \
-            if args.out_file_path \
-            else sys.stdout.buffer
+    in_file = open(args.in_file_path, "rb") if args.in_file_path else sys.stdin.buffer
+    out_file = open(args.out_file_path, "wb") if args.out_file_path else sys.stdout.buffer
     return in_file, out_file
+
 
 def configure_logging(args: argparse.Namespace) -> None:
     root_logger = logging.root
@@ -77,12 +80,8 @@ def configure_logging(args: argparse.Namespace) -> None:
     formatter = logging.Formatter(__LOG_FORMAT__)
     if log_file:
         log_handler = logging.handlers.RotatingFileHandler(
-                log_file,
-                mode="a",
-                maxBytes=50 * 1024 * 1024,
-                backupCount=10,
-                encoding="utf8",
-                delay=0)
+            log_file, mode="a", maxBytes=50 * 1024 * 1024, backupCount=10, encoding="utf8", delay=0
+        )
     else:
         log_handler = logging.StreamHandler()
     log_handler.setFormatter(formatter)
@@ -97,6 +96,7 @@ def configure_logging(args: argparse.Namespace) -> None:
 
     root_logger.setLevel(level)
 
+
 def main(args: argparse.Namespace | None = None):
     if not args:
         parser = argparse.ArgumentParser()
@@ -108,6 +108,7 @@ def main(args: argparse.Namespace | None = None):
     if uses_fileio(args):
         i, o = fileio(args)
         start_fileio_server(i, o)
+
 
 if __name__ == "__main__":
     main()
