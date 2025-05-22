@@ -46,7 +46,12 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")
     logging.add_argument(
-        "-v", "--verbose", action="count", default=0, help="Increases the verbosity of the logging."
+        "-v", "--verbose", action="count", default=0,
+        help=("Increases the verbosity of the logging."
+              " None (0)  = Warning |"
+              " -v (1)  = Info |"
+              " -vv (2+) = Debug"
+        ),
     )
     logging.add_argument("--log-file", type=argparse.FileType("w", encoding="utf8"))
     # logging.add_argument("--version", "-V", action="version", version="%(prog)s v" + __version__)
