@@ -66,7 +66,7 @@ def fileio(args: argparse.Namespace):
 def configure_logging(args: argparse.Namespace) -> None:
     root_logger = logging.root
     verbosity: int = args.verbose
-    log_file: pathlib.Path = argparse.log_file
+    log_file: pathlib.Path = args.log_file
 
     formatter = logging.Formatter(__LOG_FORMAT__)
     if log_file:
