@@ -1,4 +1,5 @@
 import argparse
+import pathlib
 import sys
 
 
@@ -19,13 +20,15 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     fileio.add_argument(
         "-i",
         "--in",
-        type=argparse.FileType("br"),
+        dest="in_file_path",
+        type=pathlib.Path,
         help="Sets which (pseudo)file to use as input. Prioritized over --stdio.",
     )
     fileio.add_argument(
         "-o",
         "--out",
-        type=argparse.FileType("bw"),
+        dest="out_file_path",
+        type=pathlib.Path,
         help=("Sets which (pseudo)file to use as output. Prioritized over --stdio."),
     )
     fileio.add_argument(
@@ -45,10 +48,25 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     logging.add_argument("--log-file", type=argparse.FileType("w", encoding="utf8"))
     # logging.add_argument("--version", "-V", action="version", version="%(prog)s v" + __version__)
 
+def uses_fileio(args: argparse.Namespace) -> bool:
+   return bool(args.stdio or args.in_file_path or args.out_file_path)
+
+def fileio(args: argparse.Namespace):
+    in_file = open(args.in_file_path, "br") \
+            if args.in_file_path \
+            else sys.stdin.buffer
+    out_file = open(args.out_file_path, "bw") \
+            if args.out_file_path \
+            else sys.stdout.buffer
+    return in_file, out_file
+
 def main():
     parser = argparse.ArgumentParser()
     configure_argument_parser(parser)
-    parser.parse_args(sys.argv[1:])
+    args = parser.parse_args()
+
+    if uses_fileio(args):
+        i, o = fileio(args)
 
 if __name__ == "__main__":
     main()
