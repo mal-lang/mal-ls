@@ -55,10 +55,10 @@ def uses_fileio(args: argparse.Namespace) -> bool:
    return bool(args.stdio or args.in_file_path or args.out_file_path)
 
 def fileio(args: argparse.Namespace):
-    in_file = open(args.in_file_path, "br") \
+    in_file = open(args.in_file_path, "rb") \
             if args.in_file_path \
             else sys.stdin.buffer
-    out_file = open(args.out_file_path, "bw") \
+    out_file = open(args.out_file_path, "wb") \
             if args.out_file_path \
             else sys.stdout.buffer
     return in_file, out_file
