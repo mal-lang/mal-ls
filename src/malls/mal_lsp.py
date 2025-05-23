@@ -21,3 +21,8 @@ class MALLSPServer(MethodDispatcher):
         self.__jsonrpc_stream_writer = JsonRpcStreamWriter(output) if output else None
 
         self.__endpoint = Endpoint(self, self.__jsonrpc_stream_writer.write)
+
+    def start(self) -> None:
+        """Starts the language server."""
+        log.info("Starting MAL LSP language server.")
+        self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
