@@ -15,9 +15,8 @@ def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> 
 
 class MALLSPServer(MethodDispatcher):
     def __init__(
-            self,
-            input: typing.BinaryIO | None = None,
-            output: typing.BinaryIO | None = None) -> None:
+        self, input: typing.BinaryIO | None = None, output: typing.BinaryIO | None = None
+    ) -> None:
         self.__jsonrpc_stream_reader = JsonRpcStreamReader(input) if input else None
         self.__jsonrpc_stream_writer = JsonRpcStreamWriter(output) if output else None
 
