@@ -46,11 +46,11 @@ class MALLSPServer(MethodDispatcher):
 
     def m_exit(self, **kwargs) -> None:
         log.info("Exiting language server.")
-        self._endpoint.shutdown()
+        self.__endpoint.shutdown()
         log.info("Endpoint shut down.")
-        if self._jsonrpc_stream_reader:
-            self._jsonrpc_stream_reader.close()
+        if self.__jsonrpc_stream_reader:
+            self.__jsonrpc_stream_reader.close()
             log.info("JSON RPC reader closed.")
-        if self._jsonrpc_stream_writer:
-            self._jsonrpc_stream_writer.close()
+        if self.__jsonrpc_stream_writer:
+            self.__jsonrpc_stream_writer.close()
             log.info("JSON RPC writer closed.")
