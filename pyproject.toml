@@ -34,12 +34,12 @@ exclude = [
 [tool.pytest.ini_options]
 addopts = [
     "-rA",
+    "--ignore=tests/fixtures",
     "--import-mode=importlib",
     "--numprocesses=auto",
 ]
 testpaths = [
-    "tests/integration",
-    "tests/unit",
+    "tests",
 ]
 
 # Based off of pylsp https://github.com/python-lsp/python-lsp-server/blob/de15a88451e223cd7ae704e47631a0c34438c314/pyproject.toml#L88-L167
