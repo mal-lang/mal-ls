@@ -14,6 +14,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.5",
+    "pytest-xdist>=3.7.0",
     "ruff>=0.11.10",
 ]
 
@@ -27,6 +29,17 @@ build-backend = "hatchling.build"
 [tool.hatch.build]
 exclude = [
     "mise.toml",
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-rA",
+    "--import-mode=importlib",
+    "--numprocesses=auto",
+]
+testpaths = [
+    "tests/integration",
+    "tests/unit",
 ]
 
 # Based off of pylsp https://github.com/python-lsp/python-lsp-server/blob/de15a88451e223cd7ae704e47631a0c34438c314/pyproject.toml#L88-L167
