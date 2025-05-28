@@ -24,12 +24,43 @@ class MALLSPServer(MethodDispatcher):
 
         self.__endpoint = Endpoint(self, self.__jsonrpc_stream_writer.write)
 
+        self.__encoding = 'utf-16'
         self.__shutdown = False
 
     def start(self) -> None:
         """Starts the language server."""
         log.info("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
+
+    # leave capabilities as dict for now, replace with explicit class/type later
+    def capabilities(self, client_capabilities: dict | None = None):
+        capabilities = {}
+        log.debug("Server capabilities: %s", capabilities)
+        return capabilities
+
+    # leave capabilities and response as dict for now, replace with explicit class/type later
+    def m_initialize(
+            self,
+            processId: int | None = None,
+            rootUri: str | None = None,
+            **kwargs) -> dict:
+        log.info(
+            "Initializing server with parameters: %s %s",
+            processId,
+            rootUri)
+        log.debug(
+            "Defered server parameters: %s",
+            kwargs)
+
+        return {
+            "capabilities": self.capabilities(kwargs.get("capabilities")),
+            "serverInfo": {
+                "name": "mal-ls"
+            }
+        }
+
+    def m_initialized(*args, **kwargs) -> None:
+        log.debug("Initialized with parameters %s %s", args, kwargs)
 
     def m_shutdown(self, **kwargs) -> None:
         log.info("Received shutdown request.")
