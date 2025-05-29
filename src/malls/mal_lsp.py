@@ -6,13 +6,17 @@ from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from .lsp.enums import ErrorCodes
+from .lsp.fsm import LifecycleFSM
+from .lsp.fsm import LifecycleState as LcState
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 
 
 def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> None:
-    log.info("Starting MAL LSP IO language server.")
+    log.info("Starting MAL IO language server.")
+    server = MALLSPServer(in_file, out_file)
+    server.start()
 
 
 class MALLSPServer(MethodDispatcher):
@@ -25,7 +29,7 @@ class MALLSPServer(MethodDispatcher):
         self.__endpoint = Endpoint(self, self.__jsonrpc_stream_writer.write)
 
         self.__encoding = 'utf-16'
-        self.__shutdown = False
+        self.__lifecycle = LifecycleFSM()
 
     def start(self) -> None:
         """Starts the language server."""
@@ -37,6 +41,19 @@ class MALLSPServer(MethodDispatcher):
         capabilities = {}
         log.debug("Server capabilities: %s", capabilities)
         return capabilities
+
+    def __getitem__(self, item):
+        """Override to ensure that correct initialize/d shutdown/exit transitions are done."""
+        if self.__lifecycle.may_accept(item):
+            self.__lifecycle.accepts(item)
+        else:
+            item = "invalid_request_at_" + self.__lifecycle.current_state
+        try:
+            return super().__getitem__(item)
+        except Exception as e:
+            # Log and rethrow, cannot do anything if the method isn't known
+            log.error(f"Error attempting to reach method `{item}`:", str(e))
+            raise e
 
     # leave capabilities and response as dict for now, replace with explicit class/type later
     def m_initialize(
@@ -64,16 +81,53 @@ class MALLSPServer(MethodDispatcher):
 
     def m_shutdown(self, **kwargs) -> None:
         log.info("Received shutdown request.")
-        self.__shutdown = True
+        self.__lifecycle.accepts(LcState.SHUTDOWN)
 
-    def m_invalid_request_after_shutdown(self, **kwargs):
-        log.warn("Received request after shutdown.")
+    @staticmethod
+    # leave return type as dict for now, replace with explicit class/type later
+    def __invalid_request_at_lifecycle(
+            warning: str,
+            message: str,
+            error: ErrorCodes = ErrorCodes.InvalidRequest) -> dict:
+        log.warn(warning)
         return {
             "error": {
-                "code": ErrorCodes.InvalidRequest,
-                "message": "Requests after `shutdown` are not valid.",
+                "code": error,
+                "message": message,
             }
         }
+
+
+    def m_invalid_request_at_start(self, **kwargs):
+        return MALLSPServer.__invalid_request_at_lifecycle(
+            warning="Received non-initialize request before initialized.",
+            message="Non-`initialize` as first request is not valid."
+        )
+
+    def m_invalid_request_at_initialize(self, **kwargs):
+        return MALLSPServer.__invalid_request_at_lifecycle(
+            warning="Received request before initialized.",
+            message="Must wait for `initalized` notification before other requests."
+        )
+
+    def m_invalid_request_at_initialized(self, **kwargs):
+        return MALLSPServer.__invalid_request_at_lifecycle(
+            warning="Received errenous request when initalized.",
+            message=("Only feature methods and `shutdown` are allowed after `initialized`"
+                     "notification.")
+        )
+
+    def m_invalid_request_at_shutdown(self, **kwargs):
+        return MALLSPServer.__invalid_request_at_lifecycle(
+            warning="Received non-exit request after shutdown.",
+            message="Non-`exit` requests after `shutdown` are not valid."
+        )
+
+    def m_invalid_request_at_exit(self, **kwargs):
+        return MALLSPServer.__invalid_request_at_lifecycle(
+            warning="Received request after exit.",
+            message="Requests after `exit` are not valid."
+        )
 
     def m_exit(self, **kwargs) -> None:
         log.info("Exiting language server.")
