@@ -1,12 +1,12 @@
-Content-Length: 40
+Content-Length: 47
 
-{"jsonrpc":"2.0","method":"initialize"}
+{"jsonrpc":"2.0","id":1,"method":"initialize"}
 Content-Length: 41
 
 {"jsonrpc":"2.0","method":"initialized"}
-Content-Length: 38
+Content-Length: 45
 
-{"jsonrpc":"2.0","method":"shutdown"}
+{"jsonrpc":"2.0","id":2,"method":"shutdown"}
 Content-Length: 34
 
 {"jsonrpc":"2.0","method":"exit"}
