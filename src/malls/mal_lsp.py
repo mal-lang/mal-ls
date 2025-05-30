@@ -7,7 +7,6 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from .lsp.enums import ErrorCodes
 from .lsp.fsm import LifecycleFSM
-from .lsp.fsm import LifecycleState as LcState
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -76,12 +75,11 @@ class MALLSPServer(MethodDispatcher):
             }
         }
 
-    def m_initialized(*args, **kwargs) -> None:
-        log.debug("Initialized with parameters %s %s", args, kwargs)
+    def m_initialized(self, *args, **kwargs) -> None:
+        log.debug("Client initialized with parameters %s %s", args, kwargs)
 
     def m_shutdown(self, **kwargs) -> None:
         log.info("Received shutdown request.")
-        self.__lifecycle.accepts(LcState.SHUTDOWN)
 
     @staticmethod
     # leave return type as dict for now, replace with explicit class/type later
