@@ -87,7 +87,7 @@ class MALLSPServer(MethodDispatcher):
             warning: str,
             message: str,
             error: ErrorCodes = ErrorCodes.InvalidRequest) -> dict:
-        log.warn(warning)
+        log.warning(warning)
         return {
             "error": {
                 "code": error,
