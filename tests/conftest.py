@@ -3,6 +3,9 @@ import sys
 import typing
 
 import pytest
+import logging
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 module = sys.modules[__name__]
 # Generate pytest fixtures from all fixture files in 'fixtures' and its subdirectories
