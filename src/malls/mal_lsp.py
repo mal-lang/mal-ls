@@ -54,6 +54,10 @@ class MALLSPServer(MethodDispatcher):
             log.error(f"Error attempting to reach method `{item}`:", str(e))
             raise e
 
+    @property
+    def state(self) -> LifecycleFSM:
+        return self.__lifecycle
+
     # leave capabilities and response as dict for now, replace with explicit class/type later
     def m_initialize(
             self,
