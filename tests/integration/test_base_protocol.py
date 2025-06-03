@@ -4,6 +4,7 @@ import logging
 import typing
 
 from malls.mal_lsp import MALLSPServer
+from malls.lsp.fsm import LifecycleState
 
 log = logging.getLogger(__name__)
 
@@ -46,4 +47,11 @@ async def test_correct_base_lifecycle(
     output, _ = await server_output(init_exit_in)
 
     assert output.getvalue() == init_exit_out.read()
+    output.close()
+
+async def test_pre_initalized_exit_does_not_change_state(
+        pre_initialized_exit_in: typing.BinaryIO):
+    output, ls = await server_output(pre_initialized_exit_in)
+
+    assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
