@@ -2,7 +2,6 @@ import asyncio
 import io
 import logging
 import typing
-from concurrent.futures import ThreadPoolExecutor
 
 from malls.mal_lsp import MALLSPServer
 
@@ -24,18 +23,27 @@ class SteppedBytesIO(io.BytesIO):
         else:
             self.steps -= 1
 
-async def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_out: typing.BinaryIO):
+async def server_output(
+        input: typing.BinaryIO,
+        timeout: float | None = MAX_TIMEOUT) -> typing.Tuple[typing.BinaryIO, MALLSPServer]:
     intermediary = SteppedBytesIO()
-    ls = MALLSPServer(init_exit_in, intermediary)
+    ls = MALLSPServer(input, intermediary)
 
     async def run_server():
         ls.start()
     try:
-        await asyncio.wait_for(run_server(), timeout=MAX_TIMEOUT)
+        await asyncio.wait_for(run_server(), timeout=timeout)
     except Exception as e:
         intermediary.close()
         raise e
-    
-    assert intermediary.getvalue() == init_exit_out.read()
-    intermediary.close()
 
+    return intermediary, ls
+
+
+async def test_correct_base_lifecycle(
+        init_exit_in: typing.BinaryIO,
+        init_exit_out: typing.BinaryIO):
+    output, _ = await server_output(init_exit_in)
+
+    assert output.getvalue() == init_exit_out.read()
+    output.close()
