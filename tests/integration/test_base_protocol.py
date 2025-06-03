@@ -1,8 +1,12 @@
 import asyncio
 import io
+import logging
 import typing
+from concurrent.futures import ThreadPoolExecutor
 
 from malls.mal_lsp import MALLSPServer
+
+log = logging.getLogger(__name__)
 
 # wait for most 5s (arbitrary)
 MAX_TIMEOUT=5
@@ -23,6 +27,7 @@ class SteppedBytesIO(io.BytesIO):
 async def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_out: typing.BinaryIO):
     intermediary = SteppedBytesIO()
     ls = MALLSPServer(init_exit_in, intermediary)
+
     async def run_server():
         ls.start()
     try:
@@ -30,6 +35,7 @@ async def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_o
     except Exception as e:
         intermediary.close()
         raise e
-    assert intermediary.readlines() == init_exit_out.readlines()
+    
+    assert intermediary.getvalue() == init_exit_out.read()
     intermediary.close()
 
