@@ -49,7 +49,7 @@ async def test_correct_base_lifecycle(
     assert output.getvalue() == init_exit_out.read()
     output.close()
 
-async def test_pre_initalized_exit_does_not_change_state(
+async def test_pre_initialized_exit_does_not_change_state(
         pre_initialized_exit_in: typing.BinaryIO):
     output, ls = await server_output(pre_initialized_exit_in)
 
