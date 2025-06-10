@@ -1,7 +1,10 @@
 import io
 import json
 
-from pylsp_jsonrpc.streams import JsonRpcStreamReader
+from pylsp_jsonrpc.endpoint import Endpoint
+from pylsp_jsonrpc.streams import JsonRpcException, JsonRpcStreamReader
+
+from malls.mal_lsp import MALLSPServer
 
 
 def get_lsp_json(input_: io.BytesIO) -> tuple[dict, int]:
@@ -17,3 +20,26 @@ def get_lsp_json(input_: io.BytesIO) -> tuple[dict, int]:
 
     # past double newline
     return json.loads(input_.read(content_length))
+
+class FakeEndpoint(Endpoint):
+    """
+    Fake `Endpoint` to shadow, stub, and commandeer LSP `Endpoint` functions for testing.
+
+    `request` is commandeered in order to make it execute sync but look async.
+    """
+
+    def request(self, method, params=None):
+        request_future = super().request(method, params)
+        try:
+            request_future.set_result(self._dispatcher[method](params))
+        except JsonRpcException as e:
+            request_future.set_exception(e)
+
+        return request_future
+
+    request.__doc__ = Endpoint.request.__doc__
+
+class FakeLanguageServer(MALLSPServer):
+    def __init__(*args, **kwargs):
+        kwargs.setdefault("EndpointClass", FakeEndpoint)
+        super().__init__(*args, **kwargs)
