@@ -20,15 +20,21 @@ def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> 
 
 class MALLSPServer(MethodDispatcher):
     def __init__(
-        self, input: typing.BinaryIO | None = None, output: typing.BinaryIO | None = None
+            self,
+            input: typing.BinaryIO | None = None,
+            output: typing.BinaryIO | None = None,
+            JsonRpcReaderClass = JsonRpcStreamReader,
+            JsonRpcWriterClass = JsonRpcStreamWriter,
+            EndpointClass: Endpoint = Endpoint,
+            LifecycleClass: LifecycleFSM = LifecycleFSM,
     ) -> None:
-        self.__jsonrpc_stream_reader = JsonRpcStreamReader(input) if input else None
-        self.__jsonrpc_stream_writer = JsonRpcStreamWriter(output) if output else None
+        self.__jsonrpc_stream_reader = JsonRpcReaderClass(input) if input else None
+        self.__jsonrpc_stream_writer = JsonRpcWriterClass(output) if output else None
 
-        self.__endpoint = Endpoint(self, self.__jsonrpc_stream_writer.write)
+        self.__endpoint = EndpointClass(self, self.__jsonrpc_stream_writer.write)
 
         self.__encoding = 'utf-16'
-        self.__lifecycle = LifecycleFSM()
+        self.__lifecycle = LifecycleClass()
 
     def start(self) -> None:
         """Starts the language server."""
