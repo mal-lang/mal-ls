@@ -9,7 +9,6 @@ authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
 dependencies = [
-    "pytest-aio>=1.9.0",
     "python-lsp-jsonrpc>=1.1.2",
 ]
 
