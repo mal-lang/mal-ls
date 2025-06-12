@@ -2,7 +2,8 @@ import io
 import json
 
 from pylsp_jsonrpc.endpoint import Endpoint
-from pylsp_jsonrpc.streams import JsonRpcException, JsonRpcStreamReader
+from pylsp_jsonrpc.streams import JsonRpcStreamReader
+from pylsp_jsonrpc.exceptions import JsonRpcException
 
 from malls.mal_lsp import MALLSPServer
 
