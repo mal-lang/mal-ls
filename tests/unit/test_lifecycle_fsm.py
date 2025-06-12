@@ -3,41 +3,6 @@ import pytest
 from malls.lsp.fsm import STATES, LifecycleFSM, State
 
 
-@pytest.fixture
-def states() -> list[str]:
-    return STATES
-
-@pytest.fixture
-def fsm() -> LifecycleFSM:
-    return LifecycleFSM()
-
-# TODO: revamp this by exacting the fixture definer in root conftest.py
-@pytest.fixture
-def fsm_start(fsm: LifecycleFSM) -> LifecycleFSM:
-    fsm.current_state = State.START
-    return fsm
-
-@pytest.fixture
-def fsm_initialize(fsm: LifecycleFSM) -> LifecycleFSM:
-    fsm.current_state = State.INITIALIZE
-    return fsm
-
-@pytest.fixture
-def fsm_initialized(fsm: LifecycleFSM) -> LifecycleFSM:
-    fsm.current_state = State.INITIALIZED
-    return fsm
-
-@pytest.fixture
-def fsm_shutdown(fsm: LifecycleFSM) -> LifecycleFSM:
-    fsm.current_state = State.SHUTDOWN
-    return fsm
-
-@pytest.fixture
-def fsm_exit(fsm: LifecycleFSM) -> LifecycleFSM:
-    fsm.current_state = State.EXIT
-    return fsm
-
-
 def test_initial_state_is_start(fsm: LifecycleFSM):
     assert fsm.current_state == State.START
 
@@ -51,15 +16,15 @@ acceptance_parameters = {
     State.SHUTDOWN: {State.EXIT}
 }
 acceptance_parameters  = [
-        ("fsm_" + start_state, accepted_state) \
+        (start_state, accepted_state) \
         for start_state in acceptance_parameters \
         for accepted_state in sorted(acceptance_parameters[start_state])
 ]
 
-@pytest.mark.parametrize("fsm_,state", acceptance_parameters)
-def test_state_may_accept(fsm_: str, state: State, request: pytest.FixtureRequest):
-    fsm: LifecycleFSM = request.getfixturevalue(fsm_)
-    assert fsm.may_accept(state)
+@pytest.mark.parametrize("start_state,symbol_state", acceptance_parameters)
+def test_state_may_accept(start_state: State, symbol_state: State):
+    fsm = LifecycleFSM(start_state)
+    assert fsm.may_accept(symbol_state)
 
 
 # Test that the FSM properly rejects invalid transitions or symbols
@@ -77,7 +42,7 @@ rejection_parameters = [
         for rejected_state in sorted(rejection_parameters[start_state])
 ]
 
-@pytest.mark.parametrize("fsm_,state", rejection_parameters)
-def test_state_may_reject(fsm_: str, state: State, request: pytest.FixtureRequest):
-    fsm: LifecycleFSM = request.getfixturevalue(fsm_)
-    assert not fsm.may_accept(state)
+@pytest.mark.parametrize("start_state,symbol_state", rejection_parameters)
+def test_state_may_reject(start_state: State, symbol_state: State):
+    fsm = LifecycleFSM(start_state)
+    assert not fsm.may_accept(symbol_state)
