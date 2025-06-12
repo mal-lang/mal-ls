@@ -14,9 +14,9 @@ State = LifecycleState
 STATES = list(State)
 
 class LifecycleFSM:
-    def __init__(self):
+    def __init__(self, start: State = State.START):
         self._states = set(STATES)
-        self.current_state = State.START
+        self.current_state = start
 
     def may_accept(self, symbol: State | str) -> bool:
         """
