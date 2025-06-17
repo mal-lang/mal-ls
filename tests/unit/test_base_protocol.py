@@ -23,3 +23,8 @@ def test_initalize_response_server_name(mute_ls_initalize_empty_response: dict):
 @pytest.mark.xfail(reason="Central version management/version injection not implemented")
 def test_initalize_response_server_version(mute_ls_initalize_empty_response: dict):
     assert mute_ls_initalize_empty_response.get("serverInfo", {}).get("version") is not None
+
+@pytest.fixture
+def mute_ls_initalize_empty(mute_ls: FakeLanguageServer) -> FakeLanguageServer:
+    mute_ls.m_initialize()
+    return mute_ls
