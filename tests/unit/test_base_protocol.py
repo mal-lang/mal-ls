@@ -19,3 +19,7 @@ def mute_ls_initalize_empty_response(mute_ls: FakeLanguageServer) -> dict:
 
 def test_initalize_response_server_name(mute_ls_initalize_empty_response: dict):
     assert mute_ls_initalize_empty_response.get("serverInfo", {}).get("name") == "malls"
+
+@pytest.mark.xfail(reason="Central version management/version injection not implemented")
+def test_initalize_response_server_version(mute_ls_initalize_empty_response: dict):
+    assert mute_ls_initalize_empty_response.get("serverInfo", {}).get("version") is not None
