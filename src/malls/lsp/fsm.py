@@ -8,10 +8,12 @@ class LifecycleState(StrEnum):
     SHUTDOWN = "shutdown"
     EXIT = "exit"
 
+
 State = LifecycleState
 
 
 STATES = list(State)
+
 
 class LifecycleFSM:
     def __init__(self, start: State = State.START):
@@ -53,8 +55,7 @@ class LifecycleFSM:
         """
         if self.may_accept(symbol):
             # abstract anything into method call unless its an existing state
-            self.current_state = symbol if symbol in self._states \
-                                else State.INITIALIZED
+            self.current_state = symbol if symbol in self._states else State.INITIALIZED
         else:
             raise KeyError(f"Lifecycle FSM does not accept {symbol} in the current state")
 

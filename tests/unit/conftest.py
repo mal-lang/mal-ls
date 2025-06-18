@@ -1,8 +1,11 @@
-import pytest
 from io import BytesIO
 
-from ..util import FakeLanguageServer
+import pytest
+
 from malls.lsp.fsm import LifecycleState
+
+from ..util import FakeLanguageServer
+
 
 @pytest.fixture
 def mute_ls() -> FakeLanguageServer:

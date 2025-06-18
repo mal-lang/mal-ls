@@ -13,14 +13,14 @@ module = sys.modules[__name__]
 for directory, _, files in os.walk("tests/fixtures"):
     for file_name in files:
         # Remove extension, e.g: .http/.lsp/.mal
-        fixture_name = file_name[:file_name.rindex('.')]
+        fixture_name = file_name[: file_name.rindex(".")]
         # Replace dots with underscore, e.g: empty.out -> empty_out
         fixture_name = fixture_name.replace(".", "_")
         # Add subdirectory path as prefix if there was one
         if len(directory) > len("tests/fixtures"):
             post_test_dir_index = directory.find("fixtures")
             # Remove up until tests plus directory delimiter
-            fixture_prefix = directory[post_test_dir_index + len("fixtures") + 1:]
+            fixture_prefix = directory[post_test_dir_index + len("fixtures") + 1 :]
             # Replace directory delimiters with underscores
             fixture_prefix = fixture_prefix.replace("/", "_").replace("\\", "_")
             fixture_name = fixture_prefix + "_" + fixture_name
@@ -34,15 +34,13 @@ for directory, _, files in os.walk("tests/fixtures"):
 
                 with open(file, "rb") as file_descriptor:
                     yield file_descriptor
+
             return template
 
         open_fixture_file.__doc__ = open.__doc__
 
         # Define the fixture from `open_file` on `file_path` as `fixture_name`
-        fixture = pytest.fixture(
-            fixture_function=open_fixture_file(file_path),
-            name=fixture_name
-        )
+        fixture = pytest.fixture(fixture_function=open_fixture_file(file_path), name=fixture_name)
 
         # Bind `fixture` as `fixture_name` inside this module so it gets exported
         setattr(module, fixture_name, fixture)

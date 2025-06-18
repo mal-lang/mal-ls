@@ -2,8 +2,8 @@ import io
 import json
 
 from pylsp_jsonrpc.endpoint import Endpoint
-from pylsp_jsonrpc.streams import JsonRpcStreamReader
 from pylsp_jsonrpc.exceptions import JsonRpcException
+from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
 
@@ -22,6 +22,7 @@ def get_lsp_json(input_: io.BytesIO) -> tuple[dict, int]:
     # past double newline
     return json.loads(input_.read(content_length))
 
+
 class FakeEndpoint(Endpoint):
     """
     Fake `Endpoint` to shadow, stub, and commandeer LSP `Endpoint` functions for testing.
@@ -39,6 +40,7 @@ class FakeEndpoint(Endpoint):
         return request_future
 
     request.__doc__ = Endpoint.request.__doc__
+
 
 class FakeLanguageServer(MALLSPServer):
     def __init__(self, *args, **kwargs):
