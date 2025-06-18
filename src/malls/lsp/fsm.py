@@ -20,6 +20,10 @@ class LifecycleFSM:
         self._states = set(STATES)
         self.current_state = start
 
+    @property
+    def state(self) -> State:
+        return self.state
+
     def may_accept(self, symbol: State | str) -> bool:
         """
         Check if there exists a valid transition from the current state using the given symbol as
