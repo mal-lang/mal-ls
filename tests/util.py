@@ -41,6 +41,6 @@ class FakeEndpoint(Endpoint):
     request.__doc__ = Endpoint.request.__doc__
 
 class FakeLanguageServer(MALLSPServer):
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         kwargs.setdefault("EndpointClass", FakeEndpoint)
         super().__init__(*args, **kwargs)
