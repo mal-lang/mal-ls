@@ -22,7 +22,7 @@ class LifecycleFSM:
 
     @property
     def state(self) -> State:
-        return self.state
+        return self.current_state
 
     def may_accept(self, symbol: State | str) -> bool:
         """
