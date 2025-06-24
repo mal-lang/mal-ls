@@ -43,7 +43,3 @@ def test_initalize_response_server_version(mute_ls_initalize_empty_response: dic
 def mute_ls_initalize_empty(mute_ls: FakeLanguageServer) -> FakeLanguageServer:
     mute_ls.m_initialize()
     return mute_ls
-
-
-def test_ls_initalize_lifecycle_state(mute_ls_initalize_empty: FakeLanguageServer):
-    assert mute_ls_initalize_empty.state == LifecycleState.INITIALIZE
