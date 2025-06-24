@@ -1,6 +1,14 @@
-from pydantic import BaseModel
+from typing import Annotated
+
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
+Integer = Annotated[int,
+                    Field(ge=-2^31, le=2^31-1),
+                    """Defines an integer number in the range of -2^31 to 2^31 - 1."""]
+UInteger = Annotated[Integer,
+                     Field(ge=0),
+                     """Defines an unsigned integer number in the range of 0 to 2^31 - 1."""]
 
 class CancelParams(BaseModel, TypedDict):
     """
@@ -9,7 +17,7 @@ class CancelParams(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#cancelRequest
     """
 
-    id: int | str
+    id: Integer | str
     """The request id to cancel."""
 
 class ProgressParams[T](BaseModel, TypedDict):
@@ -22,7 +30,7 @@ class ProgressParams[T](BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#progress
     """
 
-    token: int | str
+    token: Integer | str
     """The progress token provided by the client or server."""
 
     value: T
