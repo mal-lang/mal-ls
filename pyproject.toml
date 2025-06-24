@@ -9,6 +9,7 @@ authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
 dependencies = [
+    "pydantic>=2.11.7",
     "python-lsp-jsonrpc>=1.1.2",
 ]
 
