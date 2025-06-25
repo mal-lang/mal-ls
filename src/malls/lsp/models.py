@@ -171,3 +171,19 @@ class OptionalVersionedTextDocumentIdentifier(TextDocumentIdentifier):
 	The version number of a document will increase after each change, including undo/redo. The
     number doesn't need to be consecutive.
     """
+
+class TextDocumentPositionParams(BaseModel, TypedDict):
+    """
+    A parameter literal used in requests to pass a text document and a position inside that
+    document. It is up to the client to decide how a selection is converted into a position when
+    issuing a request for a text document. The client can for example honor or ignore the selection
+    direction to make LSP request consistent with features implemented internally.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentPositionParams
+    """
+
+    text_document: TextDocumentIdentifier
+    """The text document."""
+
+    position: Position
+    """The position inside the text document."""
