@@ -31,6 +31,8 @@ DocumentUri = Annotated[Uri,
                         https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                         """]
 
+# NOTE: Both BaseModel and TypedDict are used to explicitely support the faster validation method
+
 class CancelParams(BaseModel, TypedDict):
     """
     The base protocol offers support for request cancellation.
