@@ -56,3 +56,10 @@ class ProgressParams[T](BaseModel, TypedDict):
 
     value: T
     """The progress data."""
+
+class RegularExpressionsClientCapabilities(BaseModel, TypedDict):
+	engine: str
+	"""The engine's name."""
+
+	version: str | None
+    """The engine's version."""
