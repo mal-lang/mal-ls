@@ -1,7 +1,10 @@
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
+
+base_config = ConfigDict(alias_generator = to_snake)
 
 Integer = Annotated[int,
                     Field(ge=-2^31, le=2^31-1),
