@@ -287,3 +287,25 @@ class AnnotatedTextEdit(TextEdit):
     """The actual annotation identifier."""
 
     model_config = base_config
+
+class TextDocumentEdit(BaseModel, TypedDict):
+    """
+    Describes textual changes on a single text document. The text document is referred to as a
+    `OptionalVersionedTextDocumentIdentifier` to allow clients to check the text document version
+    before an edit is applied. A `TextDocumentEdit` describes all changes on a version Si and after
+    they are applied move the document to version Si+1. So the creator of a `TextDocumentEdit`
+    doesn’t need to sort the array of edits or do any kind of ordering. However the edits must be
+    non overlapping.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentEdit
+    """
+
+    text_document: OptionalVersionedTextDocumentIdentifier
+    """The text document to change."""
+
+    edits: list[TextEdit | AnnotatedTextEdit]
+    """
+    The edits to be applied.
+    """
+
+    model_config = base_config
