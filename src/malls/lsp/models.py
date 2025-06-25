@@ -86,3 +86,19 @@ class Position(BaseModel, TypedDict):
 	If the character value is greater than the line length it defaults back
 	to the line length.
     """
+
+class Range(BaseModel, TypedDict):
+    """
+    A range in a text document expressed as (zero-based) start and end positions. A range is
+    comparable to a selection in an editor. Therefore, the end position is exclusive. If you want
+    to specify a range that contains a line including the line ending character(s) then use an end
+    position denoting the start of the next line.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#range
+    """
+
+    start: Position
+    """The range's start position."""
+
+    end: Position
+    """The range's end position."""
