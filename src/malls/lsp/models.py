@@ -267,3 +267,11 @@ class ChangeAnnotation(BaseModel, TypedDict):
     """A human-readable string which is rendered less prominent in the user interface."""
 
     model_config = base_config
+
+ChangeAnnotationIdentifier = Annotated[str,
+                                       """
+                                       An identifier referring to a change annotation managed by a
+                                       workspace edit.
+
+                                       https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#changeAnnotationIdentifier
+                                       """]
