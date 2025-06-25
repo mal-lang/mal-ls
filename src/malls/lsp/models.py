@@ -275,3 +275,15 @@ ChangeAnnotationIdentifier = Annotated[str,
 
                                        https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#changeAnnotationIdentifier
                                        """]
+
+class AnnotatedTextEdit(TextEdit):
+    """
+    A special text edit with an additional change annotation.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#annotatedTextEdit
+    """
+
+    annotation_id: ChangeAnnotationIdentifier
+    """The actual annotation identifier."""
+
+    model_config = base_config
