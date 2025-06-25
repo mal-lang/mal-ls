@@ -8,6 +8,19 @@ https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/spe
 from enum import IntEnum, IntFlag, StrEnum
 
 
+class EndOfLine(StrEnum):
+    """
+    To ensure that both client and server split the string into the same line representation the
+    protocol specifies the following end-of-line sequences: '\\n', `\\r\\n` and `\r`. Positions are
+    line end character agnostic. So you can not specify a position that denotes `\\r|\\n` or `\\n|`
+    where `|` represents the character offset.
+    
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocuments
+    """
+    NL = "\n"
+    CRNL = "\r\n"
+    CR = "\r"
+
 class PositionEncodingKind(StrEnum):
     """
     A set of predefined position encoding kinds indicating how positions are encoded, specifically
