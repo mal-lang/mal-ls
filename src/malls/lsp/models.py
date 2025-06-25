@@ -124,6 +124,8 @@ class TextDocumentItem(BaseModel, TypedDict):
     text: str
     """The content of the opened text document."""
 
+    model_config = base_config
+
 class TextDocumentIdentifier(BaseModel, TypedDict):
     """
     Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
