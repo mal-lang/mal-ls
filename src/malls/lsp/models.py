@@ -226,3 +226,23 @@ DocumentSelector = Annotated[list[DocumentFilter],
 
                              https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSelector
                              """]
+
+class TextEdit(BaseModel, TypedDict):
+    """
+    A textual edit applicable to a text document.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
+    """
+
+    range: Range
+    """
+    The range of the text document to be manipulated. To insert text into a document create a
+    range where start === end.
+    """
+
+    new_text: str
+    """
+    The string to be inserted. For delete operations use an empty string.
+    """
+
+    model_config = base_config
