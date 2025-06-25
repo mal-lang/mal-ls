@@ -123,3 +123,13 @@ class TextDocumentItem(BaseModel, TypedDict):
 
     text: str
     """The content of the opened text document."""
+
+class TextDocumentIdentifier(BaseModel, TypedDict):
+    """
+    Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentIdentifier
+    """
+
+    uri: DocumentUri
+    """The text document's URI."""
