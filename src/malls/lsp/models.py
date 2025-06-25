@@ -102,3 +102,24 @@ class Range(BaseModel, TypedDict):
 
     end: Position
     """The range's end position."""
+
+class TextDocumentItem(BaseModel, TypedDict):
+    """
+    An item to transfer a text document from the client to the server.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
+    """
+
+    uri: DocumentUri
+    """The text document's URI."""
+
+    language_id: str
+    """The text document's language identifier."""
+
+    version: Integer
+    """
+    The version number of this document (it will increase after each change, including undo/redo).
+    """
+
+    text: str
+    """The content of the opened text document."""
