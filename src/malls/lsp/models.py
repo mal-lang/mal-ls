@@ -217,3 +217,10 @@ class DocumentFilter(BaseModel, TypedDict):
       (e.g., `example.[!0-9]` to match on `example.a`, `example.b`, but
        not `example.0`)
     """
+
+DocumentSelector = Annotated[list[DocumentFilter],
+                             """
+                             A document selector is the combination of one or more document filters.
+
+                             https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSelector
+                             """]
