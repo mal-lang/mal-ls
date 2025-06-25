@@ -246,3 +246,24 @@ class TextEdit(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ChangeAnnotation(BaseModel, TypedDict):
+    """
+    Additional information that describes document changes.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#changeAnnotation
+    """
+
+    label: str
+    """
+    A human-readable string describing the actual change. The string is rendered prominent in the
+    user interface.
+    """
+
+    needs_confirmation: bool | None
+    """A flag which indicates that user confirmation is needed before applying the change."""
+
+    description: str | None
+    """A human-readable string which is rendered less prominent in the user interface."""
+
+    model_config = base_config
