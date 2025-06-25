@@ -188,6 +188,8 @@ class TextDocumentPositionParams(BaseModel, TypedDict):
     position: Position
     """The position inside the text document."""
 
+    model_config = base_config
+
 class DocumentFilter(BaseModel, TypedDict):
     """
     A document filter denotes a document through properties like `language`, `scheme` or `pattern`
