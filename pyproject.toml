@@ -11,6 +11,7 @@ urls = { github = "https://github.com/Tobiky/mal-ls" }
 dependencies = [
     "pydantic>=2.11.7",
     "python-lsp-jsonrpc>=1.1.2",
+    "uritools>=5.0.0",
 ]
 
 [dependency-groups]
