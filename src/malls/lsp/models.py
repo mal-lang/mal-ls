@@ -1,8 +1,9 @@
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
+from uritools import isuri
 
 base_config = ConfigDict(alias_generator = to_snake)
 
@@ -12,6 +13,23 @@ Integer = Annotated[int,
 UInteger = Annotated[Integer,
                      Field(ge=0),
                      """Defines an unsigned integer number in the range of 0 to 2^31 - 1."""]
+Uri = Annotated[str,
+                AfterValidator(isuri),
+                """
+                URI’s are transferred as strings. The URI’s format is defined in https://tools.ietf.org/html/rfc3986
+
+                https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
+                """]
+DocumentUri = Annotated[Uri,
+                        """
+                        Many of the interfaces contain fields that correspond to the URI of a
+                        document. For clarity, the type of such a field is declared as a
+                        `DocumentUri`. Over the wire, it will still be transferred as a string, but
+                        this guarantees that the contents of that string can be parsed as a valid
+                        URI.
+
+                        https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
+                        """]
 
 class CancelParams(BaseModel, TypedDict):
     """
