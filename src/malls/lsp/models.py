@@ -309,3 +309,14 @@ class TextDocumentEdit(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class Location(BaseModel, TypedDict):
+    """
+    Represents a location inside a resource, such as a line inside a text file.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#location
+    """
+
+    uri: DocumentUri
+
+    range: Range
