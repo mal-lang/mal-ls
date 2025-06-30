@@ -20,6 +20,24 @@ Uri = Annotated[str,
 
                 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                 """]
+LSPAny = Annotated["LSPObject" | "LSPArray" | str | Integer | UInteger | float | bool | None,
+                   """
+                   The LSP any type.
+
+                   https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspAny
+                   """]
+LSPObject = Annotated[dict[str, LSPAny],
+                      """
+                      LSP object definition.
+
+                      https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspObject
+                      """]
+LSPArray = Annotated[list[LSPAny],
+                     """
+                     LSP arrays.
+
+                     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspArray
+                     """]
 DocumentUri = Annotated[Uri,
                         """
                         Many of the interfaces contain fields that correspond to the URI of a
