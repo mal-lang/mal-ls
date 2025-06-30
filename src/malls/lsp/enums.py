@@ -143,16 +143,53 @@ class MarkupKind(StrEnum):
     """Markdown is supported as a content format."""
 
 
-# TODO: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#resourceChanges
-# Different options as enum of classes
+class ResourceOperationKind(StrEnum):
+    """
+    The kind of resource operations supported by the client.
 
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#resourceOperationKind
+    """
 
-# TODO: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceEdit
-# Different options as enum of classes
+    Create = "create"
+    """Supports creating new files and folders."""
 
-# TODO: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgress
-# Different options as enum of classes
+    Rename = "rename"
+    """Supports renaming existing files and folders."""
 
+    Delete = "delete"
+    """Supports deleting existing files and folders."""
+
+class FailureHandlingKind(StrEnum):
+    """
+    The failure handling strategy of a client if applying the workspace edit fails.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#failureHandlingKind
+    """
+
+    Abort = "abort"
+    """
+    Applying the workspace change is simply aborted if one of the changes provided fails. All
+    operations executed before the failing operation stay executed.
+    """
+
+    Transactional = "transactional"
+    """
+    All operations are executed transactional. That means they either all succeed or no changes at
+    all are applied to the workspace.
+    """
+
+    TextOnlyTransactional = "textOnlyTransactional"
+    """
+    If the workspace edit contains only textual file changes they are executed transactional. If
+    resource changes (create, rename or delete file) are part of the change the failure handling
+    strategy is abort.
+    """
+
+    Undo = "undo"
+    """
+    The client tries to undo the operations already executed. But there is no guarantee that this
+    is succeeding.
+    """
 
 class TraceValue(StrEnum):
     """
