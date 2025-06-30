@@ -5,7 +5,7 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
-from .enums import DiagnosticSeverity, DiagnosticTag, MarkupKind
+from .enums import DiagnosticSeverity, DiagnosticTag, MarkupKind, ResourceOperationKind, FailureHandlingKind
 
 base_config = ConfigDict(alias_generator = to_snake)
 
@@ -735,6 +735,51 @@ class WorkspaceEdit(BaseModel, TypedDict):
 
     Whether clients honor this property depends on the client capability
     `workspace.changeAnnotationSupport`.
+    """
+
+    model_config = base_config
+
+
+class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
+    """
+    Workspace edit client capabilities
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceEditClientCapabilities
+    """
+
+    document_changes: bool | None
+    """
+    The client supports versioned document changes in `WorkspaceEdit`s
+    """
+
+    resource_operations: list[ResourceOperationKind] | None
+    """
+    The resource operations the client supports. Clients should at least
+    support 'create', 'rename' and 'delete' files and folders.
+    """
+
+    failure_handling: FailureHandlingKind | None
+    """
+    The failure handling strategy of a client if applying the workspace edit
+    fails.
+    """
+
+    normalizes_line_endings: bool | None
+    """
+    Whether the client normalizes line endings to the client specific
+    setting.
+    If set to `true` the client will normalize line ending characters
+    in a workspace edit to the client specific new line character(s).
+    """
+
+    change_annotation_support: dict[str, bool] | None
+    """
+    Whether the client in general supports change annotations on text edits,
+    create file, rename file and delete file changes.
+
+    Properties:
+        groupsOnLabel?: Whether the client groups edits with equal labels into tree nodes,
+        for instance all edits labelled with "Changes in Strings" would be a tree node.
     """
 
     model_config = base_config
