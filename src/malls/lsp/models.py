@@ -5,7 +5,7 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
-from .enums import DiagnosticSeverity, DiagnosticTag
+from .enums import DiagnosticSeverity, DiagnosticTag, MarkupKind
 
 base_config = ConfigDict(alias_generator = to_snake)
 
@@ -483,4 +483,42 @@ class Command(BaseModel, TypedDict):
     """
     Arguments that the command handler should be
     invoked with.
+    """
+
+class MarkupContent(BaseModel, TypedDict):
+    """
+    A `MarkupContent` literal represents a string value which content is
+    interpreted base on its kind flag. Currently the protocol supports
+    `plaintext` and `markdown` as markup kinds.
+
+    If the kind is `markdown` then the value can contain fenced code blocks like
+    in GitHub issues.
+
+    Here is an example how such a string can be constructed using
+    JavaScript / TypeScript:
+    ```typescript
+    let markdown: MarkdownContent = {
+        kind: MarkupKind.Markdown,
+        value: [
+            '# Header',
+            'Some text',
+            '```typescript',
+            'someCode();',
+            '```'
+        ].join('\n')
+    };
+    ```
+
+    *Please Note* that clients might sanitize the return markdown. A client could
+    decide to remove HTML from the markdown to avoid script execution.
+    """
+
+    kind: MarkupKind
+    """
+    The type of the Markup
+    """
+
+    value: str
+    """
+    The content itself
     """
