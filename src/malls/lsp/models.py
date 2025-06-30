@@ -522,3 +522,25 @@ class MarkupContent(BaseModel, TypedDict):
     """
     The content itself
     """
+
+class MarkdownClientCapabilities(BaseModel, TypedDict):
+    """
+    Client capabilities specific to the used markdown parser.
+    """
+
+    parser: str
+    """
+    The name of the parser.
+    """
+
+    version: str | None
+    """
+    The version of the parser.
+    """
+
+    allowed_tags: list[str] | None
+    """
+    A list of HTML tags that the client allows / supports in Markdown.
+    """
+
+    model_config = base_config
