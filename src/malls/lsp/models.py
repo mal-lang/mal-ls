@@ -5,6 +5,8 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
+from .enums import DiagnosticSeverity, DiagnosticTag
+
 base_config = ConfigDict(alias_generator = to_snake)
 
 Integer = Annotated[int,
@@ -368,6 +370,90 @@ class LocationLink(BaseModel, TypedDict):
     """
     The range that should be selected and revealed when this link is being followed, e.g the name
     of a function. Must be contained by the `targetRange`. See also `DocumentSymbol#range`.
+    """
+
+    model_config = base_config
+
+class DiagnosticRelatedInformation(BaseModel, TypedDict):
+    """
+    Represents a related message and source code location for a diagnostic. This should be used to
+    point to code locations that cause or are related to a diagnostics, e.g when duplicating a
+    symbol in a scope.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
+    """
+
+    location: Location
+    """
+    The location of this related diagnostic information.
+    """
+
+    message: str
+    """
+    The message of this related diagnostic information.
+    """
+
+class CodeDescription(BaseModel, TypedDict):
+    """
+    Structure to capture a description for an error code.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeDescription
+    """
+
+    href: Uri
+    """An URI to open with more information about the diagnostic error."""
+
+
+class Diagnostic(BaseModel, TypedDict):
+    range: Range
+    """
+    The range at which the message applies.
+    """
+
+    severity: DiagnosticSeverity | None
+    """
+    The diagnostic's severity. To avoid interpretation mismatches when a
+    server is used with different clients it is highly recommended that
+    servers always provide a severity value. If omitted, it’s recommended
+    for the client to interpret it as an Error severity.
+    """
+
+    code: int | str | None
+    """
+    The diagnostic's code, which might appear in the user interface.
+    """
+
+    code_description: CodeDescription | None
+    """
+    An optional property to describe the error code.
+    """
+
+    source: str | None
+    """
+    A human-readable string describing the source of this diagnostic, e.g. 'typescript' or
+    'super lint'.
+    """
+
+    message: str
+    """
+    The diagnostic's message.
+    """
+
+    tags: list[DiagnosticTag] | None
+    """
+    Additional metadata about the diagnostic.
+    """
+
+    related_information: list[DiagnosticRelatedInformation] | None
+    """
+    An array of related diagnostic information, e.g. when symbol-names within a scope collide all
+    definitions can be marked via this property.
+    """
+
+    data: LSPAny | None
+    """
+    A data entry field that is preserved between a `textDocument/publishDiagnostics` notification
+    and `textDocument/codeAction` request.
     """
 
     model_config = base_config
