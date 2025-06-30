@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_snake
@@ -598,6 +598,98 @@ class DeleteFileOptions(BaseModel, TypedDict):
     ignore_if_not_exists: bool | None
     """
     Ignore the operation if the file doesn't exist.
+    """
+
+    model_config = base_config
+
+class CreateFile(BaseModel, TypedDict):
+    """
+    Create file operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#createFile
+    """
+
+    kind: Literal["create"]
+    """
+    A create
+    """
+
+    uri: DocumentUri
+    """
+    The resource to create.
+    """
+
+    options: CreateFileOptions | None
+    """
+    Additional options
+    """
+
+    annotation_id: ChangeAnnotationIdentifier | None
+    """
+    An optional annotation identifier describing the operation.
+    """
+
+    model_config = base_config
+
+class RenameFile(BaseModel, TypedDict):
+    """
+    Rename file operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#renameFile
+    """
+
+    kind: Literal["rename"]
+    """
+    A rename
+    """
+
+    old_uri: DocumentUri
+    """
+    The old (existing) location.
+    """
+
+    new_uri: DocumentUri
+    """
+    The new location.
+    """
+
+    options: RenameFileOptions | None
+    """
+    Rename options.
+    """
+
+    annotation_id: ChangeAnnotationIdentifier | None
+    """
+    An optional annotation identifier describing the operation.
+    """
+
+    model_config = base_config
+
+class DeleteFile(BaseModel, TypedDict):
+    """
+    Delete file operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#deleteFile
+    """
+
+    kind: Literal["delete"]
+    """
+    A delete
+    """
+
+    uri: DocumentUri
+    """
+    The file to delete.
+    """
+
+    options: DeleteFileOptions | None
+    """
+    Delete options.
+    """
+
+    annotation_id: ChangeAnnotationIdentifier | None
+    """
+    An optional annotation identifier describing the operation.
     """
 
     model_config = base_config
