@@ -320,3 +320,36 @@ class Location(BaseModel, TypedDict):
     uri: DocumentUri
 
     range: Range
+
+class LocationLink(BaseModel, TypedDict):
+    """
+    Represents a link between a source and a target location.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
+    """
+
+    origin_selection_range: Range | None
+    """
+    Span of the origin of this link.
+
+	Used as the underlined span for mouse interaction. Defaults to the word range at the mouse
+    position.
+    """
+
+    target_uri: DocumentUri
+    """The target resource identifier of this link."""
+
+    target_range: Range
+    """
+    The full target range of this link. If the target for example is a symbol then target range is
+    the range enclosing this symbol not including leading/trailing whitespace but everything else
+    like comments. This information is typically used to highlight the range in the editor.
+    """
+
+    target_selection_range: Range
+    """
+    The range that should be selected and revealed when this link is being followed, e.g the name
+    of a function. Must be contained by the `targetRange`. See also `DocumentSymbol#range`.
+    """
+
+    model_config = base_config
