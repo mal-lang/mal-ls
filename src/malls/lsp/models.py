@@ -544,3 +544,60 @@ class MarkdownClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class CreateFileOptions(BaseModel, TypedDict):
+    """
+    Options to create a file.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#createFileOptions
+    """
+
+    overwrite: bool | None
+    """
+    Overwrite existing file. Overwrite wins over `ignoreIfExists`
+    """
+
+    ignore_if_exists: bool | None
+    """
+    Ignore if exists.
+    """
+
+    model_config = base_config
+
+class RenameFileOptions(BaseModel, TypedDict):
+    """
+    Rename file options
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#createFileOptions
+    """
+
+    overwrite: bool | None
+    """
+    Overwrite target if existing. Overwrite wins over `ignoreIfExists`
+    """
+
+    ignore_if_exists: bool | None
+    """
+    Ignores if target exists.
+    """
+
+    model_config = base_config
+
+class DeleteFileOptions(BaseModel, TypedDict):
+    """
+    Delete file options
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#deleteFileOptions
+    """
+
+    recursive: bool | None
+    """
+    Delete the content recursively if a folder is denoted.
+    """
+
+    ignore_if_not_exists: bool | None
+    """
+    Ignore the operation if the file doesn't exist.
+    """
+
+    model_config = base_config
