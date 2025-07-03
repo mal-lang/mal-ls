@@ -56,6 +56,13 @@ DocumentUri = Annotated[Uri,
 
                         https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                         """]
+ProgressToken = Annotated[str | Integer,
+                          """
+                          Token associated with each progress report, request, or other
+                          communication.
+
+                          https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#progress
+                          """]
 
 # NOTE: Both BaseModel and TypedDict are used to explicitely support the faster validation method
 
@@ -786,6 +793,136 @@ class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
     Properties:
         groupsOnLabel?: Whether the client groups edits with equal labels into tree nodes,
         for instance all edits labelled with "Changes in Strings" would be a tree node.
+    """
+
+    model_config = base_config
+
+class WorkDoneProgressBegin(BaseModel, TypedDict):
+    """
+    Begin progress operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressBegin
+    """
+
+    kind: Literal['begin']
+    """
+    Kind of progress operation
+    """
+
+    title: str
+    """
+    Mandatory title of the progress operation. Used to briefly inform about
+    the kind of operation being performed.
+
+    Examples: "Indexing" or "Linking dependencies".
+    """
+
+    cancellable: bool | None
+    """
+    Controls if a cancel button should show to allow the user to cancel the
+    long running operation. Clients that don't support cancellation are
+    allowed to ignore the setting.
+    """
+
+    message: str | None
+    """
+    Optional, more detailed associated progress message. Contains
+    complementary information to the `title`.
+
+    Examples: "3/25 files", "project/src/module2", "node_modules/some_dep".
+    If unset, the previous progress message (if any) is still valid.
+    """
+
+    percentage: UInteger | None
+    """
+    Optional progress percentage to display (value 100 is considered 100%).
+    If not provided infinite progress is assumed and clients are allowed
+    to ignore the `percentage` value in subsequent report notifications.
+
+    The value should be steadily rising. Clients are free to ignore values
+    that are not following this rule. The value range is [0, 100].
+    """
+
+class WorkDoneProgressReport(BaseModel, TypedDict):
+    """
+    Report progress operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressReport
+    """
+
+    kind: Literal['report']
+    """
+    Kind of progress operation
+    """
+
+    cancellable: bool | None
+    """
+    Controls enablement state of a cancel button. This property is only valid
+    if a cancel button got requested in the `WorkDoneProgressBegin` payload.
+
+    Clients that don't support cancellation or don't support control the
+    button's enablement state are allowed to ignore the setting.
+    """
+
+    message: str | None
+    """
+    Optional, more detailed associated progress message. Contains
+    complementary information to the `title`.
+
+    Examples: "3/25 files", "project/src/module2", "node_modules/some_dep".
+    If unset, the previous progress message (if any) is still valid.
+    """
+
+    percentage: UInteger | None
+    """
+    Optional progress percentage to display (value 100 is considered 100%).
+    If not provided infinite progress is assumed and clients are allowed
+    to ignore the `percentage` value in subsequent report notifications.
+
+    The value should be steadily rising. Clients are free to ignore values
+    that are not following this rule. The value range is [0, 100].
+    """
+
+class WorkDoneProgressEnd(BaseModel, TypedDict):
+    """
+    End progress operation
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressEnd
+    """
+
+    kind: Literal['end']
+    """
+    Kind of progress operation
+    """
+
+    message: str | None
+    """
+    Optional, a final message indicating to for example indicate the outcome
+    of the operation.
+    """
+
+class WorkDoneProgressParams(BaseModel, TypedDict):
+    """
+    Work done progress parameters
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressParams
+    """
+
+    work_done_token: ProgressToken | None
+    """
+    An optional token that a server can use to report work done progress.
+    """
+
+    model_config = base_config
+
+class PartialResultParams(BaseModel, TypedDict):
+    """
+    Partial result parameters
+    """
+    partial_result_token: ProgressToken | None
+    """
+    An optional token that a server can use to report partial results (e.g.
+    streaming) to the client.
     """
 
     model_config = base_config
