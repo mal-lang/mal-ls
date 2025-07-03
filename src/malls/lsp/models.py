@@ -5,7 +5,13 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
-from .enums import DiagnosticSeverity, DiagnosticTag, MarkupKind, ResourceOperationKind, FailureHandlingKind
+from .enums import (
+    DiagnosticSeverity,
+    DiagnosticTag,
+    FailureHandlingKind,
+    MarkupKind,
+    ResourceOperationKind,
+)
 
 base_config = ConfigDict(alias_generator = to_snake)
 
