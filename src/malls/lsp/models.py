@@ -948,3 +948,21 @@ class ClientInfo(BaseModel, TypedDict):
     """
     The client's version as defined by the client.
     """
+
+class WorkspaceFolder(BaseModel, TypedDict):
+    """
+    A workspace folder.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspaceFolder
+    """
+
+    uri: Uri
+    """
+    The associated URI for this workspace folder.
+    """
+
+    name: str
+    """
+    The name of the workspace folder. Used to refer to this
+    workspace folder in the user interface.
+    """
