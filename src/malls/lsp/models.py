@@ -918,7 +918,10 @@ class WorkDoneProgressParams(BaseModel, TypedDict):
 class PartialResultParams(BaseModel, TypedDict):
     """
     Partial result parameters
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#partialResultParams
     """
+
     partial_result_token: ProgressToken | None
     """
     An optional token that a server can use to report partial results (e.g.
