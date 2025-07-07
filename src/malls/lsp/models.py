@@ -1029,3 +1029,69 @@ class CompletionItemResolveSupport(BaseModel, TypedDict):
 
     properties: list[str]
     """The properties that a client can resolve lazily."""
+
+class CompletionItemCapabilities(BaseModel, TypedDict):
+    """
+    The client supports the following `CompletionItem` specific capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
+    """
+
+    snippet_support: bool | None
+    """
+    Client supports snippets as insert text.
+
+    A snippet can define tab stops and placeholders with `$1`, `$2`
+    and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+    the end of the snippet. Placeholders with equal identifiers are
+    linked, that is typing in one will update others too.
+    """
+
+    commit_characters_support: bool | None
+    """Client supports commit characters on a completion item."""
+
+    documentation_format: list[MarkupKind] | None
+    """Client supports the follow content formats for the documentation
+    property. The order describes the preferred format of the client."""
+
+    deprecated_support: bool | None
+    """Client supports the deprecated property on a completion item."""
+
+    preselect_support: bool | None
+    """Client supports the preselect property on a completion item."""
+
+    tag_support: CompletionItemTagSupport | None
+    """
+    Client supports the tag property on a completion item. Clients
+    supporting tags have to handle unknown tags gracefully. Clients
+    especially need to preserve unknown tags when sending a completion
+    item back to the server in a resolve call.
+    """
+
+    insert_replace_support: bool | None
+    """
+    Client supports insert replace edit to control different behavior if
+    a completion item is inserted in the text or should replace text.
+    """
+
+    resolve_support: CompletionItemResolveSupport | None
+    """
+    Indicates which properties a client can resolve lazily on a
+    completion item. Before version 3.16.0 only the predefined properties
+    `documentation` and `detail` could be resolved lazily.
+    """
+
+    insert_text_mode_support: InsertTextModeSupport | None
+    """
+    The client supports the `insertTextMode` property on
+    a completion item to override the whitespace handling mode
+    as defined by the client (see `insertTextMode`).
+    """
+
+    label_details_support: bool | None
+    """
+    The client has support for completion item label
+    details (see also `CompletionItemLabelDetails`).
+    """
+
+    model_config = base_config
