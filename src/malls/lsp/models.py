@@ -6,11 +6,14 @@ from typing_extensions import TypedDict
 from uritools import isuri
 
 from .enums import (
+    CompletionItemKind,
+    CompletionItemTag,
     DiagnosticSeverity,
     DiagnosticTag,
     FailureHandlingKind,
     MarkupKind,
     ResourceOperationKind,
+    TraceValue,
 )
 
 base_config = ConfigDict(alias_generator = to_snake)
@@ -929,3 +932,19 @@ class PartialResultParams(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ClientInfo(BaseModel, TypedDict):
+    """
+    Information about the client
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
+    """
+    name: str
+    """
+    The name of the client as defined by the client.
+    """
+
+    version: str | None
+    """
+    The client's version as defined by the client.
+    """
