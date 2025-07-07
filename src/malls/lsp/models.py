@@ -11,6 +11,7 @@ from .enums import (
     DiagnosticSeverity,
     DiagnosticTag,
     FailureHandlingKind,
+    InsertTextMode,
     MarkupKind,
     ResourceOperationKind,
     TraceValue,
@@ -1002,6 +1003,18 @@ class CompletionItemTagSupport(BaseModel, TypedDict):
 
     value_set: list[CompletionItemTag]
     """The tags supported by the client."""
+
+    model_config = base_config
+
+class InsertTextModeSupport(BaseModel, TypedDict):
+    """The client supports the `insertTextMode` property on
+    a completion item to override the whitespace handling mode
+    as defined by the client (see `insertTextMode`).
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
+    """
+
+    value_set: list[InsertTextMode]
 
     model_config = base_config
 
