@@ -1004,3 +1004,15 @@ class CompletionItemTagSupport(BaseModel, TypedDict):
     """The tags supported by the client."""
 
     model_config = base_config
+
+class CompletionItemResolveSupport(BaseModel, TypedDict):
+    """
+    Indicates which properties a client can resolve lazily on a
+	completion item. Before version 3.16.0 only the predefined properties
+	`documentation` and `detail` could be resolved lazily.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
+    """
+
+    properties: list[str]
+    """The properties that a client can resolve lazily."""
