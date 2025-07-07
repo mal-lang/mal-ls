@@ -966,3 +966,26 @@ class WorkspaceFolder(BaseModel, TypedDict):
     The name of the workspace folder. Used to refer to this
     workspace folder in the user interface.
     """
+
+class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
+    """
+    Text document specific client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether text document synchronization supports dynamic registration."""
+
+    will_save: bool | None
+    """The client supports sending will save notifications."""
+
+    will_save_wait_until: bool | None
+    """The client supports sending a will save request and
+    waits for a response providing text edits which will
+    be applied to the document before it is saved."""
+
+    did_save: bool | None
+    """The client supports did save notifications."""
+
+    model_config = base_config
