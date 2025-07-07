@@ -14,7 +14,7 @@ class EndOfLine(StrEnum):
     protocol specifies the following end-of-line sequences: '\\n', `\\r\\n` and `\r`. Positions are
     line end character agnostic. So you can not specify a position that denotes `\\r|\\n` or `\\n|`
     where `|` represents the character offset.
-    
+
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocuments
     """
     NL = "\n"
@@ -80,6 +80,17 @@ class CompletionItemKind(IntEnum):
     Event = 23
     Operator = 24
     TypeParameter = 25
+
+
+class CompletionItemTag(IntEnum):
+    """
+    Completion item tags are extra annotations that tweak the rendering of a
+    completion item.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemTag
+    """
+    Deprecated = 1
+    """Render a completion as obsolete, usually using a strike-out."""
 
 
 class DiagnosticSeverity(IntEnum):
