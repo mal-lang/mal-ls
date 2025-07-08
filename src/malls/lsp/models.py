@@ -1114,3 +1114,21 @@ class CompletionItemKindCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
+class CompletionListCapabilities(BaseModel, TypedDict):
+    """
+    The client supports the following `CompletionList` specific capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
+    """
+
+    item_defaults: list[str] | None
+    """
+    The client supports the following itemDefaults on
+    a completion list.
+
+    The value lists the supported property names of the
+    `CompletionList.itemDefaults` object. If omitted
+    no properties are supported.
+    """
+
+    model_config = base_config
