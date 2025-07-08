@@ -1177,3 +1177,21 @@ class CompletionClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class HoverClientCapabilities(BaseModel, TypedDict):
+    """
+    What capabilities the client supports for hover methods/operations.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hoverClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether hover supports dynamic registration."""
+
+    content_format: list[MarkupKind] | None
+    """
+    Client supports the follow content formats if the content property refers to a `literal of
+    type MarkupContent`. The order describes the preferred format of the client.
+    """
+
+    model_config = base_config
