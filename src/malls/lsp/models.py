@@ -1132,3 +1132,48 @@ class CompletionListCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class CompletionClientCapabilities(BaseModel, TypedDict):
+    """
+    Features and capabilities that the client supports in regards to completion.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether completion supports dynamic registration.
+    """
+
+    completion_item: CompletionItemCapabilities | None
+    """
+    The client supports the following `CompletionItem` specific capabilities.
+    """
+
+    completion_item_kind: CompletionItemKindCapabilities | None
+    """
+    The completion item kind values the client supports. When this property exists the client also
+    guarantees that it will handle values outside its set gracefully and falls back to a default
+    value when unknown.
+
+    If this property is not present the client only supports the completion items kinds from `Text`
+    to `Reference` as defined in the initial version of the protocol.
+    """
+
+    context_support: bool | None
+    """
+    The client supports to send additional context information for a `textDocument/completion`
+    request.
+    """
+
+    insert_text_mode: InsertTextMode | None
+    """
+    The client's default when the completion item doesn't provide a `insertTextMode` property.
+    """
+
+    completion_list: CompletionListCapabilities | None
+    """
+    The client supports the following `CompletionList` specific capabilities.
+    """
+
+    model_config = base_config
