@@ -1329,3 +1329,15 @@ class ImplementationClientCapabilities(BaseModel, TypedDict):
     """The client supports additional metadata in the form of definition links."""
 
     model_config = base_config
+
+class ReferenceClientCapabilities(BaseModel, TypedDict):
+    """
+    The clients capabilites in regards to project-wide references of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#referenceClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether references supports dynamic registration."""
+
+    model_config = base_config
