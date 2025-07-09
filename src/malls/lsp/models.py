@@ -1310,3 +1310,22 @@ class TypeDefinitionClientCapabilities(BaseModel, TypedDict):
     """The client supports additional metadata in the form of definition links."""
 
     model_config = base_config
+
+class ImplementationClientCapabilities(BaseModel, TypedDict):
+    """
+    The clients capabilites in regards to implementation of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#implementationClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to `true` the client
+    supports the new `ImplementationRegistrationOptions` return value for the corresponding server
+    capability as well.
+    """
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of definition links."""
+
+    model_config = base_config
