@@ -1257,3 +1257,22 @@ class SignatureHelpClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DeclarationClientCapabilities(BaseModel, TypedDict):
+    """
+    The clients capabilites in regards to declarations of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#declarationClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether declaration supports dynamic registration. If this is set to `true` the client
+    supports the new `DeclarationRegistrationOptions` return value for the corresponding server
+    capability as well.
+    """
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of declaration links."""
+
+    model_config = base_config
