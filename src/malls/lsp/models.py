@@ -1341,3 +1341,15 @@ class ReferenceClientCapabilities(BaseModel, TypedDict):
     """Whether references supports dynamic registration."""
 
     model_config = base_config
+
+class DocumentHighlightClientCapabilities(BaseModel, TypedDict):
+    """
+    The clients capabilites in regards to document highlights.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentHighlightClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether document highlight supports dynamic registration."""
+
+    model_config = base_config
