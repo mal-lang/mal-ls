@@ -1195,3 +1195,65 @@ class HoverClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ParameterInformationCapabilities(BaseModel, TypedDict):
+    """
+    Client capabilities specific to parameter information.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    label_offset_support: bool | None
+    """
+    The client supports processing label offsets instead of a simple label string.
+    """
+
+    model_config = base_config
+
+
+class SignatureInformationCapabilities(BaseModel, TypedDict):
+    """
+    The client supports the following `SignatureInformation` specific properties.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    documentation_format: list[MarkupKind] | None
+    """
+    Client supports the follow content formats for the documentation property. The order describes
+    the preferred format of the client.
+    """
+
+    parameter_information: ParameterInformationCapabilities | None
+    """Client capabilities specific to parameter information."""
+
+    active_parameter_support: bool | None
+    """
+    The client supports the `activeParameter` property on `SignatureInformation` literal.
+    """
+
+    model_config = base_config
+
+class SignatureHelpClientCapabilities(BaseModel, TypedDict):
+    """
+    The clients capabilities in regards to signature help.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether signature help supports dynamic registration."""
+
+    signature_information: SignatureInformationCapabilities | None
+    """
+    The client supports the following `SignatureInformation` specific properties.
+    """
+
+    context_support: bool | None
+    """
+    The client supports to send additional context information for a `textDocument/signatureHelp`
+    request. A client that opts into contextSupport will also support the `retriggerCharacters` on
+    `SignatureHelpOptions`.
+    """
+
+    model_config = base_config
