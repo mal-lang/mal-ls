@@ -79,10 +79,15 @@ def test_pre_initialized_shutdown_errs(
         pre_initialized_shutdown_in: typing.BinaryIO):
     output, ls, *_ = server_output(pre_initialized_shutdown_in)
 
-    response = get_lsp_json(output)
-    assert "capabilities" in response.result
+
+    # the test and server share the same buffer,
+    # so we must reset the cursor
+    output.seek(0)
 
     response = get_lsp_json(output)
-    assert response.error.code == ErrorCodes.InvalidRequest
+    assert "capabilities" in response["result"]
+
+    response = get_lsp_json(output)
+    assert response['error']['code'] == ErrorCodes.InvalidRequest
 
     output.close()
