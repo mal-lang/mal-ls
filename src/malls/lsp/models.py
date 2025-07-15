@@ -5,17 +5,7 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
-from .enums import (
-    CompletionItemKind,
-    CompletionItemTag,
-    DiagnosticSeverity,
-    DiagnosticTag,
-    FailureHandlingKind,
-    InsertTextMode,
-    MarkupKind,
-    ResourceOperationKind,
-    TraceValue,
-)
+import enums
 
 base_config = ConfigDict(alias_generator = to_snake)
 
@@ -427,7 +417,7 @@ class Diagnostic(BaseModel, TypedDict):
     The range at which the message applies.
     """
 
-    severity: DiagnosticSeverity | None
+    severity: enums.DiagnosticSeverity | None
     """
     The diagnostic's severity. To avoid interpretation mismatches when a
     server is used with different clients it is highly recommended that
@@ -456,7 +446,7 @@ class Diagnostic(BaseModel, TypedDict):
     The diagnostic's message.
     """
 
-    tags: list[DiagnosticTag] | None
+    tags: list[enums.DiagnosticTag] | None
     """
     Additional metadata about the diagnostic.
     """
@@ -530,7 +520,7 @@ class MarkupContent(BaseModel, TypedDict):
     decide to remove HTML from the markdown to avoid script execution.
     """
 
-    kind: MarkupKind
+    kind: enums.MarkupKind
     """
     The type of the Markup
     """
@@ -769,13 +759,13 @@ class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
     The client supports versioned document changes in `WorkspaceEdit`s
     """
 
-    resource_operations: list[ResourceOperationKind] | None
+    resource_operations: list[enums.ResourceOperationKind] | None
     """
     The resource operations the client supports. Clients should at least
     support 'create', 'rename' and 'delete' files and folders.
     """
 
-    failure_handling: FailureHandlingKind | None
+    failure_handling: enums.FailureHandlingKind | None
     """
     The failure handling strategy of a client if applying the workspace edit
     fails.
@@ -992,7 +982,7 @@ class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
     model_config = base_config
 
 class TagSupportProperty(BaseModel, TypedDict):
-    value_set: list[CompletionItemTag]
+    value_set: list[enums.CompletionItemTag]
     """The tags supported by the client."""
 
     model_config = base_config
@@ -1005,7 +995,7 @@ class InsertTextModeSupport(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
     """
 
-    value_set: list[InsertTextMode]
+    value_set: list[enums.InsertTextMode]
 
     model_config = base_config
 
@@ -1041,7 +1031,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
     commit_characters_support: bool | None
     """Client supports commit characters on a completion item."""
 
-    documentation_format: list[MarkupKind] | None
+    documentation_format: list[enums.MarkupKind] | None
     """Client supports the follow content formats for the documentation
     property. The order describes the preferred format of the client."""
 
@@ -1101,7 +1091,7 @@ class CompletionItemKindCapabilities(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
     """
 
-    value_set: list[CompletionItemKind] | None
+    value_set: list[enums.CompletionItemKind] | None
 
     model_config = base_config
 
@@ -1157,7 +1147,7 @@ class CompletionClientCapabilities(BaseModel, TypedDict):
     request.
     """
 
-    insert_text_mode: InsertTextMode | None
+    insert_text_mode: enums.InsertTextMode | None
     """
     The client's default when the completion item doesn't provide a `insertTextMode` property.
     """
@@ -1179,7 +1169,7 @@ class HoverClientCapabilities(BaseModel, TypedDict):
     dynamic_registration: bool | None
     """Whether hover supports dynamic registration."""
 
-    content_format: list[MarkupKind] | None
+    content_format: list[enums.MarkupKind] | None
     """
     Client supports the follow content formats if the content property refers to a `literal of
     type MarkupContent`. The order describes the preferred format of the client.
@@ -1209,7 +1199,7 @@ class SignatureInformationCapabilities(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
     """
 
-    documentation_format: list[MarkupKind] | None
+    documentation_format: list[enums.MarkupKind] | None
     """
     Client supports the follow content formats for the documentation property. The order describes
     the preferred format of the client.
