@@ -1378,3 +1378,80 @@ class DocumentSymbolClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ResolveSupportProperty(BaseModel, TypedDict):
+    properties: list[str]
+    """
+    The properties that a client can resolve lazily.
+    """
+
+    model_config = base_config
+
+class CodeActionKindSupportProperty(BaseModel, TypedDict):
+    value_set: list[enums.CodeActionKind]
+    """
+    The code action kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+    """
+
+    model_config = base_config
+
+
+class CodeActionLiteralSupportProperty(BaseModel, TypedDict):
+    code_action_kind: CodeActionKindSupportProperty
+    """
+    The code action kind is supported with the following value set.
+    """
+
+    model_config = base_config
+
+
+class CodeActionClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeActionClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether code action supports dynamic registration.
+    """
+
+    code_action_literal_support: CodeActionLiteralSupportProperty
+    """
+    The client supports code action literals as a valid response of the
+    `textDocument/codeAction` request.
+    """
+
+    is_preferred_support: bool
+    """
+    Whether code action supports the `isPreferred` property.
+    """
+
+    disabled_support: bool
+    """
+    Whether code action supports the `disabled` property.
+    """
+
+    data_support: bool
+    """
+    Whether code action supports the `data` property which is preserved
+    between a `textDocument/codeAction` and a `codeAction/resolve` request.
+    """
+
+    resolve_support: ResolveSupportProperty
+    """
+    Whether the client supports resolving additional code action properties
+    via a separate `codeAction/resolve` request.
+    """
+
+    honors_change_annotations: bool
+    """
+    Whether the client honors the change annotations in text edits and
+    resource operations returned via the `CodeAction#edit` property by for
+    example presenting the workspace edit in the user interface and asking
+    for confirmation.
+    """
+
+    model_config = base_config
