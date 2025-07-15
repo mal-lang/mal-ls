@@ -1532,3 +1532,39 @@ class DocumentOnTypeFormattingClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class RenameClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#renameClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether rename supports dynamic registration.
+    """
+
+    prepare_support: bool
+    """
+    Client supports testing for validity of rename operations
+    before execution.
+    """
+
+    prepare_support_default_behavior: enums.PrepareSupportDefaultBehavior
+    """
+    Client supports the default behavior result
+    (`{ defaultBehavior: boolean }`).
+
+    The value indicates the default behavior used by the
+    client.
+    """
+
+    honors_change_annotations: bool
+    """
+    Whether the client honors the change annotations in
+    text edits and resource operations returned via the
+    rename request's workspace edit by for example presenting
+    the workspace edit in the user interface and asking
+    for confirmation.
+    """
+
+    model_config = base_config
