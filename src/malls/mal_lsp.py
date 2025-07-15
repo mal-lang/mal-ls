@@ -72,6 +72,10 @@ class MALLSPServer(MethodDispatcher):
     def state(self) -> LifecycleFSM:
         return self.__lifecycle
 
+    @property
+    def traceValue(self) -> TraceValue:
+        return self.__trace_value
+
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
     def _change_trace_value(self, new_trace_value: str) -> None:

@@ -3,7 +3,7 @@ import io
 import logging
 import typing
 
-from malls.lsp.enums import ErrorCodes
+from malls.lsp.enums import ErrorCodes, TraceValue
 from malls.lsp.fsm import LifecycleState
 from malls.mal_lsp import MALLSPServer
 
@@ -69,3 +69,22 @@ def test_wrong_trace_value_in_initialization(
     assert response['error']['code'] == ErrorCodes.InvalidParams
 
     output.close()
+
+def test_set_trace_correctly(
+        set_trace_value_in: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_value_in)
+
+    # ensure ls has trace value correctly set
+    assert ls.traceValue == TraceValue.Verbose
+
+    output.close()
+
+def test_set_trace_incorrectly(
+        set_wrong_trace_value_in: typing.BinaryIO):
+    output, ls, *_ = server_output(set_wrong_trace_value_in)
+
+    # ensure ls has trace value correctly set
+    assert ls.traceValue == TraceValue.Off
+
+    output.close()
+
