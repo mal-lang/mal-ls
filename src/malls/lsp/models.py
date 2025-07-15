@@ -1716,3 +1716,91 @@ class CallHierarchyClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class SemanticTokensClientCapabilitiesRequestsFull(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    delta: bool | None
+    """
+    The client will send the `textDocument/semanticTokens/full/delta`
+    request if the server provides a corresponding handler.
+    """
+
+class SemanticTokensClientCapabilitiesRequests(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    range: bool | dict | None
+    """
+    The client will send the `textDocument/semanticTokens/range` request
+    if the server provides a corresponding handler.
+    """
+    full: bool | SemanticTokensClientCapabilitiesRequestsFull | None
+    """
+    The client will send the `textDocument/semanticTokens/full` request
+    if the server provides a corresponding handler.
+    """
+
+class SemanticTokensClientCapabilities(BaseModel, TypedDict, total=False):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    requests: SemanticTokensClientCapabilitiesRequests
+    """
+    Which requests the client supports and might send to the server
+    depending on the server's capability. Please note that clients might not
+    show semantic tokens or degrade some of the user experience if a range
+    or full request is advertised by the client but not provided by the
+    server.
+    """
+
+    token_types: list[str]
+    """
+    The token types that the client supports.
+    """
+
+    token_modifiers: list[str]
+    """
+    The token modifiers that the client supports.
+    """
+
+    formats: list[enums.TokenFormat]
+    """
+    The formats the clients supports.
+    """
+
+    overlapping_token_support: bool | None
+    """
+    Whether the client supports tokens that can overlap each other.
+    """
+
+    multiline_token_support: bool | None
+    """
+    Whether the client supports tokens that can span multiple lines.
+    """
+
+    server_cancel_support: bool | None
+    """
+    Whether the client allows the server to actively cancel a
+    semantic token request.
+    """
+
+    augments_syntax_tokens: bool | None
+    """
+    Whether the client uses semantic tokens to augment existing
+    syntax tokens.
+    """
+
+    model_config = base_config
