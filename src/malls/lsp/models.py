@@ -1467,3 +1467,20 @@ class CodeLensClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DocumentLinkClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentLinkClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether document link supports dynamic registration.
+    """
+
+    tooltip_support: bool
+    """
+    Whether the client supports the `tooltip` property on `DocumentLink`.
+    """
+
+    model_config = base_config
