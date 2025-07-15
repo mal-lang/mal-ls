@@ -1334,3 +1334,47 @@ class DocumentHighlightClientCapabilities(BaseModel, TypedDict):
     """Whether document highlight supports dynamic registration."""
 
     model_config = base_config
+
+class SymbolKindProperty(BaseModel, TypedDict, total=False):
+    value_set: list[enums.SymbolKind]
+    """
+    The symbol kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+
+    If this property is not present the client only supports
+    the symbol kinds from `File` to `Array` as defined in
+    the initial version of the protocol.
+    """
+
+    model_config = base_config
+
+class DocumentSymbolClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbolClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether document symbol supports dynamic registration."""
+
+    symbol_kind: SymbolKindProperty
+    """Specific capabilities for the `SymbolKind` in the `textDocument/documentSymbol` request."""
+
+    hierarchical_document_symbol_support: bool
+    """The client supports hierarchical document symbols."""
+
+    tag_support: TagSupport
+    """
+    The client supports tags on `SymbolInformation`. Tags are supported on
+    `DocumentSymbol` if `hierarchicalDocumentSymbolSupport` is set to true.
+    Clients supporting tags have to handle unknown tags gracefully.
+    """
+
+    label_support: bool
+    """
+    The client supports an additional label presented in the UI when
+    registering a document symbol provider.
+    """
+
+    model_config = base_config
