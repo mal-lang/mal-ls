@@ -1868,3 +1868,26 @@ class InlayHintClientCapabilities(BaseModel, TypedDict, total=False):
     """
 
     model_config = base_config
+
+class DiagnosticClientCapabilities(BaseModel, TypedDict, total=False):
+    """
+    Client capabilities specific to diagnostic pull requests.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new
+    `(TextDocumentRegistrationOptions & StaticRegistrationOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    related_document_support: bool | None
+    """
+    Whether the clients supports related documents for document diagnostic
+    pulls.
+    """
+
+    model_config = base_config
