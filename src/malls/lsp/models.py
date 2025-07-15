@@ -1834,3 +1834,18 @@ class TypeHierarchyClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class InlineValueClientCapabilities(BaseModel, TypedDict, total=False):
+    """
+    Client capabilities specific to inline values.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlineValueClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for inline
+    value providers.
+    """
+
+    model_config = base_config
