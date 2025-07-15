@@ -1891,3 +1891,102 @@ class DiagnosticClientCapabilities(BaseModel, TypedDict, total=False):
     """
 
     model_config = base_config
+
+class TextDocumentClientCapabilities(BaseModel, TypedDict):
+    """Text document specific client capabilities."""
+
+    synchronization: TextDocumentSyncClientCapabilities | None
+
+    completion: CompletionClientCapabilities | None
+    """Capabilities specific to the `textDocument/completion` request."""
+
+    hover: HoverClientCapabilities | None
+    """Capabilities specific to the `textDocument/hover` request."""
+
+    signature_help: SignatureHelpClientCapabilities | None
+    """Capabilities specific to the `textDocument/signatureHelp` request."""
+
+    declaration: DeclarationClientCapabilities | None
+    """Capabilities specific to the `textDocument/declaration` request."""
+
+    definition: DefinitionClientCapabilities | None
+    """Capabilities specific to the `textDocument/definition` request."""
+
+    type_definition: TypeDefinitionClientCapabilities | None
+    """Capabilities specific to the `textDocument/typeDefinition` request."""
+
+    implementation: ImplementationClientCapabilities | None
+    """Capabilities specific to the `textDocument/implementation` request."""
+
+    references: ReferenceClientCapabilities | None
+    """Capabilities specific to the `textDocument/references` request."""
+
+    document_highlight: DocumentHighlightClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentHighlight` request."""
+
+    document_symbol: DocumentSymbolClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentSymbol` request."""
+
+    code_action: CodeActionClientCapabilities | None
+    """Capabilities specific to the `textDocument/codeAction` request."""
+
+    code_lens: CodeLensClientCapabilities | None
+    """Capabilities specific to the `textDocument/codeLens` request."""
+
+    document_link: DocumentLinkClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentLink` request."""
+
+    color_provider: DocumentColorClientCapabilities | None
+    """
+    Capabilities specific to the `textDocument/documentColor` and the
+    `textDocument/colorPresentation` request.
+    """
+
+    formatting: DocumentFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/formatting` request."""
+
+    range_formatting: DocumentRangeFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/rangeFormatting` request."""
+
+    on_type_formatting: DocumentOnTypeFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/onTypeFormatting` request."""
+
+    rename: RenameClientCapabilities | None
+    """Capabilities specific to the `textDocument/rename` request."""
+
+    publish_diagnostics: PublishDiagnosticsClientCapabilities | None
+    """
+    Capabilities specific to the `textDocument/publishDiagnostics` notification.
+    """
+
+    folding_range: FoldingRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/foldingRange` request."""
+
+    selection_range: SelectionRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/selectionRange` request."""
+
+    linked_editing_range: LinkedEditingRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/linkedEditingRange` request."""
+
+    call_hierarchy: CallHierarchyClientCapabilities | None
+    """Capabilities specific to the various call hierarchy requests."""
+
+    semantic_tokens: SemanticTokensClientCapabilities | None
+    """Capabilities specific to the various semantic token requests."""
+
+    moniker: MonikerClientCapabilities | None
+    """Capabilities specific to the `textDocument/moniker` request."""
+
+    type_hierarchy: TypeHierarchyClientCapabilities | None
+    """Capabilities specific to the various type hierarchy requests."""
+
+    inline_value: InlineValueClientCapabilities | None
+    """Capabilities specific to the `textDocument/inlineValue` request."""
+
+    inlay_hint: InlayHintClientCapabilities | None
+    """Capabilities specific to the `textDocument/inlayHint` request."""
+
+    diagnostic: DiagnosticClientCapabilities | None
+    """Capabilities specific to the diagnostic pull model."""
+
+    model_config = base_config
