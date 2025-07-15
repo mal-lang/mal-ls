@@ -1520,3 +1520,15 @@ class DocumentRangeFormattingClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DocumentOnTypeFormattingClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentOnTypeFormattingClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether on type formatting supports dynamic registration.
+    """
+
+    model_config = base_config
