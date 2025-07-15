@@ -1568,3 +1568,39 @@ class RenameClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class PublishDiagnosticsClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsClientCapabilities
+    """
+
+    related_information: bool
+    """
+    Whether the clients accepts diagnostics with related information.
+    """
+
+    tag_support: TagSupportProperty
+    """
+    Client supports the tag property to provide meta data about a diagnostic.
+    Clients supporting tags have to handle unknown tags gracefully.
+    """
+
+    version_support: bool
+    """
+    Whether the client interprets the version property of the
+    `textDocument/publishDiagnostics` notification's parameter.
+    """
+
+    code_description_support: bool
+    """
+    Client supports a codeDescription property
+    """
+
+    data_support: bool
+    """
+    Whether code action supports the `data` property which is
+    preserved between a `textDocument/publishDiagnostics` and
+    `textDocument/codeAction` request.
+    """
+
+    model_config = base_config
