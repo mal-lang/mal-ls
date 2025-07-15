@@ -991,16 +991,7 @@ class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionItemTagSupport(BaseModel, TypedDict):
-    """
-	Client supports the tag property on a completion item. Clients
-	supporting tags have to handle unknown tags gracefully. Clients
-	especially need to preserve unknown tags when sending a completion
-	item back to the server in a resolve call.
-
-    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
-    """
-
+class TagSupportProperty(BaseModel, TypedDict):
     value_set: list[CompletionItemTag]
     """The tags supported by the client."""
 
@@ -1060,7 +1051,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
     preselect_support: bool | None
     """Client supports the preselect property on a completion item."""
 
-    tag_support: CompletionItemTagSupport | None
+    tag_support: TagSupportProperty | None
     """
     Client supports the tag property on a completion item. Clients
     supporting tags have to handle unknown tags gracefully. Clients
