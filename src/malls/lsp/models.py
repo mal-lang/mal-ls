@@ -1686,3 +1686,18 @@ class SelectionRangeClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class LinkedEditingRangeClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#linkedEditingRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether the implementation supports dynamic registration.
+    If this is set to `true` the client supports the new
+    `(TextDocumentRegistrationOptions & StaticRegistrationOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    model_config = base_config
