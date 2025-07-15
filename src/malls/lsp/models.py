@@ -1645,7 +1645,7 @@ class FoldingRangeClientCapabilities(BaseModel, TypedDict):
     `FoldingRangeRegistrationOptions` return value for the corresponding
     server capability as well.
     """
-    
+
     range_limit: int | None
     """
     The maximum number of folding ranges that the client prefers to receive
@@ -1668,6 +1668,21 @@ class FoldingRangeClientCapabilities(BaseModel, TypedDict):
     folding_range: FoldingRangeOptions | None
     """
     Specific options for the folding range.
+    """
+
+    model_config = base_config
+
+class SelectionRangeClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#selectionRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for selection range
+    providers. If this is set to `true` the client supports the new
+    `SelectionRangeRegistrationOptions` return value for the corresponding
+    server capability as well.
     """
 
     model_config = base_config
