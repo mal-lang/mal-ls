@@ -1455,3 +1455,15 @@ class CodeActionClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class CodeLensClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether code lens supports dynamic registration.
+    """
+
+    model_config = base_config
