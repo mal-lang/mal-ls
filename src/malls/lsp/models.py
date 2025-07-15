@@ -1893,7 +1893,11 @@ class DiagnosticClientCapabilities(BaseModel, TypedDict, total=False):
     model_config = base_config
 
 class TextDocumentClientCapabilities(BaseModel, TypedDict):
-    """Text document specific client capabilities."""
+    """
+    Text document specific client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentClientCapabilities
+    """
 
     synchronization: TextDocumentSyncClientCapabilities | None
 
