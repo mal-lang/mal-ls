@@ -177,6 +177,16 @@ class MALLSPServer(MethodDispatcher):
         )
 
     def m_exit(self, **kwargs) -> None:
+        
+        # Example of notification message
+            
+        # Only notify if traces are on
+        if (self.traceValue != TraceValue.Off):
+            params = {'message':'Exiting language server'}
+            if self.traceValue == TraceValue.Verbose:
+                params['verbose'] = 'Verbose example'  # placeholder
+            self.__endpoint.notify("exit", params)
+
         log.info("Exiting language server.")
         self.__endpoint.shutdown()
         log.info("Endpoint shut down.")

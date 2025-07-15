@@ -88,3 +88,61 @@ def test_set_trace_incorrectly(
 
     output.close()
 
+def test_log_trace_messages(
+        log_trace_messages_in: typing.BinaryIO):
+    output, ls, *_ = server_output(log_trace_messages_in)
+
+    # the test and server share the same buffer,
+    # so we must reset the cursor
+    output.seek(0)
+
+    # Skip to last message 
+    response = get_lsp_json(output)
+    response = get_lsp_json(output)
+    response = get_lsp_json(output)
+
+    assert "method" in response
+    assert "exit" == response['method']
+    assert "params" in response
+    assert 'message' in response['params']
+    assert 'verbose' not in response['params']
+
+    output.close()
+
+def test_log_trace_verbose(
+        log_trace_verbose_in: typing.BinaryIO):
+    output, ls, *_ = server_output(log_trace_verbose_in)
+
+    # the test and server share the same buffer,
+    # so we must reset the cursor
+    output.seek(0)
+
+    # Skip to last message 
+    response = get_lsp_json(output)
+    response = get_lsp_json(output)
+    response = get_lsp_json(output)
+
+    assert "method" in response
+    assert "exit" == response['method']
+    assert "params" in response
+    assert 'message' in response['params']
+    assert 'verbose' in response['params']
+
+    output.close()
+
+def test_log_trace_off(
+        log_trace_off_in: typing.BinaryIO):
+    output, ls, *_ = server_output(log_trace_off_in)
+
+    # the test and server share the same buffer,
+    # so we must reset the cursor
+    output.seek(0)
+
+    # Ensure no notification about exit was sent
+    assert b'exit' not in output.getvalue()
+
+    output.close()
+
+
+
+
