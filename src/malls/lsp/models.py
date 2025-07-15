@@ -1804,3 +1804,18 @@ class SemanticTokensClientCapabilities(BaseModel, TypedDict, total=False):
     """
 
     model_config = base_config
+
+class MonikerClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#monikerClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    model_config = base_config
