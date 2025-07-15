@@ -1604,3 +1604,70 @@ class PublishDiagnosticsClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class FoldingRangeKindProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+    
+    value_set: list[enums.FoldingRangeKind] | None
+    """
+    The folding range kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+    """
+
+    model_config = base_config
+
+class FoldingRangeOptions(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+    
+    collapsed_text: bool | None
+    """
+    If set, the client signals that it supports setting collapsedText on
+    folding ranges to display custom labels instead of the default text.
+    """
+
+    model_config = base_config
+
+class FoldingRangeClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for folding range
+    providers. If this is set to `true` the client supports the new
+    `FoldingRangeRegistrationOptions` return value for the corresponding
+    server capability as well.
+    """
+    
+    range_limit: int | None
+    """
+    The maximum number of folding ranges that the client prefers to receive
+    per document. The value serves as a hint, servers are free to follow the
+    limit.
+    """
+
+    line_folding_only: bool | None
+    """
+    If set, the client signals that it only supports folding complete lines.
+    If set, client will ignore specified `startCharacter` and `endCharacter`
+    properties in a FoldingRange.
+    """
+
+    folding_range_kind: FoldingRangeKindProperty | None
+    """
+    Specific options for the folding range kind.
+    """
+
+    folding_range: FoldingRangeOptions | None
+    """
+    Specific options for the folding range.
+    """
+
+    model_config = base_config
