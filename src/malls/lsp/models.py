@@ -1849,3 +1849,22 @@ class InlineValueClientCapabilities(BaseModel, TypedDict, total=False):
     """
 
     model_config = base_config
+
+class InlayHintClientCapabilities(BaseModel, TypedDict, total=False):
+    """
+    Inlay hint client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether inlay hints support dynamic registration.
+    """
+
+    resolve_support: ResolveSupportProperty | None
+    """
+    Indicates which properties a client can resolve lazily on an inlay hint.
+    """
+
+    model_config = base_config
