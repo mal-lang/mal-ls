@@ -1484,3 +1484,15 @@ class DocumentLinkClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DocumentColorClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentColorClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether document color supports dynamic registration.
+    """
+
+    model_config = base_config
