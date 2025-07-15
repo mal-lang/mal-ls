@@ -1496,3 +1496,15 @@ class DocumentColorClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DocumentFormattingClientCapabilities(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether formatting supports dynamic registration.
+    """
+
+    model_config = base_config
