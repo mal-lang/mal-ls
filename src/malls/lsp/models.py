@@ -1364,7 +1364,7 @@ class DocumentSymbolClientCapabilities(BaseModel, TypedDict):
     hierarchical_document_symbol_support: bool
     """The client supports hierarchical document symbols."""
 
-    tag_support: TagSupport
+    tag_support: TagSupportProperty
     """
     The client supports tags on `SymbolInformation`. Tags are supported on
     `DocumentSymbol` if `hierarchicalDocumentSymbolSupport` is set to true.
