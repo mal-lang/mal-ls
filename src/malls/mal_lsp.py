@@ -5,12 +5,17 @@ from pylsp_jsonrpc.dispatchers import MethodDispatcher
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
-from .lsp.enums import ErrorCodes
+from .lsp.enums import ErrorCodes, TraceValue
 from .lsp.fsm import LifecycleFSM
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 
+class MALLSPEXCEPTION(Exception):
+    def __init__(self, code, message):
+        self.code = code
+        self.error_msg = message
+        super().__init__(f"Error {code}: {message}") 
 
 def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> None:
     log.info("Starting MAL IO language server.")
@@ -35,6 +40,9 @@ class MALLSPServer(MethodDispatcher):
 
         self.__encoding = "utf-16"
         self.__lifecycle = LifecycleClass()
+
+        # By default, the value is Off
+        self.__trace_value = TraceValue.Off
 
     def start(self) -> None:
         """Starts the language server."""
@@ -64,12 +72,42 @@ class MALLSPServer(MethodDispatcher):
     def state(self) -> LifecycleFSM:
         return self.__lifecycle
 
+    # Helper function to change the traceValue.
+    # Log an error if the traceValue is not recognized.
+    def _change_trace_value(self, new_trace_value: str) -> None:
+        match (new_trace_value):
+            case 'off':
+                self.__trace_value = TraceValue.Off
+            case 'messages':
+                self.__trace_value = TraceValue.Messages
+            case 'verbose':
+                self.__trace_value = TraceValue.Verbose
+            case _:
+                # TODO this should throw an error
+                error_msg = f'Unrecognized trace value: `{new_trace_value}`. Options are: `off`, `messages` and `verbose`.'
+                log.error(error_msg)
+                raise MALLSPEXCEPTION(ErrorCodes.InvalidParams, error_msg)
+
+        log.info(f"Updating trace value to: `{new_trace_value}`")
+
+    # This method is to be incrementally increased by adding
+    # processing capabilities for each of the initialize parameters
+    def _process_initialize_parameters(self, **kwargs):
+        if ('trace' in kwargs):
+            self._change_trace_value(kwargs['trace'])
+
     # leave capabilities and response as dict for now, replace with explicit class/type later
     def m_initialize(
         self, processId: int | None = None, rootUri: str | None = None, **kwargs
     ) -> dict:
         log.info("Initializing server with parameters: %s %s", processId, rootUri)
         log.debug("Defered server parameters: %s", kwargs)
+
+        if (kwargs):
+            try:
+                self._process_initialize_parameters(**kwargs)
+            except MALLSPEXCEPTION as e:
+                return self.__respond_with_error(e.error_msg, e.code)
 
         return {
             "capabilities": self.capabilities(kwargs.get("capabilities")),
@@ -92,6 +130,15 @@ class MALLSPServer(MethodDispatcher):
             "error": {
                 "code": error,
                 "message": message,
+            }
+        }
+
+    # TODO maybe join with __invalid_request_at_lifecycle
+    def __respond_with_error(self, error_msg: str, error_code: int) -> dict:
+        return {
+            "error": {
+                "code": error_code,
+                "message": error_msg,
             }
         }
 
