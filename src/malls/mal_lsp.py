@@ -1,7 +1,7 @@
 import logging
 import typing
 
-from pylsp_jsonrpc.dispatchers import MethodDispatcher
+from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
@@ -62,7 +62,7 @@ class MALLSPServer(MethodDispatcher):
         else:
             item = "invalid_request_at_" + self.__lifecycle.current_state
         try:
-            return super().__getitem__(item)
+            return super().__getitem__(_method_to_string(item))
         except Exception as e:
             # Log and rethrow, cannot do anything if the method isn't known
             log.error(f"Error attempting to reach method `{item}`:", str(e))
@@ -83,7 +83,6 @@ class MALLSPServer(MethodDispatcher):
             case 'verbose':
                 self.__trace_value = TraceValue.Verbose
             case _:
-                # TODO this should throw an error
                 error_msg = f'Unrecognized trace value: `{new_trace_value}`. Options are: `off`, `messages` and `verbose`.'
                 log.error(error_msg)
                 raise MALLSPEXCEPTION(ErrorCodes.InvalidParams, error_msg)
@@ -183,3 +182,13 @@ class MALLSPServer(MethodDispatcher):
         if self.__jsonrpc_stream_writer:
             self.__jsonrpc_stream_writer.close()
             log.info("JSON RPC writer closed.")
+
+    def m___set_trace(self, **kwargs):
+        # For a notification, there is no response,
+        # even if there is an error, so the function
+        # shall just return
+        if ('value' in kwargs):
+            try:
+                self._change_trace_value(kwargs['value'])
+            finally:
+                return
