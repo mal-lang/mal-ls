@@ -5,7 +5,7 @@ from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
-from .lsp.enums import ErrorCodes, TraceValue
+from .lsp.enums import ErrorCodes, TraceValue, PositionEncodingKind
 from .lsp.fsm import LifecycleFSM
 
 log = logging.getLogger(__name__)
@@ -49,8 +49,33 @@ class MALLSPServer(MethodDispatcher):
         log.info("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
 
+    def _process_encoding(self, encodings: PositionEncodingKind):
+        # According to documentation, if utf-16 is missing, the server should
+        # assume that this encoding is supported and should be used.
+        #
+        # Therefore, only if the UTF-16 is present can we choose another
+        # encoding
+        #
+        # TODO decide which encoding to choose
+        if (PositionEncodingKind.UTF16 in encodings):
+            # TODO change encoding
+            # self.__encoding = ???
+            pass
+
+    # Auxiliary method to process and react to client capabilities
+    def _process_client_capabilities(self, capabilities: dict):
+        if ('general' in client_capabilities):
+            general = client_capabilities['general']
+            if ('positionEncodings' in general):
+                self._process_encoding(general['positionEncodings'])
+        return 
+
     # leave capabilities as dict for now, replace with explicit class/type later
     def capabilities(self, client_capabilities: dict | None = None):
+
+        if client_capabilities:
+            self._process_client_capabilities(capabilities)
+
         capabilities = {
             'positionEncoding': self.__encoding,
         }
@@ -108,16 +133,16 @@ class MALLSPServer(MethodDispatcher):
         log.info("Initializing server with parameters: %s %s", processId, rootUri)
         log.debug("Defered server parameters: %s", kwargs)
 
-        if (kwargs):
-            try:
+        try:
+            if (kwargs):
                 self._process_initialize_parameters(**kwargs)
-            except MALLSPEXCEPTION as e:
-                return self.__respond_with_error(e.error_msg, e.code)
 
-        return {
-            "capabilities": self.capabilities(kwargs.get("capabilities")),
-            "serverInfo": {"name": "mal-ls"},
-        }
+            return {
+                "capabilities": self.capabilities(kwargs.get("capabilities")),
+                "serverInfo": {"name": "mal-ls"},
+            }
+        except MALLSPEXCEPTION as e:
+            return self.__respond_with_error(e.error_msg,e.code)
 
     def m_initialized(self, *args, **kwargs) -> None:
         log.debug("Client initialized with parameters %s %s", args, kwargs)
