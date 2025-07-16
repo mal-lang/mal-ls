@@ -2262,3 +2262,17 @@ class NotebookDocumentSyncClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class NotebookDocumentClientCapabilities(BaseModel, TypedDict):
+    """
+    Capabilities specific to the notebook document support.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notebookDocumentClientCapabilities
+    """
+
+    synchronization: NotebookDocumentSyncClientCapabilities
+    """
+    Capabilities specific to notebook document synchronization
+    """
+
+    model_config = base_config
