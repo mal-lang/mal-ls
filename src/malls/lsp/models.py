@@ -2006,3 +2006,21 @@ class DidChangeConfigurationClientCapabilities(BaseModel, TypedDict):
     """Did change configuration notification supports dynamic registration."""
 
     model_config = base_config
+
+class DidChangeWatchedFilesClientCapabilities(BaseModel, TypedDict):
+    """
+    Did change watched files notification client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeWatchedFilesClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Did change watched files notification supports dynamic registration. Please note that the
+    current protocol doesn't support static configuration for file changes from the server side.
+    """
+
+    relative_pattern_support: bool
+    """Whether the client has support for relative patterns or not."""
+
+    model_config = base_config
