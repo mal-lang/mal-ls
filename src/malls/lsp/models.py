@@ -2312,3 +2312,22 @@ class ShowDocumentClientCapabilities(BaseModel, TypedDict):
 
     support: bool
     """The client has support for the show document request."""
+
+class WindowProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    work_done_progress: bool
+    """
+    Whether the client supports server initiated progress using the
+    `window/workDoneProgress/create` request.
+    """
+
+    show_message: ShowMessageRequestClientCapabilities
+    """Capabilities specific to the showMessage request"""
+
+    show_document: ShowDocumentClientCapabilities
+    """Client capabilities for the show document request."""
+
+    model_config = base_config
