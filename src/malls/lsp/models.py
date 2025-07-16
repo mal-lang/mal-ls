@@ -2288,3 +2288,17 @@ class MessageActionItemProperty(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ShowMessageRequestClientCapabilities(BaseModel, TypedDict):
+    """
+    Show message request client capabilities
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
+    """
+
+    message_action_item: MessageActionItemProperty | None
+    """
+    Capabilities specific to the `MessageActionItem` type.
+    """
+
+    model_config = base_config
