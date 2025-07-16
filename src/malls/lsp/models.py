@@ -2171,3 +2171,23 @@ class InlayHintWorkspaceClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class DiagnosticWorkspaceClientCapabilities(BaseModel, TypedDict):
+    """
+    Workspace client capabilities specific to diagnostic pull requests.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    pulled diagnostics currently shown. It should be used with absolute care
+    and is useful for situation where a server for example detects a project
+    wide change that requires such a calculation.
+    """
+
+    model_config = base_config
