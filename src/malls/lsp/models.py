@@ -2191,3 +2191,52 @@ class DiagnosticWorkspaceClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class WorkspaceProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    apply_edit: bool
+    """The client supports applying batch edits to the workspace."""
+
+    workspace_edit: WorkspaceEditClientCapabilities
+    """Capabilities specific to `WorkspaceEdit`s"""
+
+    did_change_configuration: DidChangeConfigurationClientCapabilities
+    """Capabilities specific to the `workspace/didChangeConfiguration` notification."""
+
+    did_change_watched_files: DidChangeWatchedFilesClientCapabilities
+    """Capabilities specific to the `workspace/didChangeWatchedFiles` notification."""
+
+    symbol: WorkspaceSymbolClientCapabilities
+    """Capabilities specific to the `workspace/symbol` request."""
+
+    execute_command: ExecuteCommandClientCapabilities
+    """Capabilities specific to the `workspace/executeCommand` request."""
+
+    workspace_folders: bool
+    """The client has support for workspace folders."""
+
+    configuration: bool
+    """The client supports `workspace/configuration` requests."""
+
+    semantic_tokens: SemanticTokensWorkspaceClientCapabilities
+    """Capabilities specific to the semantic token requests scoped to the workspace."""
+
+    code_lens: CodeLensWorkspaceClientCapabilities
+    """Capabilities specific to the code lens requests scoped to the workspace."""
+
+    file_operations: FileOperations
+    """The client has support for file requests/notifications."""
+
+    inline_value: InlineValueWorkspaceClientCapabilities
+    """Client workspace capabilities specific to inline values."""
+
+    inlay_hint: InlayHintWorkspaceClientCapabilities
+    """Client workspace capabilities specific to inlay hints."""
+
+    diagnostics: DiagnosticWorkspaceClientCapabilities
+    """Client workspace capabilities specific to diagnostics."""
+
+    model_config = base_config
