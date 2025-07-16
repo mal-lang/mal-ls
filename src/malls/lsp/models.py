@@ -2104,6 +2104,34 @@ class CodeLensWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
+class FileOperations(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether the client supports dynamic registration for file requests/notifications."""
+
+    did_create: bool
+    """The client has support for sending didCreateFiles notifications."""
+
+    will_create: bool
+    """The client has support for sending willCreateFiles requests."""
+
+    did_rename: bool
+    """The client has support for sending didRenameFiles notifications."""
+
+    will_rename: bool
+    """The client has support for sending willRenameFiles requests."""
+
+    did_delete: bool
+    """The client has support for sending didDeleteFiles notifications."""
+
+    will_delete: bool
+    """The client has support for sending willDeleteFiles requests."""
+
+    model_config = base_config
+
 class InlineValueWorkspaceClientCapabilities(BaseModel, TypedDict):
     """
     Client workspace capabilities specific to inline values.
