@@ -1994,3 +1994,15 @@ class TextDocumentClientCapabilities(BaseModel, TypedDict):
     """Capabilities specific to the diagnostic pull model."""
 
     model_config = base_config
+
+class DidChangeConfigurationClientCapabilities(BaseModel, TypedDict):
+    """
+    Did change configuration notification client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeConfigurationClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Did change configuration notification supports dynamic registration."""
+
+    model_config = base_config
