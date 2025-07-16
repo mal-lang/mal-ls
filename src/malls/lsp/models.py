@@ -2063,3 +2063,23 @@ class ExecuteCommandClientCapabilities(BaseModel, TypedDict):
     """Execute command supports dynamic registration."""
 
     model_config = base_config
+
+class SemanticTokensWorkspaceClientCapabilities(BaseModel, TypedDict):
+    """
+    Capabilities specific to the semantic token requests scoped to the workspace.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    semantic tokens currently shown. It should be used with absolute care
+    and is useful for situation where a server for example detect a project
+    wide change that requires such a calculation.
+    """
+
+    model_config = base_config
