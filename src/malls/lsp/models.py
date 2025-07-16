@@ -2302,3 +2302,13 @@ class ShowMessageRequestClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ShowDocumentClientCapabilities(BaseModel, TypedDict):
+    """
+    Client capabilities for the show document request.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showDocument
+    """
+
+    support: bool
+    """The client has support for the show document request."""
