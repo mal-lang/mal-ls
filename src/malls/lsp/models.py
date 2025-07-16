@@ -2393,3 +2393,75 @@ class ClientCapabilities(BaseModel, TypedDict):
     """Experimental client capabilities."""
 
     model_config = base_config
+
+class InitializeParams(WorkDoneProgressParams, BaseModel, TypedDict):
+    """
+    Initialize parameters sent from client to server
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
+    """
+
+    process_id: Integer | None
+    """
+    The process Id of the parent process that started the server. Is null if
+    the process has not been started by another process. If the parent
+    process is not alive then the server should exit (see exit notification)
+    its process.
+    """
+
+    client_info: dict[str, str | None] | None
+    """
+    Information about the client
+    """
+
+    locale: str | None
+    """
+    The locale the client is currently showing the user interface
+    in. This must not necessarily be the locale of the operating
+    system.
+
+    Uses IETF language tags as the value's syntax
+    (See https://en.wikipedia.org/wiki/IETF_language_tag)
+    """
+
+    root_path: str | None
+    """
+    The rootPath of the workspace. Is null
+    if no folder is open.
+
+    Deprecated in favour of `rootUri`.
+    """
+
+    root_uri: DocumentUri | None
+    """
+    The rootUri of the workspace. Is null if no
+    folder is open. If both `rootPath` and `rootUri` are set
+    `rootUri` wins.
+
+    Deprecated in favour of `workspaceFolders`
+    """
+
+    initialization_options: LSPAny | None
+    """
+    User provided initialization options.
+    """
+
+    capabilities: ClientCapabilities
+    """
+    The capabilities provided by the client (editor or tool)
+    """
+
+    trace: enums.TraceValue | None
+    """
+    The initial trace setting. If omitted trace is disabled ('off').
+    """
+
+    workspace_folders: list[WorkspaceFolder] | None
+    """
+    The workspace folders configured in the client when the server starts.
+    This property is only available if the client supports workspace folders.
+    It can be `null` if the client supports workspace folders but none are
+    configured.
+    """
+
+    model_config = base_config
