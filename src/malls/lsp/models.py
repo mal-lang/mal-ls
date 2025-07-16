@@ -2024,3 +2024,30 @@ class DidChangeWatchedFilesClientCapabilities(BaseModel, TypedDict):
     """Whether the client has support for relative patterns or not."""
 
     model_config = base_config
+
+class WorkspaceSymbolClientCapabilities(BaseModel, TypedDict):
+    """
+    Workspace symbol client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_symbol
+    """
+
+    dynamic_registration: bool
+    """Symbol request supports dynamic registration."""
+
+    symbol_kind: SymbolKindProperty
+    """Specific capabilities for the `SymbolKind` in the `workspace/symbol` request."""
+
+    tag_support: TagSupportProperty
+    """
+    The client supports tags on `SymbolInformation` and `WorkspaceSymbol`. Clients supporting tags
+    have to handle unknown tags gracefully.
+    """
+
+    resolve_support: ResolveSupportProperty
+    """
+    The client support partial workspace symbols. The client will send the request
+    `workspaceSymbol/resolve` to the server to resolve additional properties.
+    """
+
+    model_config = base_config
