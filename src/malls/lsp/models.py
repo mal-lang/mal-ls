@@ -2331,3 +2331,38 @@ class WindowProperty(BaseModel, TypedDict):
     """Client capabilities for the show document request."""
 
     model_config = base_config
+
+class StaleRequestSupportProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    cancel: bool
+    """The client will actively cancel the request."""
+
+    retry_on_content_modified: list[str]
+    """
+    The list of requests for which the client will retry the request if it receives a response
+    with error code `ContentModified`
+    """
+
+    model_config = base_config
+
+class GeneralProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    stale_request_support: StaleRequestSupportProperty
+    """Client capability that signals how the client handles stale requests."""
+
+    regular_expressions: RegularExpressionsClientCapabilities
+    """Client capabilities specific to regular expressions."""
+
+    markdown: MarkdownClientCapabilities
+    """Client capabilities specific to the client's markdown parser."""
+
+    position_encodings: list[enums.PositionEncodingKind]
+    """The position encodings supported by the client."""
+
+    model_config = base_config
