@@ -2366,3 +2366,30 @@ class GeneralProperty(BaseModel, TypedDict):
     """The position encodings supported by the client."""
 
     model_config = base_config
+
+class ClientCapabilities(BaseModel, TypedDict):
+    """
+    Capabilities provided by the client.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    workspace: WorkspaceProperty
+    """Workspace specific client capabilities."""
+
+    text_document: TextDocumentClientCapabilities
+    """Text document specific client capabilities."""
+
+    notebook_document: NotebookDocumentClientCapabilities
+    """Capabilities specific to the notebook document support."""
+
+    window: WindowProperty
+    """Window specific client capabilities."""
+
+    general: GeneralProperty
+    """General client capabilities."""
+
+    experimental: LSPAny
+    """Experimental client capabilities."""
+
+    model_config = base_config
