@@ -2240,3 +2240,25 @@ class WorkspaceProperty(BaseModel, TypedDict):
     """Client workspace capabilities specific to diagnostics."""
 
     model_config = base_config
+
+class NotebookDocumentSyncClientCapabilities(BaseModel, TypedDict):
+    """
+    Notebook specific client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notebookDocumentSyncClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether implementation supports dynamic registration. If this is
+    set to `true` the client supports the new
+    `(NotebookDocumentSyncRegistrationOptions & NotebookDocumentSyncOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    execution_summary_support: bool
+    """
+    The client supports sending execution summary data per cell.
+    """
+
+    model_config = base_config
