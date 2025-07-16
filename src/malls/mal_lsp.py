@@ -51,7 +51,9 @@ class MALLSPServer(MethodDispatcher):
 
     # leave capabilities as dict for now, replace with explicit class/type later
     def capabilities(self, client_capabilities: dict | None = None):
-        capabilities = {}
+        capabilities = {
+            'positionEncoding': self.__encoding,
+        }
         log.debug("Server capabilities: %s", capabilities)
         return capabilities
 
