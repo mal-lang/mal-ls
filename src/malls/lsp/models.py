@@ -2051,3 +2051,15 @@ class WorkspaceSymbolClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class ExecuteCommandClientCapabilities(BaseModel, TypedDict):
+    """
+    Execute command client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#executeCommandClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Execute command supports dynamic registration."""
+
+    model_config = base_config
