@@ -2276,3 +2276,15 @@ class NotebookDocumentClientCapabilities(BaseModel, TypedDict):
     """
 
     model_config = base_config
+
+class MessageActionItemProperty(BaseModel, TypedDict):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
+    """
+
+    additional_properties_support: bool | None
+    """
+    Capabilities specific to the `MessageActionItem` type.
+    """
+
+    model_config = base_config
