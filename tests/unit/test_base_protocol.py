@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 def test_ls_lifecycle_start(mute_ls: FakeLanguageServer):
-    assert mute_ls.state == LifecycleState.START
+    assert mute_ls.state.state == LifecycleState.START
 
 
 failing_methods = ["m_initialized", "m_shutdown", "m_exit", "m_invalid_request_at_start"]
