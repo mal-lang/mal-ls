@@ -1747,7 +1747,7 @@ class SemanticTokensClientCapabilitiesRequests(BaseModel):
     if the server provides a corresponding handler.
     """
 
-class SemanticTokensClientCapabilities(BaseModel, total=False):
+class SemanticTokensClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
     """
@@ -1838,7 +1838,7 @@ class TypeHierarchyClientCapabilities(BaseModel):
 
     model_config = base_config
 
-class InlineValueClientCapabilities(BaseModel, total=False):
+class InlineValueClientCapabilities(BaseModel):
     """
     Client capabilities specific to inline values.
 
@@ -1853,7 +1853,7 @@ class InlineValueClientCapabilities(BaseModel, total=False):
 
     model_config = base_config
 
-class InlayHintClientCapabilities(BaseModel, total=False):
+class InlayHintClientCapabilities(BaseModel):
     """
     Inlay hint client capabilities.
 
@@ -1872,7 +1872,7 @@ class InlayHintClientCapabilities(BaseModel, total=False):
 
     model_config = base_config
 
-class DiagnosticClientCapabilities(BaseModel, total=False):
+class DiagnosticClientCapabilities(BaseModel):
     """
     Client capabilities specific to diagnostic pull requests.
 
