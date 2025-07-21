@@ -22,7 +22,7 @@ Uri = Annotated[str,
 
                 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                 """]
-LSPAny = Annotated["LSPObject" | "LSPArray" | str | Integer | UInteger | float | bool | None,
+LSPAny = Annotated[str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None,
                    """
                    The LSP any type.
 
