@@ -219,12 +219,13 @@ class MALLSPServer(MethodDispatcher):
             self.__jsonrpc_stream_writer.close()
             log.info("JSON RPC writer closed.")
 
-    def m___set_trace(self, **kwargs):
+    def m___set_trace(self, params: dict | None) -> None:
         # For a notification, there is no response,
         # even if there is an error, so the function
         # shall just return
-        if ('value' in kwargs):
+        parameters = models.SetTraceParams(params) if params else None
+        if parameters:
             try:
-                self._change_trace_value(kwargs['value'])
+                self._change_trace_value(parameters.value)
             finally:
                 return
