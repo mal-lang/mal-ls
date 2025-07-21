@@ -139,7 +139,7 @@ class MALLSPServer(MethodDispatcher):
                 "serverInfo": {"name": "mal-ls"},
             }
         except MALLSPException as e:
-            return self.__respond_with_error(e.error_msg,e.code)
+            return MALLSPServer.__respond_with_error(e.error_msg,e.code)
 
     def m_initialized(self, *args, **kwargs) -> None:
         log.debug("Client initialized with parameters %s %s", args, kwargs)
@@ -148,26 +148,21 @@ class MALLSPServer(MethodDispatcher):
         log.info("Received shutdown request.")
 
     @staticmethod
-    # leave return type as dict for now, replace with explicit class/type later
-    def __invalid_request_at_lifecycle(
-        warning: str, message: str, error: ErrorCodes = ErrorCodes.InvalidRequest
-    ) -> dict:
-        log.warning(warning)
-        return {
-            "error": {
-                "code": error,
-                "message": message,
-            }
-        }
-
-    # TODO maybe join with __invalid_request_at_lifecycle
-    def __respond_with_error(self, error_msg: str, error_code: int) -> dict:
+    def __respond_with_error(error_msg: str, error_code: int) -> dict:
         return {
             "error": {
                 "code": error_code,
                 "message": error_msg,
             }
         }
+
+    @staticmethod
+    # leave return type as dict for now, replace with explicit class/type later
+    def __invalid_request_at_lifecycle(
+        warning: str, message: str, error: ErrorCodes = ErrorCodes.InvalidRequest
+    ) -> dict:
+        log.warning(warning)
+        return MALLSPServer.__respond_with_error(message, error)
 
     def m_invalid_request_at_start(self, **kwargs):
         return MALLSPServer.__invalid_request_at_lifecycle(
