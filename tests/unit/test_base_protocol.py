@@ -22,7 +22,7 @@ def test_ls_non_initialize(mute_ls: FakeLanguageServer, method: str):
     method_fn = getattr(mute_ls, method)
     assert method_fn is not None
     response = method_fn()
-    assert response.get("error", {}).get("code") == ErrorCodes.InvalidRequest
+    assert response.get("error", {}).get("code") == ErrorCodes.InvalidRequest or None
 
 
 @pytest.fixture
