@@ -1,6 +1,7 @@
 import argparse
 import logging
 import pathlib
+import socket
 import sys
 
 from . import __LOG_FORMAT__
@@ -11,6 +12,8 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     """
     Configures the parser for usage with the MAL Language Server. If the parser is already used
     for other means (through `subparser` parameter), this simply adds a subparser.
+
+    Users must choose EITHER file I/O OR TCP socket mode (mutually exclusive).
     """
     if subparser:
         subparser = argparse.ArgumentParser("mal-ls", "MAL Language Server")
@@ -19,30 +22,46 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     else:
         parser.description = "MAL Language Server"
 
+    # ---- Mutually Exclusive Group: File I/O vs. TCP Socket ----
+    mode_group = parser.add_mutually_exclusive_group(required=True)
+
     # File I/O
-    fileio = parser.add_argument_group("File I/O", "Use the server through ")
-    fileio.add_argument(
+    file_group = mode_group.add_argument_group("File I/O", "Use file-based communication")
+    file_group.add_argument(
         "-i",
         "--in",
         dest="in_file_path",
         type=pathlib.Path,
         help="Sets which (pseudo)file to use as input. Prioritized over --stdio.",
     )
-    fileio.add_argument(
+    file_group.add_argument(
         "-o",
         "--out",
         dest="out_file_path",
         type=pathlib.Path,
         help=("Sets which (pseudo)file to use as output. Prioritized over --stdio."),
     )
-    fileio.add_argument(
-        "--stdio",
-        action="store_true",
-        help=(
-            "Use stdio for --in and --out. Use in conjunction with --in/out to customize"
-            " only one of stdio."
-        ),
+
+    # TCP Socket Mode
+    tcp_group = mode_group.add_argument_group("TCP Socket", "Use TCP socket communication")
+    tcp_group.add_argument(
+        "--host",
+        type=str,
+        default="localhost",
+        dest="host",
+        help="Host to bind the TCP server to (default: localhost).",
     )
+    tcp_group.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=8080,
+        dest="port",
+        help="Port to bind the TCP server to (default: 8080).",
+    )
+
+    mode_group.add_argument('--stdio', action='store_true', help="Use stdio")
+    mode_group.add_argument('--tcp', action='store_true', help="Use TCP mode")
 
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")
@@ -71,6 +90,29 @@ def fileio(args: argparse.Namespace):
     out_file = open(args.out_file_path, "wb") if args.out_file_path else sys.stdout.buffer
     return in_file, out_file
 
+def uses_tcpsocket(args: argparse.Namespace) -> bool:
+    return bool(args.tcp or args.host or args.port)
+
+def tcpsocket(args: argparse.Namespace):
+    host = args.host if args.host else "localhost"
+    port = args.port if args.port else 8080
+
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((host, port))
+
+    # Listen for one incoming connection at a time
+    server_socket.listen(1)
+
+    # blocks until a client connects
+    conn, addr = server_socket.accept() 
+
+    # get file-like objects from the socket
+    # this allows your existing server to work with TCP sockets
+    in_stream = conn.makefile('rb')
+    out_stream = conn.makefile('wb')
+
+    return in_stream, out_stream
 
 def configure_logging(args: argparse.Namespace) -> None:
     root_logger = logging.root
@@ -107,6 +149,9 @@ def main(args: argparse.Namespace | None = None):
 
     if uses_fileio(args):
         i, o = fileio(args)
+        start_fileio_server(i, o)
+    elif uses_tcpsocket(args):
+        i, o = tcpsocket(args)
         start_fileio_server(i, o)
 
 
