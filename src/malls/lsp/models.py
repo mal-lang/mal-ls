@@ -2468,3 +2468,13 @@ class InitializeParams(WorkDoneProgressParams, BaseModel):
     """
 
     model_config = base_config
+
+class SetTraceParams(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#setTrace
+    """
+
+    value: enums.TraceValue
+    """
+    The new value that should be assigned to the trace setting.
+    """
