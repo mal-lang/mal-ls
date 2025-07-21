@@ -1,19 +1,47 @@
 [project]
-name = "mal-ls"
+name = "malls"
 version = "0.1.0"
 description = "Language server for MAL"
 readme = "README.md"
 requires-python = ">=3.13"
 
-authors = [{ "Tobiky" = "me@tobiky.dev" }]
+authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }
 
-[project.scripts]
-mal-ls = "mal-ls.__main__:main"
+dependencies = [
+    "pydantic>=2.11.7",
+    "python-lsp-jsonrpc>=1.1.2",
+    "uritools>=5.0.0",
+]
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.5",
+    "pytest-xdist>=3.7.0",
     "ruff>=0.11.10",
+]
+
+[project.scripts]
+malls = "malls:__main__.main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+    "mise.toml",
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-rA",
+    "--ignore=tests/fixtures",
+    "--import-mode=importlib",
+    "--numprocesses=auto",
+]
+testpaths = [
+    "tests",
 ]
 
 # Based off of pylsp https://github.com/python-lsp/python-lsp-server/blob/de15a88451e223cd7ae704e47631a0c34438c314/pyproject.toml#L88-L167
