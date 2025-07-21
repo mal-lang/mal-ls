@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_snake
-from typing_extensions import TypedDict
+from typing_extensions import TypeAliasType
 from uritools import isuri
 
 from . import enums
@@ -22,7 +22,10 @@ Uri = Annotated[str,
 
                 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                 """]
-LSPAny = Annotated[str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None,
+LSPAny = TypeAliasType(
+        "LSPAny",
+        str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None)
+LSPAny = Annotated[LSPAny,
                    """
                    The LSP any type.
 
@@ -60,7 +63,7 @@ ProgressToken = Annotated[str | Integer,
 
 # NOTE: Both BaseModel and TypedDict are used to explicitely support the faster validation method
 
-class CancelParams(BaseModel, TypedDict):
+class CancelParams(BaseModel):
     """
     The base protocol offers support for request cancellation.
 
@@ -70,7 +73,7 @@ class CancelParams(BaseModel, TypedDict):
     id: Integer | str
     """The request id to cancel."""
 
-class ProgressParams[T](BaseModel, TypedDict):
+class ProgressParams[T](BaseModel):
     """
     The base protocol offers also support to report progress in a generic fashion. This mechanism
     can be used to report any kind of progress including work done progress (usually used to report
@@ -86,14 +89,14 @@ class ProgressParams[T](BaseModel, TypedDict):
     value: T
     """The progress data."""
 
-class RegularExpressionsClientCapabilities(BaseModel, TypedDict):
+class RegularExpressionsClientCapabilities(BaseModel):
     engine: str
     """The engine's name."""
 
     version: str | None
     """The engine's version."""
 
-class Position(BaseModel, TypedDict):
+class Position(BaseModel):
     """
     Position in a text document expressed as zero-based line and zero-based character offset. A
     position is between two characters like an ‘insert’ cursor in an editor. Special values like
@@ -114,7 +117,7 @@ class Position(BaseModel, TypedDict):
 	to the line length.
     """
 
-class Range(BaseModel, TypedDict):
+class Range(BaseModel):
     """
     A range in a text document expressed as (zero-based) start and end positions. A range is
     comparable to a selection in an editor. Therefore, the end position is exclusive. If you want
@@ -130,7 +133,7 @@ class Range(BaseModel, TypedDict):
     end: Position
     """The range's end position."""
 
-class TextDocumentItem(BaseModel, TypedDict):
+class TextDocumentItem(BaseModel):
     """
     An item to transfer a text document from the client to the server.
 
@@ -153,7 +156,7 @@ class TextDocumentItem(BaseModel, TypedDict):
 
     model_config = base_config
 
-class TextDocumentIdentifier(BaseModel, TypedDict):
+class TextDocumentIdentifier(BaseModel):
     """
     Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
 
@@ -199,7 +202,7 @@ class OptionalVersionedTextDocumentIdentifier(TextDocumentIdentifier):
     number doesn't need to be consecutive.
     """
 
-class TextDocumentPositionParams(BaseModel, TypedDict):
+class TextDocumentPositionParams(BaseModel):
     """
     A parameter literal used in requests to pass a text document and a position inside that
     document. It is up to the client to decide how a selection is converted into a position when
@@ -217,7 +220,7 @@ class TextDocumentPositionParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentFilter(BaseModel, TypedDict):
+class DocumentFilter(BaseModel):
     """
     A document filter denotes a document through properties like `language`, `scheme` or `pattern`
 
@@ -254,7 +257,7 @@ DocumentSelector = Annotated[list[DocumentFilter],
                              https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSelector
                              """]
 
-class TextEdit(BaseModel, TypedDict):
+class TextEdit(BaseModel):
     """
     A textual edit applicable to a text document.
 
@@ -274,7 +277,7 @@ class TextEdit(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ChangeAnnotation(BaseModel, TypedDict):
+class ChangeAnnotation(BaseModel):
     """
     Additional information that describes document changes.
 
@@ -315,7 +318,7 @@ class AnnotatedTextEdit(TextEdit):
 
     model_config = base_config
 
-class TextDocumentEdit(BaseModel, TypedDict):
+class TextDocumentEdit(BaseModel):
     """
     Describes textual changes on a single text document. The text document is referred to as a
     `OptionalVersionedTextDocumentIdentifier` to allow clients to check the text document version
@@ -337,7 +340,7 @@ class TextDocumentEdit(BaseModel, TypedDict):
 
     model_config = base_config
 
-class Location(BaseModel, TypedDict):
+class Location(BaseModel):
     """
     Represents a location inside a resource, such as a line inside a text file.
 
@@ -348,7 +351,7 @@ class Location(BaseModel, TypedDict):
 
     range: Range
 
-class LocationLink(BaseModel, TypedDict):
+class LocationLink(BaseModel):
     """
     Represents a link between a source and a target location.
 
@@ -381,7 +384,7 @@ class LocationLink(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DiagnosticRelatedInformation(BaseModel, TypedDict):
+class DiagnosticRelatedInformation(BaseModel):
     """
     Represents a related message and source code location for a diagnostic. This should be used to
     point to code locations that cause or are related to a diagnostics, e.g when duplicating a
@@ -400,7 +403,7 @@ class DiagnosticRelatedInformation(BaseModel, TypedDict):
     The message of this related diagnostic information.
     """
 
-class CodeDescription(BaseModel, TypedDict):
+class CodeDescription(BaseModel):
     """
     Structure to capture a description for an error code.
 
@@ -411,7 +414,7 @@ class CodeDescription(BaseModel, TypedDict):
     """An URI to open with more information about the diagnostic error."""
 
 
-class Diagnostic(BaseModel, TypedDict):
+class Diagnostic(BaseModel):
     range: Range
     """
     The range at which the message applies.
@@ -465,7 +468,7 @@ class Diagnostic(BaseModel, TypedDict):
 
     model_config = base_config
 
-class Command(BaseModel, TypedDict):
+class Command(BaseModel):
     """
     Represents a reference to a command. Provides a title which will be used to represent a
     command in the UI. Commands are identified by a string identifier. The recommended way to
@@ -492,7 +495,7 @@ class Command(BaseModel, TypedDict):
     invoked with.
     """
 
-class MarkupContent(BaseModel, TypedDict):
+class MarkupContent(BaseModel):
     """
     A `MarkupContent` literal represents a string value which content is
     interpreted base on its kind flag. Currently the protocol supports
@@ -530,7 +533,7 @@ class MarkupContent(BaseModel, TypedDict):
     The content itself
     """
 
-class MarkdownClientCapabilities(BaseModel, TypedDict):
+class MarkdownClientCapabilities(BaseModel):
     """
     Client capabilities specific to the used markdown parser.
     """
@@ -552,7 +555,7 @@ class MarkdownClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CreateFileOptions(BaseModel, TypedDict):
+class CreateFileOptions(BaseModel):
     """
     Options to create a file.
 
@@ -571,7 +574,7 @@ class CreateFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class RenameFileOptions(BaseModel, TypedDict):
+class RenameFileOptions(BaseModel):
     """
     Rename file options
 
@@ -590,7 +593,7 @@ class RenameFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DeleteFileOptions(BaseModel, TypedDict):
+class DeleteFileOptions(BaseModel):
     """
     Delete file options
 
@@ -609,7 +612,7 @@ class DeleteFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CreateFile(BaseModel, TypedDict):
+class CreateFile(BaseModel):
     """
     Create file operation
 
@@ -638,7 +641,7 @@ class CreateFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class RenameFile(BaseModel, TypedDict):
+class RenameFile(BaseModel):
     """
     Rename file operation
 
@@ -672,7 +675,7 @@ class RenameFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DeleteFile(BaseModel, TypedDict):
+class DeleteFile(BaseModel):
     """
     Delete file operation
 
@@ -701,7 +704,7 @@ class DeleteFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkspaceEdit(BaseModel, TypedDict):
+class WorkspaceEdit(BaseModel):
     """
     Workspace edit
 
@@ -747,7 +750,7 @@ class WorkspaceEdit(BaseModel, TypedDict):
     model_config = base_config
 
 
-class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
+class WorkspaceEditClientCapabilities(BaseModel):
     """
     Workspace edit client capabilities
 
@@ -791,7 +794,7 @@ class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkDoneProgressBegin(BaseModel, TypedDict):
+class WorkDoneProgressBegin(BaseModel):
     """
     Begin progress operation
 
@@ -837,7 +840,7 @@ class WorkDoneProgressBegin(BaseModel, TypedDict):
     that are not following this rule. The value range is [0, 100].
     """
 
-class WorkDoneProgressReport(BaseModel, TypedDict):
+class WorkDoneProgressReport(BaseModel):
     """
     Report progress operation
 
@@ -877,7 +880,7 @@ class WorkDoneProgressReport(BaseModel, TypedDict):
     that are not following this rule. The value range is [0, 100].
     """
 
-class WorkDoneProgressEnd(BaseModel, TypedDict):
+class WorkDoneProgressEnd(BaseModel):
     """
     End progress operation
 
@@ -895,7 +898,7 @@ class WorkDoneProgressEnd(BaseModel, TypedDict):
     of the operation.
     """
 
-class WorkDoneProgressParams(BaseModel, TypedDict):
+class WorkDoneProgressParams(BaseModel):
     """
     Work done progress parameters
 
@@ -909,7 +912,7 @@ class WorkDoneProgressParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class PartialResultParams(BaseModel, TypedDict):
+class PartialResultParams(BaseModel):
     """
     Partial result parameters
 
@@ -924,7 +927,7 @@ class PartialResultParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ClientInfo(BaseModel, TypedDict):
+class ClientInfo(BaseModel):
     """
     Information about the client
 
@@ -940,7 +943,7 @@ class ClientInfo(BaseModel, TypedDict):
     The client's version as defined by the client.
     """
 
-class WorkspaceFolder(BaseModel, TypedDict):
+class WorkspaceFolder(BaseModel):
     """
     A workspace folder.
 
@@ -958,7 +961,7 @@ class WorkspaceFolder(BaseModel, TypedDict):
     workspace folder in the user interface.
     """
 
-class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
+class TextDocumentSyncClientCapabilities(BaseModel):
     """
     Text document specific client capabilities.
 
@@ -981,13 +984,13 @@ class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class TagSupportProperty(BaseModel, TypedDict):
+class TagSupportProperty(BaseModel):
     value_set: list[enums.CompletionItemTag]
     """The tags supported by the client."""
 
     model_config = base_config
 
-class InsertTextModeSupport(BaseModel, TypedDict):
+class InsertTextModeSupport(BaseModel):
     """The client supports the `insertTextMode` property on
     a completion item to override the whitespace handling mode
     as defined by the client (see `insertTextMode`).
@@ -999,7 +1002,7 @@ class InsertTextModeSupport(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionItemResolveSupport(BaseModel, TypedDict):
+class CompletionItemResolveSupport(BaseModel):
     """
     Indicates which properties a client can resolve lazily on a
 	completion item. Before version 3.16.0 only the predefined properties
@@ -1011,7 +1014,7 @@ class CompletionItemResolveSupport(BaseModel, TypedDict):
     properties: list[str]
     """The properties that a client can resolve lazily."""
 
-class CompletionItemCapabilities(BaseModel, TypedDict):
+class CompletionItemCapabilities(BaseModel):
     """
     The client supports the following `CompletionItem` specific capabilities.
 
@@ -1077,7 +1080,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionItemKindCapabilities(BaseModel, TypedDict):
+class CompletionItemKindCapabilities(BaseModel):
     """
     The completion item kind values the client supports. When this
     property exists the client also guarantees that it will
@@ -1095,7 +1098,7 @@ class CompletionItemKindCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionListCapabilities(BaseModel, TypedDict):
+class CompletionListCapabilities(BaseModel):
     """
     The client supports the following `CompletionList` specific capabilities.
 
@@ -1114,7 +1117,7 @@ class CompletionListCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionClientCapabilities(BaseModel, TypedDict):
+class CompletionClientCapabilities(BaseModel):
     """
     Features and capabilities that the client supports in regards to completion.
 
@@ -1159,7 +1162,7 @@ class CompletionClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class HoverClientCapabilities(BaseModel, TypedDict):
+class HoverClientCapabilities(BaseModel):
     """
     What capabilities the client supports for hover methods/operations.
 
@@ -1177,7 +1180,7 @@ class HoverClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ParameterInformationCapabilities(BaseModel, TypedDict):
+class ParameterInformationCapabilities(BaseModel):
     """
     Client capabilities specific to parameter information.
 
@@ -1192,7 +1195,7 @@ class ParameterInformationCapabilities(BaseModel, TypedDict):
     model_config = base_config
 
 
-class SignatureInformationCapabilities(BaseModel, TypedDict):
+class SignatureInformationCapabilities(BaseModel):
     """
     The client supports the following `SignatureInformation` specific properties.
 
@@ -1215,7 +1218,7 @@ class SignatureInformationCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class SignatureHelpClientCapabilities(BaseModel, TypedDict):
+class SignatureHelpClientCapabilities(BaseModel):
     """
     The clients capabilities in regards to signature help.
 
@@ -1239,7 +1242,7 @@ class SignatureHelpClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DeclarationClientCapabilities(BaseModel, TypedDict):
+class DeclarationClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to declarations of symbols.
 
@@ -1258,7 +1261,7 @@ class DeclarationClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DefinitionClientCapabilities(BaseModel, TypedDict):
+class DefinitionClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to definition of symbols.
 
@@ -1273,7 +1276,7 @@ class DefinitionClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class TypeDefinitionClientCapabilities(BaseModel, TypedDict):
+class TypeDefinitionClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to type definition of symbols.
 
@@ -1292,7 +1295,7 @@ class TypeDefinitionClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ImplementationClientCapabilities(BaseModel, TypedDict):
+class ImplementationClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to implementation of symbols.
 
@@ -1311,7 +1314,7 @@ class ImplementationClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ReferenceClientCapabilities(BaseModel, TypedDict):
+class ReferenceClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to project-wide references of symbols.
 
@@ -1323,7 +1326,7 @@ class ReferenceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentHighlightClientCapabilities(BaseModel, TypedDict):
+class DocumentHighlightClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to document highlights.
 
@@ -1335,7 +1338,7 @@ class DocumentHighlightClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class SymbolKindProperty(BaseModel, TypedDict, total=False):
+class SymbolKindProperty(BaseModel):
     value_set: list[enums.SymbolKind]
     """
     The symbol kind values the client supports. When this
@@ -1350,7 +1353,7 @@ class SymbolKindProperty(BaseModel, TypedDict, total=False):
 
     model_config = base_config
 
-class DocumentSymbolClientCapabilities(BaseModel, TypedDict):
+class DocumentSymbolClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbolClientCapabilities
     """
@@ -1379,7 +1382,7 @@ class DocumentSymbolClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ResolveSupportProperty(BaseModel, TypedDict):
+class ResolveSupportProperty(BaseModel):
     properties: list[str]
     """
     The properties that a client can resolve lazily.
@@ -1387,7 +1390,7 @@ class ResolveSupportProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CodeActionKindSupportProperty(BaseModel, TypedDict):
+class CodeActionKindSupportProperty(BaseModel):
     value_set: list[enums.CodeActionKind]
     """
     The code action kind values the client supports. When this
@@ -1399,7 +1402,7 @@ class CodeActionKindSupportProperty(BaseModel, TypedDict):
     model_config = base_config
 
 
-class CodeActionLiteralSupportProperty(BaseModel, TypedDict):
+class CodeActionLiteralSupportProperty(BaseModel):
     code_action_kind: CodeActionKindSupportProperty
     """
     The code action kind is supported with the following value set.
@@ -1408,7 +1411,7 @@ class CodeActionLiteralSupportProperty(BaseModel, TypedDict):
     model_config = base_config
 
 
-class CodeActionClientCapabilities(BaseModel, TypedDict):
+class CodeActionClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeActionClientCapabilities
     """
@@ -1456,7 +1459,7 @@ class CodeActionClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CodeLensClientCapabilities(BaseModel, TypedDict):
+class CodeLensClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensClientCapabilities
     """
@@ -1468,7 +1471,7 @@ class CodeLensClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentLinkClientCapabilities(BaseModel, TypedDict):
+class DocumentLinkClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentLinkClientCapabilities
     """
@@ -1485,7 +1488,7 @@ class DocumentLinkClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentColorClientCapabilities(BaseModel, TypedDict):
+class DocumentColorClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentColorClientCapabilities
     """
@@ -1497,7 +1500,7 @@ class DocumentColorClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentFormattingClientCapabilities(BaseModel, TypedDict):
+class DocumentFormattingClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingClientCapabilities
     """
@@ -1509,7 +1512,7 @@ class DocumentFormattingClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentRangeFormattingClientCapabilities(BaseModel, TypedDict):
+class DocumentRangeFormattingClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentRangeFormattingClientCapabilities
     """
@@ -1521,7 +1524,7 @@ class DocumentRangeFormattingClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentOnTypeFormattingClientCapabilities(BaseModel, TypedDict):
+class DocumentOnTypeFormattingClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentOnTypeFormattingClientCapabilities
     """
@@ -1533,7 +1536,7 @@ class DocumentOnTypeFormattingClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class RenameClientCapabilities(BaseModel, TypedDict):
+class RenameClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#renameClientCapabilities
     """
@@ -1569,7 +1572,7 @@ class RenameClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class PublishDiagnosticsClientCapabilities(BaseModel, TypedDict):
+class PublishDiagnosticsClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsClientCapabilities
     """
@@ -1605,7 +1608,7 @@ class PublishDiagnosticsClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class FoldingRangeKindProperty(BaseModel, TypedDict):
+class FoldingRangeKindProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
     """
@@ -1620,7 +1623,7 @@ class FoldingRangeKindProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class FoldingRangeOptions(BaseModel, TypedDict):
+class FoldingRangeOptions(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
     """
@@ -1633,7 +1636,7 @@ class FoldingRangeOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class FoldingRangeClientCapabilities(BaseModel, TypedDict):
+class FoldingRangeClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
     """
@@ -1672,7 +1675,7 @@ class FoldingRangeClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class SelectionRangeClientCapabilities(BaseModel, TypedDict):
+class SelectionRangeClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#selectionRangeClientCapabilities
     """
@@ -1687,7 +1690,7 @@ class SelectionRangeClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class LinkedEditingRangeClientCapabilities(BaseModel, TypedDict):
+class LinkedEditingRangeClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#linkedEditingRangeClientCapabilities
     """
@@ -1702,7 +1705,7 @@ class LinkedEditingRangeClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CallHierarchyClientCapabilities(BaseModel, TypedDict):
+class CallHierarchyClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#callHierarchyClientCapabilities
     """
@@ -1717,7 +1720,7 @@ class CallHierarchyClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class SemanticTokensClientCapabilitiesRequestsFull(BaseModel, TypedDict):
+class SemanticTokensClientCapabilitiesRequestsFull(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
     """
@@ -1728,7 +1731,7 @@ class SemanticTokensClientCapabilitiesRequestsFull(BaseModel, TypedDict):
     request if the server provides a corresponding handler.
     """
 
-class SemanticTokensClientCapabilitiesRequests(BaseModel, TypedDict):
+class SemanticTokensClientCapabilitiesRequests(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
     """
@@ -1744,7 +1747,7 @@ class SemanticTokensClientCapabilitiesRequests(BaseModel, TypedDict):
     if the server provides a corresponding handler.
     """
 
-class SemanticTokensClientCapabilities(BaseModel, TypedDict, total=False):
+class SemanticTokensClientCapabilities(BaseModel, total=False):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
     """
@@ -1805,7 +1808,7 @@ class SemanticTokensClientCapabilities(BaseModel, TypedDict, total=False):
 
     model_config = base_config
 
-class MonikerClientCapabilities(BaseModel, TypedDict):
+class MonikerClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#monikerClientCapabilities
     """
@@ -1820,7 +1823,7 @@ class MonikerClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class TypeHierarchyClientCapabilities(BaseModel, TypedDict):
+class TypeHierarchyClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#typeHierarchyClientCapabilities
     """
@@ -1835,7 +1838,7 @@ class TypeHierarchyClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class InlineValueClientCapabilities(BaseModel, TypedDict, total=False):
+class InlineValueClientCapabilities(BaseModel, total=False):
     """
     Client capabilities specific to inline values.
 
@@ -1850,7 +1853,7 @@ class InlineValueClientCapabilities(BaseModel, TypedDict, total=False):
 
     model_config = base_config
 
-class InlayHintClientCapabilities(BaseModel, TypedDict, total=False):
+class InlayHintClientCapabilities(BaseModel, total=False):
     """
     Inlay hint client capabilities.
 
@@ -1869,7 +1872,7 @@ class InlayHintClientCapabilities(BaseModel, TypedDict, total=False):
 
     model_config = base_config
 
-class DiagnosticClientCapabilities(BaseModel, TypedDict, total=False):
+class DiagnosticClientCapabilities(BaseModel, total=False):
     """
     Client capabilities specific to diagnostic pull requests.
 
@@ -1892,7 +1895,7 @@ class DiagnosticClientCapabilities(BaseModel, TypedDict, total=False):
 
     model_config = base_config
 
-class TextDocumentClientCapabilities(BaseModel, TypedDict):
+class TextDocumentClientCapabilities(BaseModel):
     """
     Text document specific client capabilities.
 
@@ -1995,7 +1998,7 @@ class TextDocumentClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DidChangeConfigurationClientCapabilities(BaseModel, TypedDict):
+class DidChangeConfigurationClientCapabilities(BaseModel):
     """
     Did change configuration notification client capabilities.
 
@@ -2007,7 +2010,7 @@ class DidChangeConfigurationClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DidChangeWatchedFilesClientCapabilities(BaseModel, TypedDict):
+class DidChangeWatchedFilesClientCapabilities(BaseModel):
     """
     Did change watched files notification client capabilities.
 
@@ -2025,7 +2028,7 @@ class DidChangeWatchedFilesClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkspaceSymbolClientCapabilities(BaseModel, TypedDict):
+class WorkspaceSymbolClientCapabilities(BaseModel):
     """
     Workspace symbol client capabilities.
 
@@ -2052,7 +2055,7 @@ class WorkspaceSymbolClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ExecuteCommandClientCapabilities(BaseModel, TypedDict):
+class ExecuteCommandClientCapabilities(BaseModel):
     """
     Execute command client capabilities.
 
@@ -2064,7 +2067,7 @@ class ExecuteCommandClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class SemanticTokensWorkspaceClientCapabilities(BaseModel, TypedDict):
+class SemanticTokensWorkspaceClientCapabilities(BaseModel):
     """
     Capabilities specific to the semantic token requests scoped to the workspace.
 
@@ -2084,7 +2087,7 @@ class SemanticTokensWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CodeLensWorkspaceClientCapabilities(BaseModel, TypedDict):
+class CodeLensWorkspaceClientCapabilities(BaseModel):
     """
     Capabilities specific to the code lens requests scoped to the workspace.
 
@@ -2104,7 +2107,7 @@ class CodeLensWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class FileOperations(BaseModel, TypedDict):
+class FileOperations(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
@@ -2132,7 +2135,7 @@ class FileOperations(BaseModel, TypedDict):
 
     model_config = base_config
 
-class InlineValueWorkspaceClientCapabilities(BaseModel, TypedDict):
+class InlineValueWorkspaceClientCapabilities(BaseModel):
     """
     Client workspace capabilities specific to inline values.
 
@@ -2152,7 +2155,7 @@ class InlineValueWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class InlayHintWorkspaceClientCapabilities(BaseModel, TypedDict):
+class InlayHintWorkspaceClientCapabilities(BaseModel):
     """
     Client workspace capabilities specific to inlay hints.
 
@@ -2172,7 +2175,7 @@ class InlayHintWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DiagnosticWorkspaceClientCapabilities(BaseModel, TypedDict):
+class DiagnosticWorkspaceClientCapabilities(BaseModel):
     """
     Workspace client capabilities specific to diagnostic pull requests.
 
@@ -2192,7 +2195,7 @@ class DiagnosticWorkspaceClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkspaceProperty(BaseModel, TypedDict):
+class WorkspaceProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
@@ -2241,7 +2244,7 @@ class WorkspaceProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class NotebookDocumentSyncClientCapabilities(BaseModel, TypedDict):
+class NotebookDocumentSyncClientCapabilities(BaseModel):
     """
     Notebook specific client capabilities.
 
@@ -2263,7 +2266,7 @@ class NotebookDocumentSyncClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class NotebookDocumentClientCapabilities(BaseModel, TypedDict):
+class NotebookDocumentClientCapabilities(BaseModel):
     """
     Capabilities specific to the notebook document support.
 
@@ -2277,7 +2280,7 @@ class NotebookDocumentClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class MessageActionItemProperty(BaseModel, TypedDict):
+class MessageActionItemProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
     """
@@ -2289,7 +2292,7 @@ class MessageActionItemProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ShowMessageRequestClientCapabilities(BaseModel, TypedDict):
+class ShowMessageRequestClientCapabilities(BaseModel):
     """
     Show message request client capabilities
 
@@ -2303,7 +2306,7 @@ class ShowMessageRequestClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ShowDocumentClientCapabilities(BaseModel, TypedDict):
+class ShowDocumentClientCapabilities(BaseModel):
     """
     Client capabilities for the show document request.
 
@@ -2313,7 +2316,7 @@ class ShowDocumentClientCapabilities(BaseModel, TypedDict):
     support: bool
     """The client has support for the show document request."""
 
-class WindowProperty(BaseModel, TypedDict):
+class WindowProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
@@ -2332,7 +2335,7 @@ class WindowProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class StaleRequestSupportProperty(BaseModel, TypedDict):
+class StaleRequestSupportProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
@@ -2348,7 +2351,7 @@ class StaleRequestSupportProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class GeneralProperty(BaseModel, TypedDict):
+class GeneralProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
@@ -2367,7 +2370,7 @@ class GeneralProperty(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ClientCapabilities(BaseModel, TypedDict):
+class ClientCapabilities(BaseModel):
     """
     Capabilities provided by the client.
 
@@ -2394,7 +2397,7 @@ class ClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class InitializeParams(WorkDoneProgressParams, BaseModel, TypedDict):
+class InitializeParams(WorkDoneProgressParams, BaseModel):
     """
     Initialize parameters sent from client to server
 
