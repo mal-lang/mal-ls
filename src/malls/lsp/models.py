@@ -5,7 +5,7 @@ from pydantic.alias_generators import to_snake
 from typing_extensions import TypedDict
 from uritools import isuri
 
-import enums
+from . import enums
 
 base_config = ConfigDict(alias_generator = to_snake)
 
