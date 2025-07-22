@@ -1,6 +1,11 @@
 import logging
 import typing
 
+from tree_sitter import Language, Parser, QueryCursor
+import tree_sitter_mal as ts_mal
+from urllib.parse import urlparse
+from pathlib import Path
+
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
@@ -10,6 +15,9 @@ from .lsp.fsm import LifecycleFSM
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
+
+MAL_LANGUAGE = Language(ts_mal.language())
+PARSER = Parser(MAL_LANGUAGE)
 
 class MALLSPEXCEPTION(Exception):
     def __init__(self, code, message):
@@ -43,6 +51,8 @@ class MALLSPServer(MethodDispatcher):
 
         # By default, the value is Off
         self.__trace_value = TraceValue.Off
+
+        self.__files = {}
 
     def start(self) -> None:
         """Starts the language server."""
@@ -233,3 +243,157 @@ class MALLSPServer(MethodDispatcher):
                 self._change_trace_value(kwargs['value'])
             finally:
                 return
+
+    def uri_to_path(self, uri: str) -> Path:
+        """Convert file:// URI back to filesystem path"""
+        parsed = urlparse(uri)
+        if parsed.scheme != 'file':
+            raise ValueError(f"Unsupported URI scheme: {parsed.scheme}")
+        
+        host = parsed.netloc
+        path = parsed.path
+
+        # Handle Windows paths
+        if host and path.startswith('/'):
+            path = f"//{host}{path}"
+        elif len(path) >= 3 and path[0] == '/' and path[2] == ':':
+            path = path[1:]
+
+        return path
+
+    def _recursive_parsing(self, uri_prec, captures):
+        while captures:
+            # build file path
+            file_name = uri_prec + captures.pop(0).text.decode().strip("\"")
+            print("Now parsing",file_name)
+
+            # if the file has already been processed, ignore it
+            # (this can happen if file A was opened with a didOpen notification
+            # and then file B which extends file A is also opened. By logical order,
+            # A was parsed already, so we do not need to do it, since it hasn't changed)
+
+            if file_name in self.__files:
+                continue
+
+            # otherwise, parse it
+            with open(file_name,"rb") as file:
+                source = file.read()
+
+            tree = PARSER.parse(source)
+            root_node = tree.root_node
+
+            # save parsed file
+            self.__files[file_name] = tree
+
+            # check if there are other includes to process
+            query = MAL_LANGUAGE.query("""
+            (include_declaration 
+                file: (string) @file_name)
+            """)
+
+            query_cursor = QueryCursor(query)
+            new_captures = query_cursor.captures(root_node)
+
+            # if there are new includes, add them to the list
+            if new_captures:
+                captures.extend(new_captures["file_name"])
+
+        return
+
+    def m_example(self, **kwargs):
+        # 1. parse a single file
+
+        # First, the client would send a didOpen notification with
+        # the file content, which should be parsed. This is passed
+        # as a parameter.
+        # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didOpen
+        #
+        # Therefore, this should be considered as the didOpen
+        # functionality
+        
+        uri_unprocessed = kwargs['textDocument']['uri']
+        uri = self.uri_to_path(uri_unprocessed)
+        print("Received file", uri)
+
+        # the file might have already been processed, so we should avoid
+        # repeating it (unless it was changed, via a didChange notification).
+        # This could happen if file A was opened and it included file B, which would be
+        # parsed, since its included. Therefore, if file B was then opened, we don't
+        # need to parse it again
+
+        if uri not in self.__files:
+            print("Parsing new file")
+            source = kwargs['textDocument']['text'] # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
+            source_encoded = source.encode()
+            tree = PARSER.parse(source_encoded)
+
+            # Consider this file as parsed
+            print("Done parsing new file")
+            self.__files[uri] = tree
+
+            #----------------------------------------------------#
+
+            # 2. parse included files
+        
+            # The given file might include other files, which must also
+            # be parsed, as they could contain information that will be
+            # queried
+
+            # obtain general URI of files
+            path_prec = uri.rsplit('/',1)[0]+"/"
+
+            # obtain the included files
+            root_node = tree.root_node
+
+            query = MAL_LANGUAGE.query("""
+            (include_declaration 
+                file: (string) @file_name)
+            """)
+
+            query_cursor = QueryCursor(query)
+            captures = query_cursor.captures(root_node)
+            if captures: # If there are included files, start recursive parsing
+                self._recursive_parsing(path_prec, captures["file_name"])
+
+        else: # if the file was already parsed, so were its includes
+            uri = self.__files[uri]
+            root_node = tree.root_node
+
+        #----------------------------------------------------#
+
+        # 3. query the given file
+
+        # We want a thread to figure out the query. The EndpointClass
+        # is the "owner" of the threads and will give the query a
+        # single thread if, instead of returning the message
+        # right away, the current function returns a callable.
+        # Hence, the function which will execute the query
+        # should be returned, which in turn will return the result
+        # of the query
+
+        def query_source():
+
+            print("Querying the file")
+            # Example query to find all asset names in a file
+            query = MAL_LANGUAGE.query("""
+            (asset_declaration 
+                id: (identifier) @asset_name )
+            """)
+
+            # QueryCursor
+            query_cursor = QueryCursor(query)
+
+            # Execute the query
+            captures = query_cursor.captures(root_node)
+
+            # Print results
+            if captures:
+                for node in captures["asset_name"]:
+                    print(f"Found node of type {node.type}: {node.text.decode()}")
+
+            return [x.text.decode() for x in captures["asset_name"]]
+
+        print("Final files parsed")
+        [print(x,":",y) for x,y in self.__files.items()]
+        print("\n\n")
+        return query_source

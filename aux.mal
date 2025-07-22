@@ -1,0 +1,7 @@
+category System {
+    asset Asset1 {}
+}
+                    
+associations {
+    Asset1 [foo] * <-- connects --> * [bar] Asset2
+}                
