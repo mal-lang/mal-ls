@@ -30,4 +30,7 @@ jobs:
 
       - name: Run tests
         if: success() && hashFiles('tests/**') != ''
+        # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstepstimeout-minutes
+        # Limit step run-time to 3 minutes
+        timeout-minutes: 3
         run: uv run pytest
