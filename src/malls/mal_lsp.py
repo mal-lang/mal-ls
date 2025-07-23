@@ -126,8 +126,8 @@ class MALLSPServer(MethodDispatcher):
             self._change_trace_value(parameters.trace)
 
     # leave capabilities and response as dict for now, replace with explicit class/type later
-    def m_initialize(self, params: dict | None) -> dict:
-        parameters = models.InitializeParams(params) if params else None
+    def m_initialize(self, **params: dict | None) -> dict:
+        parameters = models.InitializeParams(**params) if params else None
         log.info("Initializing server with parameters: %s", parameters)
 
         try:
@@ -214,24 +214,11 @@ class MALLSPServer(MethodDispatcher):
             self.__jsonrpc_stream_writer.close()
             log.info("JSON RPC writer closed.")
 
-    '''
-    def m___set_trace(self, value) -> None:
+    def m___set_trace(self, **params: dict | None) -> None:
         # For a notification, there is no response,
         # even if there is an error, so the function
         # shall just return
-        parameters = models.SetTraceParams(value = value) if value else None
-        if parameters:
-            try:
-                self._change_trace_value(parameters.value)
-            finally:
-                return
-    '''
-
-    def m___set_trace(self, **kwargs: dict | None) -> None:
-        # For a notification, there is no response,
-        # even if there is an error, so the function
-        # shall just return
-        parameters = models.SetTraceParams(value = kwargs["value"]) if kwargs else None
+        parameters = models.SetTraceParams(**params) if params else None
         if parameters:
             try:
                 self._change_trace_value(parameters.value)
