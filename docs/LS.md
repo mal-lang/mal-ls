@@ -34,3 +34,11 @@ terms, the class `MethodDispatcher` is where the functions that the user request
 functionality this super class provides is the ability to find the name of the methods more easily and
 in a standardized manner - starting with `m_`. Methods receive the parameters the client sent as arguments,
 which can come in the form of a dictionary, if `**kwargs` is used, or named parameters.
+
+## MAL LSP Server
+
+The MAL LSP Server, represented in `mal_lsp.py`, is a subclass of the `MethodDispatcher`, i.e. where the
+functions the user can request to run are stored. It contains an input and output buffer to communicate
+with the client, which are handled by `Streams`. In return, when a message is received, the `Endpoint` will
+ensure that the appropriate method is called. This can be found in the function `start`. As mentioned
+above, all methods start with `m_`.
