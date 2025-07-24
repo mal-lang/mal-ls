@@ -2,20 +2,10 @@ from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_snake
-from typing_extensions import TypedDict
+from typing_extensions import TypeAliasType
 from uritools import isuri
 
-from .enums import (
-    CompletionItemKind,
-    CompletionItemTag,
-    DiagnosticSeverity,
-    DiagnosticTag,
-    FailureHandlingKind,
-    InsertTextMode,
-    MarkupKind,
-    ResourceOperationKind,
-    TraceValue,
-)
+from . import enums
 
 base_config = ConfigDict(alias_generator = to_snake)
 
@@ -32,7 +22,10 @@ Uri = Annotated[str,
 
                 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
                 """]
-LSPAny = Annotated["LSPObject" | "LSPArray" | str | Integer | UInteger | float | bool | None,
+LSPAny = TypeAliasType(
+        "LSPAny",
+        str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None)
+LSPAny = Annotated[LSPAny,
                    """
                    The LSP any type.
 
@@ -70,7 +63,7 @@ ProgressToken = Annotated[str | Integer,
 
 # NOTE: Both BaseModel and TypedDict are used to explicitely support the faster validation method
 
-class CancelParams(BaseModel, TypedDict):
+class CancelParams(BaseModel):
     """
     The base protocol offers support for request cancellation.
 
@@ -80,7 +73,7 @@ class CancelParams(BaseModel, TypedDict):
     id: Integer | str
     """The request id to cancel."""
 
-class ProgressParams[T](BaseModel, TypedDict):
+class ProgressParams[T](BaseModel):
     """
     The base protocol offers also support to report progress in a generic fashion. This mechanism
     can be used to report any kind of progress including work done progress (usually used to report
@@ -96,14 +89,14 @@ class ProgressParams[T](BaseModel, TypedDict):
     value: T
     """The progress data."""
 
-class RegularExpressionsClientCapabilities(BaseModel, TypedDict):
+class RegularExpressionsClientCapabilities(BaseModel):
     engine: str
     """The engine's name."""
 
     version: str | None
     """The engine's version."""
 
-class Position(BaseModel, TypedDict):
+class Position(BaseModel):
     """
     Position in a text document expressed as zero-based line and zero-based character offset. A
     position is between two characters like an ‘insert’ cursor in an editor. Special values like
@@ -124,7 +117,7 @@ class Position(BaseModel, TypedDict):
 	to the line length.
     """
 
-class Range(BaseModel, TypedDict):
+class Range(BaseModel):
     """
     A range in a text document expressed as (zero-based) start and end positions. A range is
     comparable to a selection in an editor. Therefore, the end position is exclusive. If you want
@@ -140,7 +133,7 @@ class Range(BaseModel, TypedDict):
     end: Position
     """The range's end position."""
 
-class TextDocumentItem(BaseModel, TypedDict):
+class TextDocumentItem(BaseModel):
     """
     An item to transfer a text document from the client to the server.
 
@@ -163,7 +156,7 @@ class TextDocumentItem(BaseModel, TypedDict):
 
     model_config = base_config
 
-class TextDocumentIdentifier(BaseModel, TypedDict):
+class TextDocumentIdentifier(BaseModel):
     """
     Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
 
@@ -209,7 +202,7 @@ class OptionalVersionedTextDocumentIdentifier(TextDocumentIdentifier):
     number doesn't need to be consecutive.
     """
 
-class TextDocumentPositionParams(BaseModel, TypedDict):
+class TextDocumentPositionParams(BaseModel):
     """
     A parameter literal used in requests to pass a text document and a position inside that
     document. It is up to the client to decide how a selection is converted into a position when
@@ -227,7 +220,7 @@ class TextDocumentPositionParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DocumentFilter(BaseModel, TypedDict):
+class DocumentFilter(BaseModel):
     """
     A document filter denotes a document through properties like `language`, `scheme` or `pattern`
 
@@ -264,7 +257,7 @@ DocumentSelector = Annotated[list[DocumentFilter],
                              https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSelector
                              """]
 
-class TextEdit(BaseModel, TypedDict):
+class TextEdit(BaseModel):
     """
     A textual edit applicable to a text document.
 
@@ -284,7 +277,7 @@ class TextEdit(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ChangeAnnotation(BaseModel, TypedDict):
+class ChangeAnnotation(BaseModel):
     """
     Additional information that describes document changes.
 
@@ -325,7 +318,7 @@ class AnnotatedTextEdit(TextEdit):
 
     model_config = base_config
 
-class TextDocumentEdit(BaseModel, TypedDict):
+class TextDocumentEdit(BaseModel):
     """
     Describes textual changes on a single text document. The text document is referred to as a
     `OptionalVersionedTextDocumentIdentifier` to allow clients to check the text document version
@@ -347,7 +340,7 @@ class TextDocumentEdit(BaseModel, TypedDict):
 
     model_config = base_config
 
-class Location(BaseModel, TypedDict):
+class Location(BaseModel):
     """
     Represents a location inside a resource, such as a line inside a text file.
 
@@ -358,7 +351,7 @@ class Location(BaseModel, TypedDict):
 
     range: Range
 
-class LocationLink(BaseModel, TypedDict):
+class LocationLink(BaseModel):
     """
     Represents a link between a source and a target location.
 
@@ -391,7 +384,7 @@ class LocationLink(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DiagnosticRelatedInformation(BaseModel, TypedDict):
+class DiagnosticRelatedInformation(BaseModel):
     """
     Represents a related message and source code location for a diagnostic. This should be used to
     point to code locations that cause or are related to a diagnostics, e.g when duplicating a
@@ -410,7 +403,7 @@ class DiagnosticRelatedInformation(BaseModel, TypedDict):
     The message of this related diagnostic information.
     """
 
-class CodeDescription(BaseModel, TypedDict):
+class CodeDescription(BaseModel):
     """
     Structure to capture a description for an error code.
 
@@ -421,13 +414,13 @@ class CodeDescription(BaseModel, TypedDict):
     """An URI to open with more information about the diagnostic error."""
 
 
-class Diagnostic(BaseModel, TypedDict):
+class Diagnostic(BaseModel):
     range: Range
     """
     The range at which the message applies.
     """
 
-    severity: DiagnosticSeverity | None
+    severity: enums.DiagnosticSeverity | None
     """
     The diagnostic's severity. To avoid interpretation mismatches when a
     server is used with different clients it is highly recommended that
@@ -456,7 +449,7 @@ class Diagnostic(BaseModel, TypedDict):
     The diagnostic's message.
     """
 
-    tags: list[DiagnosticTag] | None
+    tags: list[enums.DiagnosticTag] | None
     """
     Additional metadata about the diagnostic.
     """
@@ -475,7 +468,7 @@ class Diagnostic(BaseModel, TypedDict):
 
     model_config = base_config
 
-class Command(BaseModel, TypedDict):
+class Command(BaseModel):
     """
     Represents a reference to a command. Provides a title which will be used to represent a
     command in the UI. Commands are identified by a string identifier. The recommended way to
@@ -502,7 +495,7 @@ class Command(BaseModel, TypedDict):
     invoked with.
     """
 
-class MarkupContent(BaseModel, TypedDict):
+class MarkupContent(BaseModel):
     """
     A `MarkupContent` literal represents a string value which content is
     interpreted base on its kind flag. Currently the protocol supports
@@ -530,7 +523,7 @@ class MarkupContent(BaseModel, TypedDict):
     decide to remove HTML from the markdown to avoid script execution.
     """
 
-    kind: MarkupKind
+    kind: enums.MarkupKind
     """
     The type of the Markup
     """
@@ -540,7 +533,7 @@ class MarkupContent(BaseModel, TypedDict):
     The content itself
     """
 
-class MarkdownClientCapabilities(BaseModel, TypedDict):
+class MarkdownClientCapabilities(BaseModel):
     """
     Client capabilities specific to the used markdown parser.
     """
@@ -562,7 +555,7 @@ class MarkdownClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CreateFileOptions(BaseModel, TypedDict):
+class CreateFileOptions(BaseModel):
     """
     Options to create a file.
 
@@ -581,7 +574,7 @@ class CreateFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class RenameFileOptions(BaseModel, TypedDict):
+class RenameFileOptions(BaseModel):
     """
     Rename file options
 
@@ -600,7 +593,7 @@ class RenameFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DeleteFileOptions(BaseModel, TypedDict):
+class DeleteFileOptions(BaseModel):
     """
     Delete file options
 
@@ -619,7 +612,7 @@ class DeleteFileOptions(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CreateFile(BaseModel, TypedDict):
+class CreateFile(BaseModel):
     """
     Create file operation
 
@@ -648,7 +641,7 @@ class CreateFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class RenameFile(BaseModel, TypedDict):
+class RenameFile(BaseModel):
     """
     Rename file operation
 
@@ -682,7 +675,7 @@ class RenameFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class DeleteFile(BaseModel, TypedDict):
+class DeleteFile(BaseModel):
     """
     Delete file operation
 
@@ -711,7 +704,7 @@ class DeleteFile(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkspaceEdit(BaseModel, TypedDict):
+class WorkspaceEdit(BaseModel):
     """
     Workspace edit
 
@@ -757,7 +750,7 @@ class WorkspaceEdit(BaseModel, TypedDict):
     model_config = base_config
 
 
-class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
+class WorkspaceEditClientCapabilities(BaseModel):
     """
     Workspace edit client capabilities
 
@@ -769,13 +762,13 @@ class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
     The client supports versioned document changes in `WorkspaceEdit`s
     """
 
-    resource_operations: list[ResourceOperationKind] | None
+    resource_operations: list[enums.ResourceOperationKind] | None
     """
     The resource operations the client supports. Clients should at least
     support 'create', 'rename' and 'delete' files and folders.
     """
 
-    failure_handling: FailureHandlingKind | None
+    failure_handling: enums.FailureHandlingKind | None
     """
     The failure handling strategy of a client if applying the workspace edit
     fails.
@@ -801,7 +794,7 @@ class WorkspaceEditClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class WorkDoneProgressBegin(BaseModel, TypedDict):
+class WorkDoneProgressBegin(BaseModel):
     """
     Begin progress operation
 
@@ -847,7 +840,7 @@ class WorkDoneProgressBegin(BaseModel, TypedDict):
     that are not following this rule. The value range is [0, 100].
     """
 
-class WorkDoneProgressReport(BaseModel, TypedDict):
+class WorkDoneProgressReport(BaseModel):
     """
     Report progress operation
 
@@ -887,7 +880,7 @@ class WorkDoneProgressReport(BaseModel, TypedDict):
     that are not following this rule. The value range is [0, 100].
     """
 
-class WorkDoneProgressEnd(BaseModel, TypedDict):
+class WorkDoneProgressEnd(BaseModel):
     """
     End progress operation
 
@@ -905,7 +898,7 @@ class WorkDoneProgressEnd(BaseModel, TypedDict):
     of the operation.
     """
 
-class WorkDoneProgressParams(BaseModel, TypedDict):
+class WorkDoneProgressParams(BaseModel):
     """
     Work done progress parameters
 
@@ -919,7 +912,7 @@ class WorkDoneProgressParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class PartialResultParams(BaseModel, TypedDict):
+class PartialResultParams(BaseModel):
     """
     Partial result parameters
 
@@ -934,7 +927,7 @@ class PartialResultParams(BaseModel, TypedDict):
 
     model_config = base_config
 
-class ClientInfo(BaseModel, TypedDict):
+class ClientInfo(BaseModel):
     """
     Information about the client
 
@@ -950,7 +943,7 @@ class ClientInfo(BaseModel, TypedDict):
     The client's version as defined by the client.
     """
 
-class WorkspaceFolder(BaseModel, TypedDict):
+class WorkspaceFolder(BaseModel):
     """
     A workspace folder.
 
@@ -968,7 +961,7 @@ class WorkspaceFolder(BaseModel, TypedDict):
     workspace folder in the user interface.
     """
 
-class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
+class TextDocumentSyncClientCapabilities(BaseModel):
     """
     Text document specific client capabilities.
 
@@ -991,22 +984,13 @@ class TextDocumentSyncClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionItemTagSupport(BaseModel, TypedDict):
-    """
-	Client supports the tag property on a completion item. Clients
-	supporting tags have to handle unknown tags gracefully. Clients
-	especially need to preserve unknown tags when sending a completion
-	item back to the server in a resolve call.
-
-    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
-    """
-
-    value_set: list[CompletionItemTag]
+class TagSupportProperty(BaseModel):
+    value_set: list[enums.CompletionItemTag]
     """The tags supported by the client."""
 
     model_config = base_config
 
-class InsertTextModeSupport(BaseModel, TypedDict):
+class InsertTextModeSupport(BaseModel):
     """The client supports the `insertTextMode` property on
     a completion item to override the whitespace handling mode
     as defined by the client (see `insertTextMode`).
@@ -1014,11 +998,11 @@ class InsertTextModeSupport(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
     """
 
-    value_set: list[InsertTextMode]
+    value_set: list[enums.InsertTextMode]
 
     model_config = base_config
 
-class CompletionItemResolveSupport(BaseModel, TypedDict):
+class CompletionItemResolveSupport(BaseModel):
     """
     Indicates which properties a client can resolve lazily on a
 	completion item. Before version 3.16.0 only the predefined properties
@@ -1030,7 +1014,7 @@ class CompletionItemResolveSupport(BaseModel, TypedDict):
     properties: list[str]
     """The properties that a client can resolve lazily."""
 
-class CompletionItemCapabilities(BaseModel, TypedDict):
+class CompletionItemCapabilities(BaseModel):
     """
     The client supports the following `CompletionItem` specific capabilities.
 
@@ -1050,7 +1034,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
     commit_characters_support: bool | None
     """Client supports commit characters on a completion item."""
 
-    documentation_format: list[MarkupKind] | None
+    documentation_format: list[enums.MarkupKind] | None
     """Client supports the follow content formats for the documentation
     property. The order describes the preferred format of the client."""
 
@@ -1060,7 +1044,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
     preselect_support: bool | None
     """Client supports the preselect property on a completion item."""
 
-    tag_support: CompletionItemTagSupport | None
+    tag_support: TagSupportProperty | None
     """
     Client supports the tag property on a completion item. Clients
     supporting tags have to handle unknown tags gracefully. Clients
@@ -1096,7 +1080,7 @@ class CompletionItemCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionItemKindCapabilities(BaseModel, TypedDict):
+class CompletionItemKindCapabilities(BaseModel):
     """
     The completion item kind values the client supports. When this
     property exists the client also guarantees that it will
@@ -1110,11 +1094,11 @@ class CompletionItemKindCapabilities(BaseModel, TypedDict):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
     """
 
-    value_set: list[CompletionItemKind] | None
+    value_set: list[enums.CompletionItemKind] | None
 
     model_config = base_config
 
-class CompletionListCapabilities(BaseModel, TypedDict):
+class CompletionListCapabilities(BaseModel):
     """
     The client supports the following `CompletionList` specific capabilities.
 
@@ -1133,7 +1117,7 @@ class CompletionListCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class CompletionClientCapabilities(BaseModel, TypedDict):
+class CompletionClientCapabilities(BaseModel):
     """
     Features and capabilities that the client supports in regards to completion.
 
@@ -1166,7 +1150,7 @@ class CompletionClientCapabilities(BaseModel, TypedDict):
     request.
     """
 
-    insert_text_mode: InsertTextMode | None
+    insert_text_mode: enums.InsertTextMode | None
     """
     The client's default when the completion item doesn't provide a `insertTextMode` property.
     """
@@ -1178,7 +1162,7 @@ class CompletionClientCapabilities(BaseModel, TypedDict):
 
     model_config = base_config
 
-class HoverClientCapabilities(BaseModel, TypedDict):
+class HoverClientCapabilities(BaseModel):
     """
     What capabilities the client supports for hover methods/operations.
 
@@ -1188,10 +1172,1309 @@ class HoverClientCapabilities(BaseModel, TypedDict):
     dynamic_registration: bool | None
     """Whether hover supports dynamic registration."""
 
-    content_format: list[MarkupKind] | None
+    content_format: list[enums.MarkupKind] | None
     """
     Client supports the follow content formats if the content property refers to a `literal of
     type MarkupContent`. The order describes the preferred format of the client.
     """
 
     model_config = base_config
+
+class ParameterInformationCapabilities(BaseModel):
+    """
+    Client capabilities specific to parameter information.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    label_offset_support: bool | None
+    """
+    The client supports processing label offsets instead of a simple label string.
+    """
+
+    model_config = base_config
+
+
+class SignatureInformationCapabilities(BaseModel):
+    """
+    The client supports the following `SignatureInformation` specific properties.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    documentation_format: list[enums.MarkupKind] | None
+    """
+    Client supports the follow content formats for the documentation property. The order describes
+    the preferred format of the client.
+    """
+
+    parameter_information: ParameterInformationCapabilities | None
+    """Client capabilities specific to parameter information."""
+
+    active_parameter_support: bool | None
+    """
+    The client supports the `activeParameter` property on `SignatureInformation` literal.
+    """
+
+    model_config = base_config
+
+class SignatureHelpClientCapabilities(BaseModel):
+    """
+    The clients capabilities in regards to signature help.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#signatureHelpClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether signature help supports dynamic registration."""
+
+    signature_information: SignatureInformationCapabilities | None
+    """
+    The client supports the following `SignatureInformation` specific properties.
+    """
+
+    context_support: bool | None
+    """
+    The client supports to send additional context information for a `textDocument/signatureHelp`
+    request. A client that opts into contextSupport will also support the `retriggerCharacters` on
+    `SignatureHelpOptions`.
+    """
+
+    model_config = base_config
+
+class DeclarationClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to declarations of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#declarationClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether declaration supports dynamic registration. If this is set to `true` the client
+    supports the new `DeclarationRegistrationOptions` return value for the corresponding server
+    capability as well.
+    """
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of declaration links."""
+
+    model_config = base_config
+
+class DefinitionClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to definition of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether definition supports dynamic registration."""
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of definition links."""
+
+    model_config = base_config
+
+class TypeDefinitionClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to type definition of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#typeDefinitionClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to `true` the client
+    supports the new `TypeDefinitionRegistrationOptions` return value for the corresponding server
+    capability as well.
+    """
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of definition links."""
+
+    model_config = base_config
+
+class ImplementationClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to implementation of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#implementationClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to `true` the client
+    supports the new `ImplementationRegistrationOptions` return value for the corresponding server
+    capability as well.
+    """
+
+    link_support: bool | None
+    """The client supports additional metadata in the form of definition links."""
+
+    model_config = base_config
+
+class ReferenceClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to project-wide references of symbols.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#referenceClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """Whether references supports dynamic registration."""
+
+    model_config = base_config
+
+class DocumentHighlightClientCapabilities(BaseModel):
+    """
+    The clients capabilites in regards to document highlights.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentHighlightClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether document highlight supports dynamic registration."""
+
+    model_config = base_config
+
+class SymbolKindProperty(BaseModel):
+    value_set: list[enums.SymbolKind]
+    """
+    The symbol kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+
+    If this property is not present the client only supports
+    the symbol kinds from `File` to `Array` as defined in
+    the initial version of the protocol.
+    """
+
+    model_config = base_config
+
+class DocumentSymbolClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbolClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether document symbol supports dynamic registration."""
+
+    symbol_kind: SymbolKindProperty
+    """Specific capabilities for the `SymbolKind` in the `textDocument/documentSymbol` request."""
+
+    hierarchical_document_symbol_support: bool
+    """The client supports hierarchical document symbols."""
+
+    tag_support: TagSupportProperty
+    """
+    The client supports tags on `SymbolInformation`. Tags are supported on
+    `DocumentSymbol` if `hierarchicalDocumentSymbolSupport` is set to true.
+    Clients supporting tags have to handle unknown tags gracefully.
+    """
+
+    label_support: bool
+    """
+    The client supports an additional label presented in the UI when
+    registering a document symbol provider.
+    """
+
+    model_config = base_config
+
+class ResolveSupportProperty(BaseModel):
+    properties: list[str]
+    """
+    The properties that a client can resolve lazily.
+    """
+
+    model_config = base_config
+
+class CodeActionKindSupportProperty(BaseModel):
+    value_set: list[enums.CodeActionKind]
+    """
+    The code action kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+    """
+
+    model_config = base_config
+
+
+class CodeActionLiteralSupportProperty(BaseModel):
+    code_action_kind: CodeActionKindSupportProperty
+    """
+    The code action kind is supported with the following value set.
+    """
+
+    model_config = base_config
+
+
+class CodeActionClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeActionClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether code action supports dynamic registration.
+    """
+
+    code_action_literal_support: CodeActionLiteralSupportProperty
+    """
+    The client supports code action literals as a valid response of the
+    `textDocument/codeAction` request.
+    """
+
+    is_preferred_support: bool
+    """
+    Whether code action supports the `isPreferred` property.
+    """
+
+    disabled_support: bool
+    """
+    Whether code action supports the `disabled` property.
+    """
+
+    data_support: bool
+    """
+    Whether code action supports the `data` property which is preserved
+    between a `textDocument/codeAction` and a `codeAction/resolve` request.
+    """
+
+    resolve_support: ResolveSupportProperty
+    """
+    Whether the client supports resolving additional code action properties
+    via a separate `codeAction/resolve` request.
+    """
+
+    honors_change_annotations: bool
+    """
+    Whether the client honors the change annotations in text edits and
+    resource operations returned via the `CodeAction#edit` property by for
+    example presenting the workspace edit in the user interface and asking
+    for confirmation.
+    """
+
+    model_config = base_config
+
+class CodeLensClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether code lens supports dynamic registration.
+    """
+
+    model_config = base_config
+
+class DocumentLinkClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentLinkClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether document link supports dynamic registration.
+    """
+
+    tooltip_support: bool
+    """
+    Whether the client supports the `tooltip` property on `DocumentLink`.
+    """
+
+    model_config = base_config
+
+class DocumentColorClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentColorClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether document color supports dynamic registration.
+    """
+
+    model_config = base_config
+
+class DocumentFormattingClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether formatting supports dynamic registration.
+    """
+
+    model_config = base_config
+
+class DocumentRangeFormattingClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentRangeFormattingClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether formatting supports dynamic registration.
+    """
+
+    model_config = base_config
+
+class DocumentOnTypeFormattingClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentOnTypeFormattingClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether on type formatting supports dynamic registration.
+    """
+
+    model_config = base_config
+
+class RenameClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#renameClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether rename supports dynamic registration.
+    """
+
+    prepare_support: bool
+    """
+    Client supports testing for validity of rename operations
+    before execution.
+    """
+
+    prepare_support_default_behavior: enums.PrepareSupportDefaultBehavior
+    """
+    Client supports the default behavior result
+    (`{ defaultBehavior: boolean }`).
+
+    The value indicates the default behavior used by the
+    client.
+    """
+
+    honors_change_annotations: bool
+    """
+    Whether the client honors the change annotations in
+    text edits and resource operations returned via the
+    rename request's workspace edit by for example presenting
+    the workspace edit in the user interface and asking
+    for confirmation.
+    """
+
+    model_config = base_config
+
+class PublishDiagnosticsClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsClientCapabilities
+    """
+
+    related_information: bool
+    """
+    Whether the clients accepts diagnostics with related information.
+    """
+
+    tag_support: TagSupportProperty
+    """
+    Client supports the tag property to provide meta data about a diagnostic.
+    Clients supporting tags have to handle unknown tags gracefully.
+    """
+
+    version_support: bool
+    """
+    Whether the client interprets the version property of the
+    `textDocument/publishDiagnostics` notification's parameter.
+    """
+
+    code_description_support: bool
+    """
+    Client supports a codeDescription property
+    """
+
+    data_support: bool
+    """
+    Whether code action supports the `data` property which is
+    preserved between a `textDocument/publishDiagnostics` and
+    `textDocument/codeAction` request.
+    """
+
+    model_config = base_config
+
+class FoldingRangeKindProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+    
+    value_set: list[enums.FoldingRangeKind] | None
+    """
+    The folding range kind values the client supports. When this
+    property exists the client also guarantees that it will
+    handle values outside its set gracefully and falls back
+    to a default value when unknown.
+    """
+
+    model_config = base_config
+
+class FoldingRangeOptions(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+    
+    collapsed_text: bool | None
+    """
+    If set, the client signals that it supports setting collapsedText on
+    folding ranges to display custom labels instead of the default text.
+    """
+
+    model_config = base_config
+
+class FoldingRangeClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for folding range
+    providers. If this is set to `true` the client supports the new
+    `FoldingRangeRegistrationOptions` return value for the corresponding
+    server capability as well.
+    """
+
+    range_limit: int | None
+    """
+    The maximum number of folding ranges that the client prefers to receive
+    per document. The value serves as a hint, servers are free to follow the
+    limit.
+    """
+
+    line_folding_only: bool | None
+    """
+    If set, the client signals that it only supports folding complete lines.
+    If set, client will ignore specified `startCharacter` and `endCharacter`
+    properties in a FoldingRange.
+    """
+
+    folding_range_kind: FoldingRangeKindProperty | None
+    """
+    Specific options for the folding range kind.
+    """
+
+    folding_range: FoldingRangeOptions | None
+    """
+    Specific options for the folding range.
+    """
+
+    model_config = base_config
+
+class SelectionRangeClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#selectionRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for selection range
+    providers. If this is set to `true` the client supports the new
+    `SelectionRangeRegistrationOptions` return value for the corresponding
+    server capability as well.
+    """
+
+    model_config = base_config
+
+class LinkedEditingRangeClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#linkedEditingRangeClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether the implementation supports dynamic registration.
+    If this is set to `true` the client supports the new
+    `(TextDocumentRegistrationOptions & StaticRegistrationOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    model_config = base_config
+
+class CallHierarchyClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#callHierarchyClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    model_config = base_config
+
+class SemanticTokensClientCapabilitiesRequestsFull(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    delta: bool | None
+    """
+    The client will send the `textDocument/semanticTokens/full/delta`
+    request if the server provides a corresponding handler.
+    """
+
+class SemanticTokensClientCapabilitiesRequests(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    range: bool | dict | None
+    """
+    The client will send the `textDocument/semanticTokens/range` request
+    if the server provides a corresponding handler.
+    """
+    full: bool | SemanticTokensClientCapabilitiesRequestsFull | None
+    """
+    The client will send the `textDocument/semanticTokens/full` request
+    if the server provides a corresponding handler.
+    """
+
+class SemanticTokensClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    requests: SemanticTokensClientCapabilitiesRequests
+    """
+    Which requests the client supports and might send to the server
+    depending on the server's capability. Please note that clients might not
+    show semantic tokens or degrade some of the user experience if a range
+    or full request is advertised by the client but not provided by the
+    server.
+    """
+
+    token_types: list[str]
+    """
+    The token types that the client supports.
+    """
+
+    token_modifiers: list[str]
+    """
+    The token modifiers that the client supports.
+    """
+
+    formats: list[enums.TokenFormat]
+    """
+    The formats the clients supports.
+    """
+
+    overlapping_token_support: bool | None
+    """
+    Whether the client supports tokens that can overlap each other.
+    """
+
+    multiline_token_support: bool | None
+    """
+    Whether the client supports tokens that can span multiple lines.
+    """
+
+    server_cancel_support: bool | None
+    """
+    Whether the client allows the server to actively cancel a
+    semantic token request.
+    """
+
+    augments_syntax_tokens: bool | None
+    """
+    Whether the client uses semantic tokens to augment existing
+    syntax tokens.
+    """
+
+    model_config = base_config
+
+class MonikerClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#monikerClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    model_config = base_config
+
+class TypeHierarchyClientCapabilities(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#typeHierarchyClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new `(TextDocumentRegistrationOptions &
+    StaticRegistrationOptions)` return value for the corresponding server
+    capability as well.
+    """
+
+    model_config = base_config
+
+class InlineValueClientCapabilities(BaseModel):
+    """
+    Client capabilities specific to inline values.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlineValueClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration for inline
+    value providers.
+    """
+
+    model_config = base_config
+
+class InlayHintClientCapabilities(BaseModel):
+    """
+    Inlay hint client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether inlay hints support dynamic registration.
+    """
+
+    resolve_support: ResolveSupportProperty | None
+    """
+    Indicates which properties a client can resolve lazily on an inlay hint.
+    """
+
+    model_config = base_config
+
+class DiagnosticClientCapabilities(BaseModel):
+    """
+    Client capabilities specific to diagnostic pull requests.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticClientCapabilities
+    """
+
+    dynamic_registration: bool | None
+    """
+    Whether implementation supports dynamic registration. If this is set to
+    `true` the client supports the new
+    `(TextDocumentRegistrationOptions & StaticRegistrationOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    related_document_support: bool | None
+    """
+    Whether the clients supports related documents for document diagnostic
+    pulls.
+    """
+
+    model_config = base_config
+
+class TextDocumentClientCapabilities(BaseModel):
+    """
+    Text document specific client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentClientCapabilities
+    """
+
+    synchronization: TextDocumentSyncClientCapabilities | None
+
+    completion: CompletionClientCapabilities | None
+    """Capabilities specific to the `textDocument/completion` request."""
+
+    hover: HoverClientCapabilities | None
+    """Capabilities specific to the `textDocument/hover` request."""
+
+    signature_help: SignatureHelpClientCapabilities | None
+    """Capabilities specific to the `textDocument/signatureHelp` request."""
+
+    declaration: DeclarationClientCapabilities | None
+    """Capabilities specific to the `textDocument/declaration` request."""
+
+    definition: DefinitionClientCapabilities | None
+    """Capabilities specific to the `textDocument/definition` request."""
+
+    type_definition: TypeDefinitionClientCapabilities | None
+    """Capabilities specific to the `textDocument/typeDefinition` request."""
+
+    implementation: ImplementationClientCapabilities | None
+    """Capabilities specific to the `textDocument/implementation` request."""
+
+    references: ReferenceClientCapabilities | None
+    """Capabilities specific to the `textDocument/references` request."""
+
+    document_highlight: DocumentHighlightClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentHighlight` request."""
+
+    document_symbol: DocumentSymbolClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentSymbol` request."""
+
+    code_action: CodeActionClientCapabilities | None
+    """Capabilities specific to the `textDocument/codeAction` request."""
+
+    code_lens: CodeLensClientCapabilities | None
+    """Capabilities specific to the `textDocument/codeLens` request."""
+
+    document_link: DocumentLinkClientCapabilities | None
+    """Capabilities specific to the `textDocument/documentLink` request."""
+
+    color_provider: DocumentColorClientCapabilities | None
+    """
+    Capabilities specific to the `textDocument/documentColor` and the
+    `textDocument/colorPresentation` request.
+    """
+
+    formatting: DocumentFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/formatting` request."""
+
+    range_formatting: DocumentRangeFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/rangeFormatting` request."""
+
+    on_type_formatting: DocumentOnTypeFormattingClientCapabilities | None
+    """Capabilities specific to the `textDocument/onTypeFormatting` request."""
+
+    rename: RenameClientCapabilities | None
+    """Capabilities specific to the `textDocument/rename` request."""
+
+    publish_diagnostics: PublishDiagnosticsClientCapabilities | None
+    """
+    Capabilities specific to the `textDocument/publishDiagnostics` notification.
+    """
+
+    folding_range: FoldingRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/foldingRange` request."""
+
+    selection_range: SelectionRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/selectionRange` request."""
+
+    linked_editing_range: LinkedEditingRangeClientCapabilities | None
+    """Capabilities specific to the `textDocument/linkedEditingRange` request."""
+
+    call_hierarchy: CallHierarchyClientCapabilities | None
+    """Capabilities specific to the various call hierarchy requests."""
+
+    semantic_tokens: SemanticTokensClientCapabilities | None
+    """Capabilities specific to the various semantic token requests."""
+
+    moniker: MonikerClientCapabilities | None
+    """Capabilities specific to the `textDocument/moniker` request."""
+
+    type_hierarchy: TypeHierarchyClientCapabilities | None
+    """Capabilities specific to the various type hierarchy requests."""
+
+    inline_value: InlineValueClientCapabilities | None
+    """Capabilities specific to the `textDocument/inlineValue` request."""
+
+    inlay_hint: InlayHintClientCapabilities | None
+    """Capabilities specific to the `textDocument/inlayHint` request."""
+
+    diagnostic: DiagnosticClientCapabilities | None
+    """Capabilities specific to the diagnostic pull model."""
+
+    model_config = base_config
+
+class DidChangeConfigurationClientCapabilities(BaseModel):
+    """
+    Did change configuration notification client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeConfigurationClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Did change configuration notification supports dynamic registration."""
+
+    model_config = base_config
+
+class DidChangeWatchedFilesClientCapabilities(BaseModel):
+    """
+    Did change watched files notification client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeWatchedFilesClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Did change watched files notification supports dynamic registration. Please note that the
+    current protocol doesn't support static configuration for file changes from the server side.
+    """
+
+    relative_pattern_support: bool
+    """Whether the client has support for relative patterns or not."""
+
+    model_config = base_config
+
+class WorkspaceSymbolClientCapabilities(BaseModel):
+    """
+    Workspace symbol client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_symbol
+    """
+
+    dynamic_registration: bool
+    """Symbol request supports dynamic registration."""
+
+    symbol_kind: SymbolKindProperty
+    """Specific capabilities for the `SymbolKind` in the `workspace/symbol` request."""
+
+    tag_support: TagSupportProperty
+    """
+    The client supports tags on `SymbolInformation` and `WorkspaceSymbol`. Clients supporting tags
+    have to handle unknown tags gracefully.
+    """
+
+    resolve_support: ResolveSupportProperty
+    """
+    The client support partial workspace symbols. The client will send the request
+    `workspaceSymbol/resolve` to the server to resolve additional properties.
+    """
+
+    model_config = base_config
+
+class ExecuteCommandClientCapabilities(BaseModel):
+    """
+    Execute command client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#executeCommandClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Execute command supports dynamic registration."""
+
+    model_config = base_config
+
+class SemanticTokensWorkspaceClientCapabilities(BaseModel):
+    """
+    Capabilities specific to the semantic token requests scoped to the workspace.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    semantic tokens currently shown. It should be used with absolute care
+    and is useful for situation where a server for example detect a project
+    wide change that requires such a calculation.
+    """
+
+    model_config = base_config
+
+class CodeLensWorkspaceClientCapabilities(BaseModel):
+    """
+    Capabilities specific to the code lens requests scoped to the workspace.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from the
+    server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    code lenses currently shown. It should be used with absolute care and is
+    useful for situation where a server for example detect a project wide
+    change that requires such a calculation.
+    """
+
+    model_config = base_config
+
+class FileOperations(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    dynamic_registration: bool
+    """Whether the client supports dynamic registration for file requests/notifications."""
+
+    did_create: bool
+    """The client has support for sending didCreateFiles notifications."""
+
+    will_create: bool
+    """The client has support for sending willCreateFiles requests."""
+
+    did_rename: bool
+    """The client has support for sending didRenameFiles notifications."""
+
+    will_rename: bool
+    """The client has support for sending willRenameFiles requests."""
+
+    did_delete: bool
+    """The client has support for sending didDeleteFiles notifications."""
+
+    will_delete: bool
+    """The client has support for sending willDeleteFiles requests."""
+
+    model_config = base_config
+
+class InlineValueWorkspaceClientCapabilities(BaseModel):
+    """
+    Client workspace capabilities specific to inline values.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlineValueWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    inline values currently shown. It should be used with absolute care and
+    is useful for situation where a server for example detect a project wide
+    change that requires such a calculation.
+    """
+
+    model_config = base_config
+
+class InlayHintWorkspaceClientCapabilities(BaseModel):
+    """
+    Client workspace capabilities specific to inlay hints.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    inlay hints currently shown. It should be used with absolute care and
+    is useful for situation where a server for example detects a project wide
+    change that requires such a calculation.
+    """
+
+    model_config = base_config
+
+class DiagnosticWorkspaceClientCapabilities(BaseModel):
+    """
+    Workspace client capabilities specific to diagnostic pull requests.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticWorkspaceClientCapabilities
+    """
+
+    refresh_support: bool
+    """
+    Whether the client implementation supports a refresh request sent from
+    the server to the client.
+
+    Note that this event is global and will force the client to refresh all
+    pulled diagnostics currently shown. It should be used with absolute care
+    and is useful for situation where a server for example detects a project
+    wide change that requires such a calculation.
+    """
+
+    model_config = base_config
+
+class WorkspaceProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    apply_edit: bool
+    """The client supports applying batch edits to the workspace."""
+
+    workspace_edit: WorkspaceEditClientCapabilities
+    """Capabilities specific to `WorkspaceEdit`s"""
+
+    did_change_configuration: DidChangeConfigurationClientCapabilities
+    """Capabilities specific to the `workspace/didChangeConfiguration` notification."""
+
+    did_change_watched_files: DidChangeWatchedFilesClientCapabilities
+    """Capabilities specific to the `workspace/didChangeWatchedFiles` notification."""
+
+    symbol: WorkspaceSymbolClientCapabilities
+    """Capabilities specific to the `workspace/symbol` request."""
+
+    execute_command: ExecuteCommandClientCapabilities
+    """Capabilities specific to the `workspace/executeCommand` request."""
+
+    workspace_folders: bool
+    """The client has support for workspace folders."""
+
+    configuration: bool
+    """The client supports `workspace/configuration` requests."""
+
+    semantic_tokens: SemanticTokensWorkspaceClientCapabilities
+    """Capabilities specific to the semantic token requests scoped to the workspace."""
+
+    code_lens: CodeLensWorkspaceClientCapabilities
+    """Capabilities specific to the code lens requests scoped to the workspace."""
+
+    file_operations: FileOperations
+    """The client has support for file requests/notifications."""
+
+    inline_value: InlineValueWorkspaceClientCapabilities
+    """Client workspace capabilities specific to inline values."""
+
+    inlay_hint: InlayHintWorkspaceClientCapabilities
+    """Client workspace capabilities specific to inlay hints."""
+
+    diagnostics: DiagnosticWorkspaceClientCapabilities
+    """Client workspace capabilities specific to diagnostics."""
+
+    model_config = base_config
+
+class NotebookDocumentSyncClientCapabilities(BaseModel):
+    """
+    Notebook specific client capabilities.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notebookDocumentSyncClientCapabilities
+    """
+
+    dynamic_registration: bool
+    """
+    Whether implementation supports dynamic registration. If this is
+    set to `true` the client supports the new
+    `(NotebookDocumentSyncRegistrationOptions & NotebookDocumentSyncOptions)`
+    return value for the corresponding server capability as well.
+    """
+
+    execution_summary_support: bool
+    """
+    The client supports sending execution summary data per cell.
+    """
+
+    model_config = base_config
+
+class NotebookDocumentClientCapabilities(BaseModel):
+    """
+    Capabilities specific to the notebook document support.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notebookDocumentClientCapabilities
+    """
+
+    synchronization: NotebookDocumentSyncClientCapabilities
+    """
+    Capabilities specific to notebook document synchronization
+    """
+
+    model_config = base_config
+
+class MessageActionItemProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
+    """
+
+    additional_properties_support: bool | None
+    """
+    Capabilities specific to the `MessageActionItem` type.
+    """
+
+    model_config = base_config
+
+class ShowMessageRequestClientCapabilities(BaseModel):
+    """
+    Show message request client capabilities
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
+    """
+
+    message_action_item: MessageActionItemProperty | None
+    """
+    Capabilities specific to the `MessageActionItem` type.
+    """
+
+    model_config = base_config
+
+class ShowDocumentClientCapabilities(BaseModel):
+    """
+    Client capabilities for the show document request.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showDocument
+    """
+
+    support: bool
+    """The client has support for the show document request."""
+
+class WindowProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    work_done_progress: bool
+    """
+    Whether the client supports server initiated progress using the
+    `window/workDoneProgress/create` request.
+    """
+
+    show_message: ShowMessageRequestClientCapabilities
+    """Capabilities specific to the showMessage request"""
+
+    show_document: ShowDocumentClientCapabilities
+    """Client capabilities for the show document request."""
+
+    model_config = base_config
+
+class StaleRequestSupportProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    cancel: bool
+    """The client will actively cancel the request."""
+
+    retry_on_content_modified: list[str]
+    """
+    The list of requests for which the client will retry the request if it receives a response
+    with error code `ContentModified`
+    """
+
+    model_config = base_config
+
+class GeneralProperty(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    stale_request_support: StaleRequestSupportProperty
+    """Client capability that signals how the client handles stale requests."""
+
+    regular_expressions: RegularExpressionsClientCapabilities
+    """Client capabilities specific to regular expressions."""
+
+    markdown: MarkdownClientCapabilities
+    """Client capabilities specific to the client's markdown parser."""
+
+    position_encodings: list[enums.PositionEncodingKind]
+    """The position encodings supported by the client."""
+
+    model_config = base_config
+
+class ClientCapabilities(BaseModel):
+    """
+    Capabilities provided by the client.
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
+    """
+
+    workspace: WorkspaceProperty
+    """Workspace specific client capabilities."""
+
+    text_document: TextDocumentClientCapabilities
+    """Text document specific client capabilities."""
+
+    notebook_document: NotebookDocumentClientCapabilities
+    """Capabilities specific to the notebook document support."""
+
+    window: WindowProperty
+    """Window specific client capabilities."""
+
+    general: GeneralProperty
+    """General client capabilities."""
+
+    experimental: LSPAny
+    """Experimental client capabilities."""
+
+    model_config = base_config
+
+class InitializeParams(WorkDoneProgressParams, BaseModel):
+    """
+    Initialize parameters sent from client to server
+
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
+    """
+
+    process_id: Integer | None
+    """
+    The process Id of the parent process that started the server. Is null if
+    the process has not been started by another process. If the parent
+    process is not alive then the server should exit (see exit notification)
+    its process.
+    """
+
+    client_info: dict[str, str | None] | None
+    """
+    Information about the client
+    """
+
+    locale: str | None
+    """
+    The locale the client is currently showing the user interface
+    in. This must not necessarily be the locale of the operating
+    system.
+
+    Uses IETF language tags as the value's syntax
+    (See https://en.wikipedia.org/wiki/IETF_language_tag)
+    """
+
+    root_path: str | None
+    """
+    The rootPath of the workspace. Is null
+    if no folder is open.
+
+    Deprecated in favour of `rootUri`.
+    """
+
+    root_uri: DocumentUri | None
+    """
+    The rootUri of the workspace. Is null if no
+    folder is open. If both `rootPath` and `rootUri` are set
+    `rootUri` wins.
+
+    Deprecated in favour of `workspaceFolders`
+    """
+
+    initialization_options: LSPAny | None
+    """
+    User provided initialization options.
+    """
+
+    capabilities: ClientCapabilities
+    """
+    The capabilities provided by the client (editor or tool)
+    """
+
+    trace: enums.TraceValue | None
+    """
+    The initial trace setting. If omitted trace is disabled ('off').
+    """
+
+    workspace_folders: list[WorkspaceFolder] | None
+    """
+    The workspace folders configured in the client when the server starts.
+    This property is only available if the client supports workspace folders.
+    It can be `null` if the client supports workspace folders but none are
+    configured.
+    """
+
+    model_config = base_config
+
+class SetTraceParams(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#setTrace
+    """
+
+    value: enums.TraceValue
+    """
+    The new value that should be assigned to the trace setting.
+    """

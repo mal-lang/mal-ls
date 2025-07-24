@@ -13,6 +13,8 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 from .lsp.enums import ErrorCodes, TraceValue, PositionEncodingKind
 from .lsp.fsm import LifecycleFSM
 
+from .lsp import models, enums
+
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 
@@ -23,7 +25,7 @@ class MALLSPEXCEPTION(Exception):
     def __init__(self, code, message):
         self.code = code
         self.error_msg = message
-        super().__init__(f"Error {code}: {message}") 
+        super().__init__(f"Error {code}: {message}")
 
 def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> None:
     log.info("Starting MAL IO language server.")
@@ -59,7 +61,7 @@ class MALLSPServer(MethodDispatcher):
         log.info("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
 
-    def _process_encoding(self, encodings: PositionEncodingKind):
+    def _process_encoding(self, encodings: list[PositionEncodingKind]):
         # According to documentation, if utf-16 is missing, the server should
         # assume that this encoding is supported and should be used.
         #
@@ -73,22 +75,23 @@ class MALLSPServer(MethodDispatcher):
             pass
 
     # Auxiliary method to process and react to client capabilities
-    def _process_client_capabilities(self, capabilities: dict):
-        if ('general' in client_capabilities):
-            general = client_capabilities['general']
-            if ('positionEncodings' in general):
-                self._process_encoding(general['positionEncodings'])
-        return 
+    def _process_client_capabilities(
+            self,
+            client_capabilities: models.ClientCapabilities) -> None:
+        if client_capabilities.general:
+            general = client_capabilities.general
+            if general.position_encodings:
+                self._process_encoding(general.position_encodings)
 
     # leave capabilities as dict for now, replace with explicit class/type later
-    def capabilities(self, client_capabilities: dict | None = None):
-
+    def capabilities(self, client_capabilities: models.ClientCapabilities | None = None):
         if client_capabilities:
-            self._process_client_capabilities(capabilities)
+            self._process_client_capabilities(client_capabilities)
 
         capabilities = {
-            'positionEncoding': self.__encoding,
+            "positionEncoding": self.__encoding,
         }
+
         log.debug("Server capabilities: %s", capabilities)
         return capabilities
 
@@ -110,49 +113,43 @@ class MALLSPServer(MethodDispatcher):
         return self.__lifecycle
 
     @property
-    def traceValue(self) -> TraceValue:
+    def trace_value(self) -> TraceValue:
         return self.__trace_value
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
-    def _change_trace_value(self, new_trace_value: str) -> None:
+    def _change_trace_value(self, new_trace_value: enums.TraceValue) -> None:
         match (new_trace_value):
-            case 'off':
-                self.__trace_value = TraceValue.Off
-            case 'messages':
-                self.__trace_value = TraceValue.Messages
-            case 'verbose':
-                self.__trace_value = TraceValue.Verbose
+            case enums.TraceValue.Off | enums.TraceValue.Messages | enums.TraceValue.Verbose:
+                self.__trace_value = new_trace_value
             case _:
-                error_msg = f'Unrecognized trace value: `{new_trace_value}`. Options are: `off`, `messages` and `verbose`.'
+                error_msg = f"Unrecognized trace value: `{new_trace_value}`. Options are: `off`, `messages` and `verbose`."
                 log.error(error_msg)
-                raise MALLSPEXCEPTION(ErrorCodes.InvalidParams, error_msg)
+                raise MALLSPException(ErrorCodes.InvalidParams, error_msg)
 
         log.info(f"Updating trace value to: `{new_trace_value}`")
 
     # This method is to be incrementally increased by adding
     # processing capabilities for each of the initialize parameters
-    def _process_initialize_parameters(self, **kwargs):
-        if ('trace' in kwargs):
-            self._change_trace_value(kwargs['trace'])
+    def _process_initialize_parameters(self, parameters: models.InitializeParams):
+        if parameters.trace:
+            self._change_trace_value(parameters.trace)
 
     # leave capabilities and response as dict for now, replace with explicit class/type later
-    def m_initialize(
-        self, processId: int | None = None, rootUri: str | None = None, **kwargs
-    ) -> dict:
-        log.info("Initializing server with parameters: %s %s", processId, rootUri)
-        log.debug("Defered server parameters: %s", kwargs)
+    def m_initialize(self, **params: dict | None) -> dict:
+        parameters = models.InitializeParams(**params) if params else None
+        log.info("Initializing server with parameters: %s", parameters)
 
         try:
-            if (kwargs):
-                self._process_initialize_parameters(**kwargs)
+            if parameters:
+                self._process_initialize_parameters(parameters)
 
             return {
-                "capabilities": self.capabilities(kwargs.get("capabilities")),
+                "capabilities": self.capabilities(parameters.capabilities),
                 "serverInfo": {"name": "mal-ls"},
             }
-        except MALLSPEXCEPTION as e:
-            return self.__respond_with_error(e.error_msg,e.code)
+        except MALLSPException as e:
+            return MALLSPServer.__respond_with_error(e.error_msg,e.code)
 
     def m_initialized(self, *args, **kwargs) -> None:
         log.debug("Client initialized with parameters %s %s", args, kwargs)
@@ -161,26 +158,21 @@ class MALLSPServer(MethodDispatcher):
         log.info("Received shutdown request.")
 
     @staticmethod
-    # leave return type as dict for now, replace with explicit class/type later
-    def __invalid_request_at_lifecycle(
-        warning: str, message: str, error: ErrorCodes = ErrorCodes.InvalidRequest
-    ) -> dict:
-        log.warning(warning)
-        return {
-            "error": {
-                "code": error,
-                "message": message,
-            }
-        }
-
-    # TODO maybe join with __invalid_request_at_lifecycle
-    def __respond_with_error(self, error_msg: str, error_code: int) -> dict:
+    def __respond_with_error(error_msg: str, error_code: int) -> dict:
         return {
             "error": {
                 "code": error_code,
                 "message": error_msg,
             }
         }
+
+    @staticmethod
+    # leave return type as dict for now, replace with explicit class/type later
+    def __invalid_request_at_lifecycle(
+        warning: str, message: str, error: ErrorCodes = ErrorCodes.InvalidRequest
+    ) -> dict:
+        log.warning(warning)
+        return MALLSPServer.__respond_with_error(message, error)
 
     def m_invalid_request_at_start(self, **kwargs):
         return MALLSPServer.__invalid_request_at_lifecycle(
@@ -214,13 +206,11 @@ class MALLSPServer(MethodDispatcher):
         )
 
     def m_exit(self, **kwargs) -> None:
-        
         # Example of notification message
-            
         # Only notify if traces are on
-        if (self.traceValue != TraceValue.Off):
+        if (self.trace_value != TraceValue.Off):
             params = {'message':'Exiting language server'}
-            if self.traceValue == TraceValue.Verbose:
+            if self.trace_value == TraceValue.Verbose:
                 params['verbose'] = 'Verbose example'  # placeholder
             self.__endpoint.notify("exit", params)
 
@@ -234,13 +224,14 @@ class MALLSPServer(MethodDispatcher):
             self.__jsonrpc_stream_writer.close()
             log.info("JSON RPC writer closed.")
 
-    def m___set_trace(self, **kwargs):
+    def m___set_trace(self, **params: dict | None) -> None:
         # For a notification, there is no response,
         # even if there is an error, so the function
         # shall just return
-        if ('value' in kwargs):
+        parameters = models.SetTraceParams(**params) if params else None
+        if parameters:
             try:
-                self._change_trace_value(kwargs['value'])
+                self._change_trace_value(parameters.value)
             finally:
                 return
 

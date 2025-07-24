@@ -35,7 +35,7 @@ def test_set_trace_correctly(
     output, ls, *_ = server_output(set_trace_value_in)
 
     # ensure ls has trace value correctly set
-    assert ls.traceValue == TraceValue.Verbose
+    assert ls.trace_value == TraceValue.Verbose
 
     output.close()
 
@@ -44,7 +44,7 @@ def test_set_trace_incorrectly(
     output, ls, *_ = server_output(set_wrong_trace_value_in)
 
     # ensure ls has trace value correctly set
-    assert ls.traceValue == TraceValue.Off
+    assert ls.trace_value == TraceValue.Off
 
     output.close()
 
