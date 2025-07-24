@@ -1,96 +1,83 @@
-import typing
-from malls.lsp.enums import PositionEncodingKind
-from malls.mal_lsp import MALLSPServer
-import io
+from malls.ts.utils import find_current_scope
 from tree_sitter import Language, Parser, QueryCursor
 import tree_sitter_mal as ts_mal
 
-FILE = open("./tests/mal_fixtures/test_find_current_scope.mal","rb")
-SOURCE = FILE.read()
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
-TREE = PARSER.parse(SOURCE)
 
-class FakeLanguageServer(MALLSPServer):
-    def __init__(self):
-        super().__init__(io.BytesIO, io.BytesIO)
-
-    def find_current_scope(self, cursor, point):
-        return self._find_current_scope(cursor, point)
-
-def test_find_current_scope_1():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_space_between_category_and_asset(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # space between category and asset
     point = (4,0)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "category_declaration"
+    assert find_current_scope(tree.walk(), point).type == "category_declaration"
 
-def test_find_current_scope_2():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_inside_the_asset_declaration(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # inside the asset declaration
     point = (7,13)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "asset_declaration"
+    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
 
-def test_find_current_scope_3():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_inside_the_association_declaration(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # inside the association declaration
     point = (17,19)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "associations_declaration"
+    assert find_current_scope(tree.walk(), point).type == "associations_declaration"
 
-def test_find_current_scope_4():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_outside_all_components(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # outside all components
     point = (1,10)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == 'source_file'
+    assert find_current_scope(tree.walk(), point).type == 'source_file'
 
-def test_find_current_scope_5():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_name_of_asset(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the name of the asset
     point = (10,10)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "category_declaration"
+    assert find_current_scope(tree.walk(), point).type == "category_declaration"
 
-def test_find_current_scope_6():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_bracket_of_asset(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the '{' of the asset
     point = (11,4)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "asset_declaration"
+    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
 
-def test_find_current_scope_7():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_closing_bracket_of_asset(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the '}' of the asset
     point = (13,4)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "asset_declaration"
+    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
 
-def test_find_current_scope_8():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_name_of_category(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the name of the category
     point = (3,10)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == 'source_file'
+    assert find_current_scope(tree.walk(), point).type == 'source_file'
 
-def test_find_current_scope_9():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_bracket_of_category(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the '{' of the category 
     point = (3,17)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "category_declaration"
+    assert find_current_scope(tree.walk(), point).type == "category_declaration"
 
-def test_find_current_scope_10():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_term_association(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the term 'associations'
     point = (15,4)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == 'source_file'
+    assert find_current_scope(tree.walk(), point).type == 'source_file'
 
-def test_find_current_scope_11():
-    fakeLSP = FakeLanguageServer()
+def test_find_current_scope_on_bracket_of_association(mal_find_current_scope_function):
+    tree = PARSER.parse(mal_find_current_scope_function.read())
 
     # on the '{' of the association
     point = (18,0)
-    assert fakeLSP.find_current_scope(TREE.walk(), point).type == "associations_declaration"
+    assert find_current_scope(tree.walk(), point).type == "associations_declaration"
