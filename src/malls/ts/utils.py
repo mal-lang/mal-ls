@@ -85,3 +85,26 @@ def find_current_scope(cursor: TreeCursor, point: Point):
                 pass
 
     return owner
+
+def lsp_to_tree_sitter(text: str, lsp_line: int, lsp_char: int) -> Point:
+    """
+    Converts an LSP position (UTF-16 character index) to a Tree-sitter position (UTF-8 byte offset).
+    """
+    lines = text.splitlines(keepends=True)
+    
+    # Get correct line
+    line_text = lines[lsp_line]
+    
+    # Convert to UTF-16 little endian (each UTF-16 code unit is 2 bytes)
+    line_utf16 = line_text.encode('utf-16-le')
+    
+    # lsp_char * 2 gives us the byte offset in the UTF-16 string
+    utf16_slice = line_utf16[:lsp_char * 2]
+    
+    # return to unicode
+    string_slice = utf16_slice.decode('utf-16-le')
+    
+    # Encode the string slice to UTF-8 and get its byte length
+    byte_offset = len(string_slice.encode('utf-8'))
+    
+    return Point(lsp_line, byte_offset)
