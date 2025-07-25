@@ -11,6 +11,9 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup environment
         uses: ./.github/workflows/py-setup.yml@language-server-env
 
@@ -24,6 +27,9 @@ jobs:
     # Since these don't verify runtime properties the platform doesn't matter, as it does in tests
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup environment
         uses: ./.github/workflows/py-setup.yml@language-server-env
 
@@ -33,6 +39,9 @@ jobs:
     # Since these don't verify runtime properties the platform doesn't matter, as it does in tests
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup environment
         uses: ./.github/workflows/py-setup.yml@language-server-env
 
