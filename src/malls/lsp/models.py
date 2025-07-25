@@ -7,44 +7,55 @@ from uritools import isuri
 
 from . import enums
 
-base_config = ConfigDict(alias_generator = to_snake)
+base_config = ConfigDict(alias_generator=to_snake)
 
-Integer = Annotated[int,
-                    Field(ge=-2^31, le=2^31-1),
-                    """Defines an integer number in the range of -2^31 to 2^31 - 1."""]
-UInteger = Annotated[Integer,
-                     Field(ge=0),
-                     """Defines an unsigned integer number in the range of 0 to 2^31 - 1."""]
-Uri = Annotated[str,
-                AfterValidator(isuri),
-                """
+Integer = Annotated[
+    int,
+    Field(ge=-2 ^ 31, le=2 ^ 31 - 1),
+    """Defines an integer number in the range of -2^31 to 2^31 - 1.""",
+]
+UInteger = Annotated[
+    Integer, Field(ge=0), """Defines an unsigned integer number in the range of 0 to 2^31 - 1."""
+]
+Uri = Annotated[
+    str,
+    AfterValidator(isuri),
+    """
                 URI’s are transferred as strings. The URI’s format is defined in https://tools.ietf.org/html/rfc3986
 
                 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
-                """]
+                """,
+]
 LSPAny = TypeAliasType(
-        "LSPAny",
-        str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None)
-LSPAny = Annotated[LSPAny,
-                   """
+    "LSPAny", str | Integer | UInteger | float | bool | "LSPObject" | "LSPArray" | None
+)
+LSPAny = Annotated[
+    LSPAny,
+    """
                    The LSP any type.
 
                    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspAny
-                   """]
-LSPObject = Annotated[dict[str, LSPAny],
-                      """
+                   """,
+]
+LSPObject = Annotated[
+    dict[str, LSPAny],
+    """
                       LSP object definition.
 
                       https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspObject
-                      """]
-LSPArray = Annotated[list[LSPAny],
-                     """
+                      """,
+]
+LSPArray = Annotated[
+    list[LSPAny],
+    """
                      LSP arrays.
 
                      https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#lspArray
-                     """]
-DocumentUri = Annotated[Uri,
-                        """
+                     """,
+]
+DocumentUri = Annotated[
+    Uri,
+    """
                         Many of the interfaces contain fields that correspond to the URI of a
                         document. For clarity, the type of such a field is declared as a
                         `DocumentUri`. Over the wire, it will still be transferred as a string, but
@@ -52,16 +63,20 @@ DocumentUri = Annotated[Uri,
                         URI.
 
                         https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#uri
-                        """]
-ProgressToken = Annotated[str | Integer,
-                          """
+                        """,
+]
+ProgressToken = Annotated[
+    str | Integer,
+    """
                           Token associated with each progress report, request, or other
                           communication.
 
                           https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#progress
-                          """]
+                          """,
+]
 
 # NOTE: Both BaseModel and TypedDict are used to explicitely support the faster validation method
+
 
 class CancelParams(BaseModel):
     """
@@ -72,6 +87,7 @@ class CancelParams(BaseModel):
 
     id: Integer | str
     """The request id to cancel."""
+
 
 class ProgressParams[T](BaseModel):
     """
@@ -89,12 +105,14 @@ class ProgressParams[T](BaseModel):
     value: T
     """The progress data."""
 
+
 class RegularExpressionsClientCapabilities(BaseModel):
     engine: str
     """The engine's name."""
 
     version: str | None
     """The engine's version."""
+
 
 class Position(BaseModel):
     """
@@ -117,6 +135,7 @@ class Position(BaseModel):
 	to the line length.
     """
 
+
 class Range(BaseModel):
     """
     A range in a text document expressed as (zero-based) start and end positions. A range is
@@ -132,6 +151,7 @@ class Range(BaseModel):
 
     end: Position
     """The range's end position."""
+
 
 class TextDocumentItem(BaseModel):
     """
@@ -155,6 +175,7 @@ class TextDocumentItem(BaseModel):
     """The content of the opened text document."""
 
     model_config = base_config
+
 
 class TextDocumentIdentifier(BaseModel):
     """
@@ -183,6 +204,7 @@ class VersionedTextDocumentIdentifier(TextDocumentIdentifier):
     number doesn't need to be consecutive.
     """
 
+
 class OptionalVersionedTextDocumentIdentifier(TextDocumentIdentifier):
     """
     An identifier which optionally denotes a specific version of a text document. This information
@@ -202,6 +224,7 @@ class OptionalVersionedTextDocumentIdentifier(TextDocumentIdentifier):
     number doesn't need to be consecutive.
     """
 
+
 class TextDocumentPositionParams(BaseModel):
     """
     A parameter literal used in requests to pass a text document and a position inside that
@@ -219,6 +242,7 @@ class TextDocumentPositionParams(BaseModel):
     """The position inside the text document."""
 
     model_config = base_config
+
 
 class DocumentFilter(BaseModel):
     """
@@ -250,12 +274,16 @@ class DocumentFilter(BaseModel):
        not `example.0`)
     """
 
-DocumentSelector = Annotated[list[DocumentFilter],
-                             """
+
+DocumentSelector = Annotated[
+    list[DocumentFilter],
+    """
                              A document selector is the combination of one or more document filters.
 
                              https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSelector
-                             """]
+                             """,
+]
+
 
 class TextEdit(BaseModel):
     """
@@ -276,6 +304,7 @@ class TextEdit(BaseModel):
     """
 
     model_config = base_config
+
 
 class ChangeAnnotation(BaseModel):
     """
@@ -298,13 +327,17 @@ class ChangeAnnotation(BaseModel):
 
     model_config = base_config
 
-ChangeAnnotationIdentifier = Annotated[str,
-                                       """
+
+ChangeAnnotationIdentifier = Annotated[
+    str,
+    """
                                        An identifier referring to a change annotation managed by a
                                        workspace edit.
 
                                        https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#changeAnnotationIdentifier
-                                       """]
+                                       """,
+]
+
 
 class AnnotatedTextEdit(TextEdit):
     """
@@ -317,6 +350,7 @@ class AnnotatedTextEdit(TextEdit):
     """The actual annotation identifier."""
 
     model_config = base_config
+
 
 class TextDocumentEdit(BaseModel):
     """
@@ -340,6 +374,7 @@ class TextDocumentEdit(BaseModel):
 
     model_config = base_config
 
+
 class Location(BaseModel):
     """
     Represents a location inside a resource, such as a line inside a text file.
@@ -350,6 +385,7 @@ class Location(BaseModel):
     uri: DocumentUri
 
     range: Range
+
 
 class LocationLink(BaseModel):
     """
@@ -384,6 +420,7 @@ class LocationLink(BaseModel):
 
     model_config = base_config
 
+
 class DiagnosticRelatedInformation(BaseModel):
     """
     Represents a related message and source code location for a diagnostic. This should be used to
@@ -402,6 +439,7 @@ class DiagnosticRelatedInformation(BaseModel):
     """
     The message of this related diagnostic information.
     """
+
 
 class CodeDescription(BaseModel):
     """
@@ -468,6 +506,7 @@ class Diagnostic(BaseModel):
 
     model_config = base_config
 
+
 class Command(BaseModel):
     """
     Represents a reference to a command. Provides a title which will be used to represent a
@@ -494,6 +533,7 @@ class Command(BaseModel):
     Arguments that the command handler should be
     invoked with.
     """
+
 
 class MarkupContent(BaseModel):
     """
@@ -533,6 +573,7 @@ class MarkupContent(BaseModel):
     The content itself
     """
 
+
 class MarkdownClientCapabilities(BaseModel):
     """
     Client capabilities specific to the used markdown parser.
@@ -555,6 +596,7 @@ class MarkdownClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class CreateFileOptions(BaseModel):
     """
     Options to create a file.
@@ -573,6 +615,7 @@ class CreateFileOptions(BaseModel):
     """
 
     model_config = base_config
+
 
 class RenameFileOptions(BaseModel):
     """
@@ -593,6 +636,7 @@ class RenameFileOptions(BaseModel):
 
     model_config = base_config
 
+
 class DeleteFileOptions(BaseModel):
     """
     Delete file options
@@ -611,6 +655,7 @@ class DeleteFileOptions(BaseModel):
     """
 
     model_config = base_config
+
 
 class CreateFile(BaseModel):
     """
@@ -640,6 +685,7 @@ class CreateFile(BaseModel):
     """
 
     model_config = base_config
+
 
 class RenameFile(BaseModel):
     """
@@ -675,6 +721,7 @@ class RenameFile(BaseModel):
 
     model_config = base_config
 
+
 class DeleteFile(BaseModel):
     """
     Delete file operation
@@ -704,6 +751,7 @@ class DeleteFile(BaseModel):
 
     model_config = base_config
 
+
 class WorkspaceEdit(BaseModel):
     """
     Workspace edit
@@ -717,9 +765,9 @@ class WorkspaceEdit(BaseModel):
     """
 
     document_changes: (
-        list[TextDocumentEdit] |
-        list[TextDocumentEdit | CreateFile | RenameFile | DeleteFile] |
-        None
+        list[TextDocumentEdit]
+        | list[TextDocumentEdit | CreateFile | RenameFile | DeleteFile]
+        | None
     )
     """
     Depending on the client capability
@@ -794,6 +842,7 @@ class WorkspaceEditClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class WorkDoneProgressBegin(BaseModel):
     """
     Begin progress operation
@@ -801,7 +850,7 @@ class WorkDoneProgressBegin(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressBegin
     """
 
-    kind: Literal['begin']
+    kind: Literal["begin"]
     """
     Kind of progress operation
     """
@@ -840,6 +889,7 @@ class WorkDoneProgressBegin(BaseModel):
     that are not following this rule. The value range is [0, 100].
     """
 
+
 class WorkDoneProgressReport(BaseModel):
     """
     Report progress operation
@@ -847,7 +897,7 @@ class WorkDoneProgressReport(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressReport
     """
 
-    kind: Literal['report']
+    kind: Literal["report"]
     """
     Kind of progress operation
     """
@@ -880,6 +930,7 @@ class WorkDoneProgressReport(BaseModel):
     that are not following this rule. The value range is [0, 100].
     """
 
+
 class WorkDoneProgressEnd(BaseModel):
     """
     End progress operation
@@ -887,7 +938,7 @@ class WorkDoneProgressEnd(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workDoneProgressEnd
     """
 
-    kind: Literal['end']
+    kind: Literal["end"]
     """
     Kind of progress operation
     """
@@ -897,6 +948,7 @@ class WorkDoneProgressEnd(BaseModel):
     Optional, a final message indicating to for example indicate the outcome
     of the operation.
     """
+
 
 class WorkDoneProgressParams(BaseModel):
     """
@@ -911,6 +963,7 @@ class WorkDoneProgressParams(BaseModel):
     """
 
     model_config = base_config
+
 
 class PartialResultParams(BaseModel):
     """
@@ -927,12 +980,14 @@ class PartialResultParams(BaseModel):
 
     model_config = base_config
 
+
 class ClientInfo(BaseModel):
     """
     Information about the client
 
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
     """
+
     name: str
     """
     The name of the client as defined by the client.
@@ -942,6 +997,7 @@ class ClientInfo(BaseModel):
     """
     The client's version as defined by the client.
     """
+
 
 class WorkspaceFolder(BaseModel):
     """
@@ -960,6 +1016,7 @@ class WorkspaceFolder(BaseModel):
     The name of the workspace folder. Used to refer to this
     workspace folder in the user interface.
     """
+
 
 class TextDocumentSyncClientCapabilities(BaseModel):
     """
@@ -984,11 +1041,13 @@ class TextDocumentSyncClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class TagSupportProperty(BaseModel):
     value_set: list[enums.CompletionItemTag]
     """The tags supported by the client."""
 
     model_config = base_config
+
 
 class InsertTextModeSupport(BaseModel):
     """The client supports the `insertTextMode` property on
@@ -1002,17 +1061,19 @@ class InsertTextModeSupport(BaseModel):
 
     model_config = base_config
 
+
 class CompletionItemResolveSupport(BaseModel):
     """
     Indicates which properties a client can resolve lazily on a
-	completion item. Before version 3.16.0 only the predefined properties
-	`documentation` and `detail` could be resolved lazily.
+        completion item. Before version 3.16.0 only the predefined properties
+        `documentation` and `detail` could be resolved lazily.
 
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionClientCapabilities
     """
 
     properties: list[str]
     """The properties that a client can resolve lazily."""
+
 
 class CompletionItemCapabilities(BaseModel):
     """
@@ -1080,6 +1141,7 @@ class CompletionItemCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class CompletionItemKindCapabilities(BaseModel):
     """
     The completion item kind values the client supports. When this
@@ -1097,6 +1159,7 @@ class CompletionItemKindCapabilities(BaseModel):
     value_set: list[enums.CompletionItemKind] | None
 
     model_config = base_config
+
 
 class CompletionListCapabilities(BaseModel):
     """
@@ -1116,6 +1179,7 @@ class CompletionListCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class CompletionClientCapabilities(BaseModel):
     """
@@ -1162,6 +1226,7 @@ class CompletionClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class HoverClientCapabilities(BaseModel):
     """
     What capabilities the client supports for hover methods/operations.
@@ -1179,6 +1244,7 @@ class HoverClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class ParameterInformationCapabilities(BaseModel):
     """
@@ -1218,6 +1284,7 @@ class SignatureInformationCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class SignatureHelpClientCapabilities(BaseModel):
     """
     The clients capabilities in regards to signature help.
@@ -1242,6 +1309,7 @@ class SignatureHelpClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DeclarationClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to declarations of symbols.
@@ -1261,6 +1329,7 @@ class DeclarationClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DefinitionClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to definition of symbols.
@@ -1275,6 +1344,7 @@ class DefinitionClientCapabilities(BaseModel):
     """The client supports additional metadata in the form of definition links."""
 
     model_config = base_config
+
 
 class TypeDefinitionClientCapabilities(BaseModel):
     """
@@ -1295,6 +1365,7 @@ class TypeDefinitionClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class ImplementationClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to implementation of symbols.
@@ -1314,6 +1385,7 @@ class ImplementationClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class ReferenceClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to project-wide references of symbols.
@@ -1326,6 +1398,7 @@ class ReferenceClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DocumentHighlightClientCapabilities(BaseModel):
     """
     The clients capabilites in regards to document highlights.
@@ -1337,6 +1410,7 @@ class DocumentHighlightClientCapabilities(BaseModel):
     """Whether document highlight supports dynamic registration."""
 
     model_config = base_config
+
 
 class SymbolKindProperty(BaseModel):
     value_set: list[enums.SymbolKind]
@@ -1352,6 +1426,7 @@ class SymbolKindProperty(BaseModel):
     """
 
     model_config = base_config
+
 
 class DocumentSymbolClientCapabilities(BaseModel):
     """
@@ -1382,6 +1457,7 @@ class DocumentSymbolClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class ResolveSupportProperty(BaseModel):
     properties: list[str]
     """
@@ -1389,6 +1465,7 @@ class ResolveSupportProperty(BaseModel):
     """
 
     model_config = base_config
+
 
 class CodeActionKindSupportProperty(BaseModel):
     value_set: list[enums.CodeActionKind]
@@ -1459,6 +1536,7 @@ class CodeActionClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class CodeLensClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensClientCapabilities
@@ -1470,6 +1548,7 @@ class CodeLensClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class DocumentLinkClientCapabilities(BaseModel):
     """
@@ -1488,6 +1567,7 @@ class DocumentLinkClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DocumentColorClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentColorClientCapabilities
@@ -1499,6 +1579,7 @@ class DocumentColorClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class DocumentFormattingClientCapabilities(BaseModel):
     """
@@ -1512,6 +1593,7 @@ class DocumentFormattingClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DocumentRangeFormattingClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentRangeFormattingClientCapabilities
@@ -1524,6 +1606,7 @@ class DocumentRangeFormattingClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DocumentOnTypeFormattingClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentOnTypeFormattingClientCapabilities
@@ -1535,6 +1618,7 @@ class DocumentOnTypeFormattingClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class RenameClientCapabilities(BaseModel):
     """
@@ -1572,6 +1656,7 @@ class RenameClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class PublishDiagnosticsClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsClientCapabilities
@@ -1608,11 +1693,12 @@ class PublishDiagnosticsClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class FoldingRangeKindProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
     """
-    
+
     value_set: list[enums.FoldingRangeKind] | None
     """
     The folding range kind values the client supports. When this
@@ -1623,11 +1709,12 @@ class FoldingRangeKindProperty(BaseModel):
 
     model_config = base_config
 
+
 class FoldingRangeOptions(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#foldingRangeClientCapabilities
     """
-    
+
     collapsed_text: bool | None
     """
     If set, the client signals that it supports setting collapsedText on
@@ -1635,6 +1722,7 @@ class FoldingRangeOptions(BaseModel):
     """
 
     model_config = base_config
+
 
 class FoldingRangeClientCapabilities(BaseModel):
     """
@@ -1675,6 +1763,7 @@ class FoldingRangeClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class SelectionRangeClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#selectionRangeClientCapabilities
@@ -1689,6 +1778,7 @@ class SelectionRangeClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class LinkedEditingRangeClientCapabilities(BaseModel):
     """
@@ -1705,6 +1795,7 @@ class LinkedEditingRangeClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class CallHierarchyClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#callHierarchyClientCapabilities
@@ -1720,6 +1811,7 @@ class CallHierarchyClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class SemanticTokensClientCapabilitiesRequestsFull(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensClientCapabilities
@@ -1730,6 +1822,7 @@ class SemanticTokensClientCapabilitiesRequestsFull(BaseModel):
     The client will send the `textDocument/semanticTokens/full/delta`
     request if the server provides a corresponding handler.
     """
+
 
 class SemanticTokensClientCapabilitiesRequests(BaseModel):
     """
@@ -1746,6 +1839,7 @@ class SemanticTokensClientCapabilitiesRequests(BaseModel):
     The client will send the `textDocument/semanticTokens/full` request
     if the server provides a corresponding handler.
     """
+
 
 class SemanticTokensClientCapabilities(BaseModel):
     """
@@ -1808,6 +1902,7 @@ class SemanticTokensClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class MonikerClientCapabilities(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#monikerClientCapabilities
@@ -1822,6 +1917,7 @@ class MonikerClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class TypeHierarchyClientCapabilities(BaseModel):
     """
@@ -1838,6 +1934,7 @@ class TypeHierarchyClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class InlineValueClientCapabilities(BaseModel):
     """
     Client capabilities specific to inline values.
@@ -1852,6 +1949,7 @@ class InlineValueClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class InlayHintClientCapabilities(BaseModel):
     """
@@ -1871,6 +1969,7 @@ class InlayHintClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class DiagnosticClientCapabilities(BaseModel):
     """
@@ -1894,6 +1993,7 @@ class DiagnosticClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class TextDocumentClientCapabilities(BaseModel):
     """
@@ -1998,6 +2098,7 @@ class TextDocumentClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DidChangeConfigurationClientCapabilities(BaseModel):
     """
     Did change configuration notification client capabilities.
@@ -2009,6 +2110,7 @@ class DidChangeConfigurationClientCapabilities(BaseModel):
     """Did change configuration notification supports dynamic registration."""
 
     model_config = base_config
+
 
 class DidChangeWatchedFilesClientCapabilities(BaseModel):
     """
@@ -2027,6 +2129,7 @@ class DidChangeWatchedFilesClientCapabilities(BaseModel):
     """Whether the client has support for relative patterns or not."""
 
     model_config = base_config
+
 
 class WorkspaceSymbolClientCapabilities(BaseModel):
     """
@@ -2055,6 +2158,7 @@ class WorkspaceSymbolClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class ExecuteCommandClientCapabilities(BaseModel):
     """
     Execute command client capabilities.
@@ -2066,6 +2170,7 @@ class ExecuteCommandClientCapabilities(BaseModel):
     """Execute command supports dynamic registration."""
 
     model_config = base_config
+
 
 class SemanticTokensWorkspaceClientCapabilities(BaseModel):
     """
@@ -2087,6 +2192,7 @@ class SemanticTokensWorkspaceClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class CodeLensWorkspaceClientCapabilities(BaseModel):
     """
     Capabilities specific to the code lens requests scoped to the workspace.
@@ -2106,6 +2212,7 @@ class CodeLensWorkspaceClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class FileOperations(BaseModel):
     """
@@ -2135,6 +2242,7 @@ class FileOperations(BaseModel):
 
     model_config = base_config
 
+
 class InlineValueWorkspaceClientCapabilities(BaseModel):
     """
     Client workspace capabilities specific to inline values.
@@ -2154,6 +2262,7 @@ class InlineValueWorkspaceClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class InlayHintWorkspaceClientCapabilities(BaseModel):
     """
@@ -2175,6 +2284,7 @@ class InlayHintWorkspaceClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class DiagnosticWorkspaceClientCapabilities(BaseModel):
     """
     Workspace client capabilities specific to diagnostic pull requests.
@@ -2194,6 +2304,7 @@ class DiagnosticWorkspaceClientCapabilities(BaseModel):
     """
 
     model_config = base_config
+
 
 class WorkspaceProperty(BaseModel):
     """
@@ -2244,6 +2355,7 @@ class WorkspaceProperty(BaseModel):
 
     model_config = base_config
 
+
 class NotebookDocumentSyncClientCapabilities(BaseModel):
     """
     Notebook specific client capabilities.
@@ -2266,6 +2378,7 @@ class NotebookDocumentSyncClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class NotebookDocumentClientCapabilities(BaseModel):
     """
     Capabilities specific to the notebook document support.
@@ -2280,6 +2393,7 @@ class NotebookDocumentClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class MessageActionItemProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#window_showMessageRequest
@@ -2291,6 +2405,7 @@ class MessageActionItemProperty(BaseModel):
     """
 
     model_config = base_config
+
 
 class ShowMessageRequestClientCapabilities(BaseModel):
     """
@@ -2306,6 +2421,7 @@ class ShowMessageRequestClientCapabilities(BaseModel):
 
     model_config = base_config
 
+
 class ShowDocumentClientCapabilities(BaseModel):
     """
     Client capabilities for the show document request.
@@ -2315,6 +2431,7 @@ class ShowDocumentClientCapabilities(BaseModel):
 
     support: bool
     """The client has support for the show document request."""
+
 
 class WindowProperty(BaseModel):
     """
@@ -2335,6 +2452,7 @@ class WindowProperty(BaseModel):
 
     model_config = base_config
 
+
 class StaleRequestSupportProperty(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
@@ -2350,6 +2468,7 @@ class StaleRequestSupportProperty(BaseModel):
     """
 
     model_config = base_config
+
 
 class GeneralProperty(BaseModel):
     """
@@ -2369,6 +2488,7 @@ class GeneralProperty(BaseModel):
     """The position encodings supported by the client."""
 
     model_config = base_config
+
 
 class ClientCapabilities(BaseModel):
     """
@@ -2396,6 +2516,7 @@ class ClientCapabilities(BaseModel):
     """Experimental client capabilities."""
 
     model_config = base_config
+
 
 class InitializeParams(WorkDoneProgressParams, BaseModel):
     """
@@ -2468,6 +2589,7 @@ class InitializeParams(WorkDoneProgressParams, BaseModel):
     """
 
     model_config = base_config
+
 
 class SetTraceParams(BaseModel):
     """

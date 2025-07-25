@@ -17,6 +17,8 @@ def test_ls_lifecycle_start(mute_ls: FakeLanguageServer):
 
 
 failing_methods = ["m_initialized", "m_shutdown", "m_exit", "m_invalid_request_at_start"]
+
+
 @pytest.mark.parametrize("method", failing_methods)
 def test_ls_non_initialize(mute_ls: FakeLanguageServer, method: str):
     method_fn = getattr(mute_ls, method)

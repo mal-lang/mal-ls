@@ -17,9 +17,11 @@ class EndOfLine(StrEnum):
 
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocuments
     """
+
     NL = "\n"
     CRNL = "\r\n"
     CR = "\r"
+
 
 class PositionEncodingKind(StrEnum):
     """
@@ -89,6 +91,7 @@ class CompletionItemTag(IntEnum):
 
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemTag
     """
+
     Deprecated = 1
     """Render a completion as obsolete, usually using a strike-out."""
 
@@ -170,6 +173,7 @@ class ResourceOperationKind(StrEnum):
     Delete = "delete"
     """Supports deleting existing files and folders."""
 
+
 class FailureHandlingKind(StrEnum):
     """
     The failure handling strategy of a client if applying the workspace edit fails.
@@ -201,6 +205,7 @@ class FailureHandlingKind(StrEnum):
     The client tries to undo the operations already executed. But there is no guarantee that this
     is succeeding.
     """
+
 
 class TraceValue(StrEnum):
     """

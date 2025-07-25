@@ -60,8 +60,8 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
         help="Port to bind the TCP server to (default: 8080).",
     )
 
-    mode_group.add_argument('--stdio', action='store_true', help="Use stdio")
-    mode_group.add_argument('--tcp', action='store_true', help="Use TCP mode")
+    mode_group.add_argument("--stdio", action="store_true", help="Use stdio")
+    mode_group.add_argument("--tcp", action="store_true", help="Use TCP mode")
 
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")
@@ -90,8 +90,10 @@ def fileio(args: argparse.Namespace):
     out_file = open(args.out_file_path, "wb") if args.out_file_path else sys.stdout.buffer
     return in_file, out_file
 
+
 def uses_tcpsocket(args: argparse.Namespace) -> bool:
     return bool(args.tcp or args.host or args.port)
+
 
 def tcpsocket(args: argparse.Namespace):
     host = args.host if args.host else "localhost"
@@ -105,14 +107,15 @@ def tcpsocket(args: argparse.Namespace):
     server_socket.listen(1)
 
     # blocks until a client connects
-    conn, addr = server_socket.accept() 
+    conn, addr = server_socket.accept()
 
     # get file-like objects from the socket
     # this allows your existing server to work with TCP sockets
-    in_stream = conn.makefile('rb')
-    out_stream = conn.makefile('wb')
+    in_stream = conn.makefile("rb")
+    out_stream = conn.makefile("wb")
 
     return in_stream, out_stream
+
 
 def configure_logging(args: argparse.Namespace) -> None:
     root_logger = logging.root

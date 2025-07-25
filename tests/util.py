@@ -49,14 +49,17 @@ class FakeLanguageServer(MALLSPServer):
         kwargs.setdefault("EndpointClass", FakeEndpoint)
         super().__init__(*args, **kwargs)
 
+
 # wait for most 5s (arbitrary)
-MAX_TIMEOUT=2
+MAX_TIMEOUT = 2
+
 
 class SteppedBytesIO(io.BytesIO):
     """
     SteppedBytesIO provide a way to stop the closing of the IO N-1 times, closing on the Nth time.
     """
-    def __init__(self, initial_bytes: bytes = b'', steps: int = 1):
+
+    def __init__(self, initial_bytes: bytes = b"", steps: int = 1):
         self.steps = steps
 
     def close(self):
@@ -65,12 +68,14 @@ class SteppedBytesIO(io.BytesIO):
         else:
             self.steps -= 1
 
+
 # TODO: create fake endpoint class (or similar) so the input can be stepped
+
 
 # https://github.com/python-lsp/python-lsp-server/blob/develop/pylsp/python_lsp.py#L58
 def server_output(
-        input: typing.BinaryIO,
-        timeout: float | None = MAX_TIMEOUT) -> typing.Tuple[typing.BinaryIO, MALLSPServer, TimeoutError | None]:
+    input: typing.BinaryIO, timeout: float | None = MAX_TIMEOUT
+) -> typing.Tuple[typing.BinaryIO, MALLSPServer, TimeoutError | None]:
     intermediary = SteppedBytesIO()
     ls = MALLSPServer(input, intermediary)
     time_out_err = None
