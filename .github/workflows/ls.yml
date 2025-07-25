@@ -15,6 +15,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup environment
+        # Actions use only the folder name (with an action.yml inside)
+        # https://github.com/orgs/community/discussions/26245#discussioncomment-5962450
+        # https://docs.github.com/en/actions/tutorials/creating-a-composite-action#creating-an-action-metadata-file
         uses: ./.github/actions/py-setup
 
       - name: Run tests
@@ -31,6 +34,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup environment
+        # Actions use only the folder name (with an action.yml inside)
+        # https://github.com/orgs/community/discussions/26245#discussioncomment-5962450
+        # https://docs.github.com/en/actions/tutorials/creating-a-composite-action#creating-an-action-metadata-file
         uses: ./.github/actions/py-setup
 
       - name: Run lint check
@@ -43,6 +49,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup environment
+        # Actions use only the folder name (with an action.yml inside)
+        # https://github.com/orgs/community/discussions/26245#discussioncomment-5962450
+        # https://docs.github.com/en/actions/tutorials/creating-a-composite-action#creating-an-action-metadata-file
         uses: ./.github/actions/py-setup
 
       - name: Run format check
