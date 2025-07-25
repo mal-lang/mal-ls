@@ -20,3 +20,10 @@ jobs:
         # Limit step run-time to 3 minutes
         timeout-minutes: 3
         run: uv run pytest
+  language-server-lint:
+    steps:
+      - name: Setup environment
+        uses: ./.github/workflows/py-setup.yml@language-server-env
+
+      - name: Run lint check
+        run: uv run ruff check
