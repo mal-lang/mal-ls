@@ -21,6 +21,8 @@ jobs:
         timeout-minutes: 3
         run: uv run pytest
   language-server-lint:
+    # Since these don't verify runtime properties the platform doesn't matter, as it does in tests
+    runs-on: ubuntu-latest
     steps:
       - name: Setup environment
         uses: ./.github/workflows/py-setup.yml@language-server-env
@@ -28,6 +30,8 @@ jobs:
       - name: Run lint check
         run: uv run ruff check
   language-server-format:
+    # Since these don't verify runtime properties the platform doesn't matter, as it does in tests
+    runs-on: ubuntu-latest
     steps:
       - name: Setup environment
         uses: ./.github/workflows/py-setup.yml@language-server-env
