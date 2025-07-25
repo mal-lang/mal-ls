@@ -10,7 +10,9 @@ runs:
         enable-cache: true
 
     - name: Update uv.lock (if needed)
+      shell: bash
       run: uv lock
 
     - name: Install the project
+      shell: bash
       run: uv sync --locked --all-extras --dev
