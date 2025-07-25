@@ -12,13 +12,15 @@ from ..util import get_lsp_json
 log = logging.getLogger(__name__)
 
 # wait for most 5s (arbitrary)
-MAX_TIMEOUT=2
+MAX_TIMEOUT = 2
+
 
 class SteppedBytesIO(io.BytesIO):
     """
     SteppedBytesIO provide a way to stop the closing of the IO N-1 times, closing on the Nth time.
     """
-    def __init__(self, initial_bytes: bytes = b'', steps: int = 1):
+
+    def __init__(self, initial_bytes: bytes = b"", steps: int = 1):
         self.steps = steps
 
     def close(self):
@@ -27,12 +29,14 @@ class SteppedBytesIO(io.BytesIO):
         else:
             self.steps -= 1
 
+
 # TODO: create fake endpoint class (or similar) so the input can be stepped
+
 
 # https://github.com/python-lsp/python-lsp-server/blob/develop/pylsp/python_lsp.py#L58
 def server_output(
-        input: typing.BinaryIO,
-        timeout: float | None = MAX_TIMEOUT) -> typing.Tuple[typing.BinaryIO, MALLSPServer, TimeoutError | None]:
+    input: typing.BinaryIO, timeout: float | None = MAX_TIMEOUT
+) -> typing.Tuple[typing.BinaryIO, MALLSPServer, TimeoutError | None]:
     intermediary = SteppedBytesIO()
     ls = MALLSPServer(input, intermediary)
     time_out_err = None
@@ -53,32 +57,31 @@ def server_output(
     return intermediary, ls, time_out_err
 
 
-def test_correct_base_lifecycle(
-        init_exit_in: typing.BinaryIO,
-        init_exit_out: typing.BinaryIO):
+def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_out: typing.BinaryIO):
     output, *_ = server_output(init_exit_in)
 
     assert output.getvalue() == init_exit_out.read()
     output.close()
 
-def test_pre_initialized_exit_does_not_change_state(
-        pre_initialized_exit_in: typing.BinaryIO):
+
+def test_pre_initialized_exit_does_not_change_state(pre_initialized_exit_in: typing.BinaryIO):
     output, ls, *_ = server_output(pre_initialized_exit_in)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
 
+
 def test_pre_initialized_shutdown_does_not_change_state(
-        pre_initialized_shutdown_in: typing.BinaryIO):
+    pre_initialized_shutdown_in: typing.BinaryIO,
+):
     output, ls, *_ = server_output(pre_initialized_shutdown_in)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
 
-def test_pre_initialized_shutdown_errs(
-        pre_initialized_shutdown_in: typing.BinaryIO):
-    output, ls, *_ = server_output(pre_initialized_shutdown_in)
 
+def test_pre_initialized_shutdown_errs(pre_initialized_shutdown_in: typing.BinaryIO):
+    output, ls, *_ = server_output(pre_initialized_shutdown_in)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
@@ -88,6 +91,6 @@ def test_pre_initialized_shutdown_errs(
     assert "capabilities" in response["result"]
 
     response = get_lsp_json(output)
-    assert response['error']['code'] == ErrorCodes.InvalidRequest
+    assert response["error"]["code"] == ErrorCodes.InvalidRequest
 
     output.close()

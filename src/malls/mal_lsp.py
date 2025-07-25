@@ -1,29 +1,27 @@
 import logging
 import typing
 
+import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
+from tree_sitter import Language
 
-from tree_sitter import *
-import tree_sitter_mal as ts_mal
-
-from .lsp.enums import ErrorCodes, TraceValue, PositionEncodingKind
+from .lsp import enums, models
+from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-
-from .lsp import models, enums
-
-from .ts.utils import query_and_compare_scope_pos, compare_points
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
+
 
 class MALLSPException(Exception):
     def __init__(self, code, message):
         self.code = code
         self.error_msg = message
         super().__init__(f"Error {code}: {message}")
+
 
 def start_fileio_server(in_file: typing.BinaryIO, out_file: typing.BinaryIO) -> None:
     log.info("Starting MAL IO language server.")
@@ -65,15 +63,13 @@ class MALLSPServer(MethodDispatcher):
         # encoding
         #
         # TODO decide which encoding to choose
-        if (PositionEncodingKind.UTF16 in encodings):
+        if PositionEncodingKind.UTF16 in encodings:
             # TODO change encoding
             # self.__encoding = ???
             pass
 
     # Auxiliary method to process and react to client capabilities
-    def _process_client_capabilities(
-            self,
-            client_capabilities: models.ClientCapabilities) -> None:
+    def _process_client_capabilities(self, client_capabilities: models.ClientCapabilities) -> None:
         if client_capabilities.general:
             general = client_capabilities.general
             if general.position_encodings:
@@ -115,7 +111,7 @@ class MALLSPServer(MethodDispatcher):
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
     def _change_trace_value(self, new_trace_value: enums.TraceValue) -> None:
-        match (new_trace_value):
+        match new_trace_value:
             case enums.TraceValue.Off | enums.TraceValue.Messages | enums.TraceValue.Verbose:
                 self.__trace_value = new_trace_value
             case _:
@@ -145,7 +141,7 @@ class MALLSPServer(MethodDispatcher):
                 "serverInfo": {"name": "mal-ls"},
             }
         except MALLSPException as e:
-            return MALLSPServer.__respond_with_error(e.error_msg,e.code)
+            return MALLSPServer.__respond_with_error(e.error_msg, e.code)
 
     def m_initialized(self, *args, **kwargs) -> None:
         log.debug("Client initialized with parameters %s %s", args, kwargs)
@@ -204,10 +200,10 @@ class MALLSPServer(MethodDispatcher):
     def m_exit(self, **kwargs) -> None:
         # Example of notification message
         # Only notify if traces are on
-        if (self.trace_value != TraceValue.Off):
-            params = {'message':'Exiting language server'}
+        if self.trace_value != TraceValue.Off:
+            params = {"message": "Exiting language server"}
             if self.trace_value == TraceValue.Verbose:
-                params['verbose'] = 'Verbose example'  # placeholder
+                params["verbose"] = "Verbose example"  # placeholder
             self.__endpoint.notify("exit", params)
 
         log.info("Exiting language server.")
@@ -230,4 +226,3 @@ class MALLSPServer(MethodDispatcher):
                 self._change_trace_value(parameters.value)
             finally:
                 return
-
