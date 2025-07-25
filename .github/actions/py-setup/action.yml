@@ -1,6 +1,7 @@
 name: Language Server Environment Setup
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   language-server-env:
