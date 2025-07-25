@@ -10,7 +10,6 @@ def run_query(node: Node, query: Query):
     captures = query_cursor.captures(node)
     return captures
 
-
 def compare_points(pointA: Point, pointB: Point):
     """
     Check if pointA is after pointB
@@ -23,7 +22,6 @@ def compare_points(pointA: Point, pointB: Point):
     ):  # same row but bigger column
         return True
     return False
-
 
 def query_and_compare_scope_pos(query_node_type: str, cursor: TreeCursor, point: Point) -> bool:
     """
@@ -43,7 +41,6 @@ def query_and_compare_scope_pos(query_node_type: str, cursor: TreeCursor, point:
 
     start_point = run_query(cursor.node, query)["scope_beginning"][0].start_point
     return compare_points(start_point, point)
-
 
 def find_current_scope(cursor: TreeCursor, point: Point):
     """
@@ -115,3 +112,147 @@ def lsp_to_tree_sitter(text: str, lsp_line: int, lsp_char: int) -> Point:
     byte_offset = len(string_slice.encode('utf-8'))
     
     return Point(lsp_line, byte_offset)
+
+def find_symbols_category_declaration(owner: Node) -> list[str]:
+    '''
+    Given the owner of a scope that is a category declaration, we want to find
+    all symbols in this scope. The only possible identifiers correspond to asset
+    names, so that is what will be queried
+    '''
+
+    query = Query(
+        MAL_LANGUAGE, 
+        """
+        (asset_declaration
+            id: (identifier) @asset_name )
+        """)
+
+    # query and save the node's text
+    results = [x.text.decode() for x in run_query(owner, query)['asset_name']]
+
+    # also include relevant keywords in the category scope
+    results.extend([
+        'abstract',
+        'extends',
+        'asset',
+        'info', # for metas
+    ])
+
+    # filter out repeated symbols (e.g. assets with the same name)
+    final_result = []
+    [final_result.append(x) for x in results if x not in final_result]
+
+    return final_result
+
+def find_symbols_associations_declaration(owner: Node) -> list[str]:
+    '''
+    In an associations declaration node, the relevant identifiers are
+    field, associations and asset names. However, asset names should
+    be queried from categories in the current file and extended files,
+    as they are the components where assets are defined. Therefore,
+    the only queried things here are association names and field names.
+    '''
+
+    query = Query(
+        MAL_LANGUAGE, 
+        """
+        (association
+            left_field_id: (identifier) @left_field_name
+            id: (identifier) @association_name
+            right_field_id: (identifier) @right_field_name )
+        """)
+
+    # query and save the node's text
+    captures = run_query(owner, query)
+
+    # add filtered results
+    results = []
+    for key in captures:
+        for symbol in captures[key]:
+            symbol = symbol.text.decode()
+            if symbol not in results: results.append(symbol)
+
+    # also include relevant keywords in the category scope (only meta)
+    results.extend([
+        'info', # for metas
+    ])
+
+    return results
+
+def find_symbols_asset_declaration(owner: Node) -> list[str]:
+    '''
+    Asset declarations can have many symbols, such as in
+    variables, expressions or attack steps. Therefore,
+    the easiest method to find them all is querying for
+    all identifiers at once
+    '''
+
+    # query for identifiers in variable declarations or steps.
+    # to avoid including information in the asset declaration
+    # (like the asset name, extended asset name), we must move
+    # the cursor to the child worth querying - asset_definition.
+    # If this child exists, it must be the last named child
+    if ((child := owner.named_children[-1]).type=='asset_definition'):
+        # If the child exists, query it
+        query = Query(
+            MAL_LANGUAGE, 
+            """
+            (
+                (identifier) @symbol)
+            """)
+
+        # query and save the node's text
+        captures = run_query(child, query)
+
+        # add filtered results
+        results = []
+        for key in captures:
+            for symbol in captures[key]:
+                symbol = symbol.text.decode()
+                if symbol not in results: results.append(symbol)
+
+    # also include relevant keywords in the category scope
+    # TODO should we recommend probability distributions (TTC)
+    results.extend([
+        'let', # for variables
+        'info', # for metas
+    ])
+
+    return results
+
+def find_symbols_root_node(owner: Node) -> list[str]:
+    '''
+    Root nodes (source files) do not need to recommend any symbols
+    which are user-defined, since there are no variables worth defining
+    at this moment. Therefore, the only relevant keywords are the ones
+    related to association declaration or category declaration.
+    '''
+    return [
+        'category',
+        'info',
+        'associations',
+    ]
+
+def find_symbols_in_current_scope(cursor: TreeCursor, point: Point):
+    '''
+    Given a cursor and a point, we want to find all available symbols in
+    the current scope. Symbols can refer to identifiers, i.e. user-decided
+    strings, that represent components of the language. They can also mean
+    keywords in the MAL language, such as `asset` or `extends`
+
+    A list of all symbols is returned.
+    '''
+
+    # obtain owner of the scope
+    owner = find_current_scope(cursor, point)
+
+    match owner.type:
+        case 'category_declaration':
+            return find_symbols_category_declaration(owner)
+        case 'associations_declaration':
+            return find_symbols_associations_declaration(owner)
+        case 'asset_declaration':
+            return find_symbols_asset_declaration(owner)
+        case _: # defaults to root node
+            return find_symbols_root_node(owner)
+
