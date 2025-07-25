@@ -27,3 +27,10 @@ jobs:
 
       - name: Run lint check
         run: uv run ruff check
+  language-server-format:
+    steps:
+      - name: Setup environment
+        uses: ./.github/workflows/py-setup.yml@language-server-env
+
+      - name: Run format check
+        run: uv run ruff format --check
