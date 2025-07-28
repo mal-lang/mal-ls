@@ -1,0 +1,18 @@
+name: Language Server Environment Setup
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "0.7.20"
+        enable-cache: true
+
+    - name: Update uv.lock (if needed)
+      shell: bash
+      run: uv lock
+
+    - name: Install the project
+      shell: bash
+      run: uv sync --locked --all-extras --dev
