@@ -128,7 +128,7 @@ def find_symbols_category_declaration(owner: Node) -> list[str]:
         """)
 
     # query and save the node's text
-    results = [x.text.decode() for x in run_query(owner, query)['asset_name']]
+    results = [asset_name.text.decode() for asset_name in run_query(owner, query)['asset_name']]
 
     # also include relevant keywords in the category scope
     results.extend([
@@ -173,9 +173,9 @@ def find_symbols_associations_declaration(owner: Node) -> list[str]:
             if symbol not in results: results.append(symbol)
 
     # also include relevant keywords in the category scope (only meta)
-    results.extend([
+    results.append(
         'info', # for metas
-    ])
+    )
 
     return results
 
@@ -187,11 +187,12 @@ def find_symbols_asset_declaration(owner: Node) -> list[str]:
     all identifiers at once
     '''
 
-    # query for identifiers in variable declarations or steps.
-    # to avoid including information in the asset declaration
-    # (like the asset name, extended asset name), we must move
+    # Query for identifiers in variable declarations or steps.
+    # To avoid including information in the asset declaration
+    # (e.g. asset name, extended asset name), we must move
     # the cursor to the child worth querying - asset_definition.
     # If this child exists, it must be the last named child
+    # (this is done for efficiency, instead of going to a named child directly)
     if ((child := owner.named_children[-1]).type=='asset_definition'):
         # If the child exists, query it
         query = Query(
@@ -212,7 +213,7 @@ def find_symbols_asset_declaration(owner: Node) -> list[str]:
                 if symbol not in results: results.append(symbol)
 
     # also include relevant keywords in the category scope
-    # TODO should we recommend probability distributions (TTC)
+    # TODO should we recommend probability distributions (TTC)?
     results.extend([
         'let', # for variables
         'info', # for metas
@@ -233,7 +234,7 @@ def find_symbols_root_node(owner: Node) -> list[str]:
         'associations',
     ]
 
-def find_symbols_in_current_scope(cursor: TreeCursor, point: Point):
+def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> list[str]:
     '''
     Given a cursor and a point, we want to find all available symbols in
     the current scope. Symbols can refer to identifiers, i.e. user-decided
