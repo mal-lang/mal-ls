@@ -1,11 +1,9 @@
 from ..lsp.models import Position
-from tree_sitter import Point
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
 
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
-
 
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
