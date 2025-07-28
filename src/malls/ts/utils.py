@@ -5,12 +5,10 @@ from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
 
-
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
     captures = query_cursor.captures(node)
     return captures
-
 
 def compare_points(pointA: Point, pointB: Point):
     """
@@ -24,7 +22,6 @@ def compare_points(pointA: Point, pointB: Point):
     ):  # same row but bigger column
         return True
     return False
-
 
 def query_and_compare_scope_pos(query_node_type: str, cursor: TreeCursor, point: Point) -> bool:
     """
@@ -44,7 +41,6 @@ def query_and_compare_scope_pos(query_node_type: str, cursor: TreeCursor, point:
 
     start_point = run_query(cursor.node, query)["scope_beginning"][0].start_point
     return compare_points(start_point, point)
-
 
 def find_current_scope(cursor: TreeCursor, point: Point):
     """
