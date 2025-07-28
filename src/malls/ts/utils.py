@@ -266,7 +266,8 @@ def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> list[str]
     '''
 
     # obtain owner of the scope
-    owner = find_current_scope(cursor, point)
+    if not owner:
+        owner = find_current_scope(cursor, point)
 
     match owner.type:
         case 'category_declaration':
@@ -277,4 +278,137 @@ def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> list[str]
             return find_symbols_asset_declaration(owner)
         case _: # defaults to root node
             return find_symbols_root_node(owner)
+
+def find_symbols_in_category_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
+    '''
+    Given a category declaration, we want to find the symbols in the current scope,
+    the children's scope, which are assets, and the parent node (root)
+    '''
+
+    # keep track of used symbols (e.g. avoid repeated 'info')
+    used_symbols = []
+
+    # iterate over the children and get the symbols in the asset declarations, in case there are any
+    child_symbols = []
+    for child in owner.children:
+        if child.type == 'asset_declaration':
+            child_symbols.extend(find_symbols_asset_declaration(child))
+
+    used_symbols = list(set(child_symbols)) # use set to remove duplicates
+    child_scope = (-1,used_symbols)
+
+    # get the current scope's symbols
+    current_symbols = find_symbols_category_declaration(owner)
+    # remove already considered symbols
+    current_symbols_filtered = list(set(current_symbols) - set(used_symbols))
+    current_scope = (0,current_symbols_filtered)
+
+    # finally, get the scope for the parent (root node)
+    parent_symbols = find_symbols_root_node(owner.parent)
+    # remove used symbols
+    parent_symbols_filtered = list(set(parent_symbols) - set(used_symbols))
+    parent_scope = (1, parent_symbols_filtered)
+    
+    return [child_scope, current_scope, parent_scope]
+
+def find_symbols_in_association_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
+    '''
+    The association does not have any children, so we only have to obtain the current scope's
+    symbols and the parent scope's symbols (root node)
+    '''
+    used_symbols = []
+
+    # get the current scope's symbols
+    used_symbols = find_symbols_associations_declaration(owner)
+    current_scope = (0,used_symbols)
+
+    # get the parent scope's symbols
+    parent_symbols = find_symbols_root_node(owner.parent)
+    # remove already considered symbols
+    parent_symbols_filtered = list(set(parent_symbols) - set(used_symbols))
+    parent_scope = (1,parent_symbols_filtered)
+
+    return [current_scope, parent_scope]
+
+def find_symbols_in_asset_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
+    '''
+    An asset does not have any children, so we only have to return the current scope's,
+    parent scope's (category) and parent of parent's (root node) symbols.
+    '''
+
+    used_symbols = []
+
+    # get the current scope's symbols
+    used_symbols = find_symbols_asset_declaration(owner)
+    current_scope = (0,used_symbols)
+
+    # get the parent scope's symbols (category)
+    parent_symbols = find_symbols_category_declaration(owner.parent)
+    # remove already considered symbols
+    parent_symbols_filtered = list(set(parent_symbols) - set(used_symbols))
+    parent_scope = (1,parent_symbols_filtered)
+
+    # get the parent of the parent scope's symbols (root node)
+    parent_of_parent_symbols = find_symbols_root_node(owner.parent.parent)
+    # remove already considered symbols
+    parent_of_parent_symbols_filtered = list(set(parent_of_parent_symbols) - set(used_symbols))
+    parent_of_parent_scope = (2,parent_of_parent_symbols_filtered)
+
+    return [current_scope, parent_scope, parent_of_parent_scope]
+
+def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
+    '''
+    Root node only has children, so we have to get their symbols. For that, we will
+    have to iterate over all categories and get their hierarchy symbols and the 
+    associations symbols
+    '''
+
+    # current node's symbols
+    used_symbols = find_symbols_root_node(owner)
+    current_scope = (0,used_symbols)
+
+    # iterate over categories and associations to get their symbols
+    child_symbols = []
+    child_of_child_symbols = []
+    for child in owner.children:
+        if child.type == 'category_declaration':
+            # The results come in the following order:
+            # asset symbols, category symbols, root node symbols
+            #
+            # Obviously, we only want the first two, as the last corresponds
+            # to the current node's symbols
+            current_child_symbols, current_child_of_child_symbols, _ = find_symbols_in_category_hierarchy(child)
+            # remove repeated and save them
+            child_symbols.extend(list(set(current_child_symbols) - set(child_symbols)))
+            child_of_child_symbols.extend(list(set(current_child_of_child_symbols) - set(child_of_child_symbols)))
+        elif child.type == 'associations_declaration':
+            # when it comes to associations, we can consider only the symbols in that scope,
+            # since associations do not have children
+            current_child_symbols = find_symbols_associations_declaration(child)
+            # remove repeated and save
+            child_symbols.extend(list(set(current_child_symbols) - set(child_symbols)))
+
+    child_scope = (-1,child_symbols)
+    child_of_child_scope = (-2,child_of_child_symbols)
+
+    return [child_of_child_scope, child_scope, current_scope]
+
+def find_symbols_in_context_hiearchy(cursor: TreeCursor, point: Point) -> list[tuple[int,str]]:
+    '''
+    This function aims to return the symbols in the hierarchy. This means finding the symbols
+    in parents and children.
+    '''
+
+    # Firstly, obtain the owner of the scope
+    owner = find_current_scope(cursor, point)
+
+    match owner.type:
+        case 'find_symbols_in_category_hierarchy':
+            return find_symbols_in_category_hierarchy(owner)
+        case 'find_symbols_in_association_hierarchy':
+            return find_symbols_in_association_hierarchy(owner)
+        case 'find_symbols_in_asset_hierarchy':
+            return find_symbols_in_asset_hierarchy(owner)
+        case _: # defaults to root node
+            return find_symbols_root_node_hierarchy(owner)
 
