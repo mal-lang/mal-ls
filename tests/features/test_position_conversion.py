@@ -15,7 +15,7 @@ def test_ascii_chars_only():
     assert lsp_to_tree_sitter_position(text, position) == (0,6)
 
 def test_with_emoji():
-    text = 'a🚀b' # emoji takes 2 UTF-16 characters, 4 bytes
+    text = 'a🚀b' # emoji takes 2 UTF-16 characters, so the emoji is 4 bytes
 
     # a  🚀   b
     # 0  1 2  3
