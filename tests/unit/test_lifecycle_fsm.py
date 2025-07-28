@@ -2,9 +2,11 @@ import pytest
 
 from malls.lsp.fsm import STATES, LifecycleFSM, State
 
+
 @pytest.fixture
 def fsm() -> LifecycleFSM:
     return LifecycleFSM()
+
 
 def test_initial_state_is_start(fsm: LifecycleFSM):
     assert fsm.current_state == State.START
