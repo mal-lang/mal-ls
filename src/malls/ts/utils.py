@@ -129,13 +129,11 @@ def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
     
     # return to unicode
     string_slice = utf16_slice.decode('utf-16')
->>>>>>> 3c5ddac58693551a2c7886f90d8851502fc59a72
     
     # Encode the string slice to UTF-8 and get its byte length
     byte_offset = len(string_slice.encode('utf-8'))
     
     return Point(lsp_line, byte_offset)
-<<<<<<< HEAD
 
 def find_symbols_category_declaration(owner: Node) -> list[str]:
     '''
