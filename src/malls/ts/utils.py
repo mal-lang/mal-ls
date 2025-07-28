@@ -1,3 +1,5 @@
+from ..lsp.models import Position
+from tree_sitter import Point
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
 
@@ -90,28 +92,50 @@ def find_current_scope(cursor: TreeCursor, point: Point):
 
     return owner
 
-def lsp_to_tree_sitter(text: str, lsp_line: int, lsp_char: int) -> Point:
+
+def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
     """
     Converts an LSP position (UTF-16 character index) to a Tree-sitter position (UTF-8 byte offset).
     """
+    lsp_line, lsp_char = pos.line, pos.character
+    
     lines = text.splitlines(keepends=True)
     
     # Get correct line
     line_text = lines[lsp_line]
     
-    # Convert to UTF-16 little endian (each UTF-16 code unit is 2 bytes)
-    line_utf16 = line_text.encode('utf-16-le')
+    # The idea is to conver the string to UTF-16.
+    # Since UTF-16 characters correspond to 2 bytes,
+    # if we multiply the character position by 2
+    # and then encode back to UTF-8, we effectively
+    # cut back to the byte number
+
+    # Convert to UTF-16 (each UTF-16 code unit is 2 bytes)
+    # https://en.wikipedia.org/wiki/UTF-16#Byte-order_encoding_schemes
+    line_utf16 = line_text.encode('utf-16')
+
+    # check for BOM
+    bom_size = 0
+    if line_utf16.startswith(b'\xff\xfe') or line_utf16.startswith(b'\xfe\xff'):
+        bom_size = 2
     
     # lsp_char * 2 gives us the byte offset in the UTF-16 string
-    utf16_slice = line_utf16[:lsp_char * 2]
+    # UTF-16 chars are 2 bytes long
+    # We need to take into account possible BOM
+    #
+    # lsp_char refers to the position according to the source encoding,
+    # decided by the server and client. For now, it is only UTF-16
+    utf16_slice = line_utf16[bom_size:bom_size + lsp_char * 2]
     
     # return to unicode
-    string_slice = utf16_slice.decode('utf-16-le')
+    string_slice = utf16_slice.decode('utf-16')
+>>>>>>> 3c5ddac58693551a2c7886f90d8851502fc59a72
     
     # Encode the string slice to UTF-8 and get its byte length
     byte_offset = len(string_slice.encode('utf-8'))
     
     return Point(lsp_line, byte_offset)
+<<<<<<< HEAD
 
 def find_symbols_category_declaration(owner: Node) -> list[str]:
     '''
