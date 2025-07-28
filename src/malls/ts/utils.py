@@ -92,7 +92,6 @@ def find_current_scope(cursor: TreeCursor, point: Point):
 
     return owner
 
-
 def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
     """
     Converts an LSP position (UTF-16 character index) to a Tree-sitter position (UTF-8 byte offset).
