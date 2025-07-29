@@ -5,6 +5,30 @@ from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
 
+# Pre-made queries
+FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY = Query(
+        MAL_LANGUAGE, 
+        """
+        (asset_declaration
+            id: (identifier) @asset_name )
+        """)
+
+FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
+        MAL_LANGUAGE, 
+        """
+        (association
+            left_field_id: (identifier) @left_field_name
+            id: (identifier) @association_name
+            right_field_id: (identifier) @right_field_name )
+        """)
+
+FIND_SYMBOLS_ASSET_DECLARATION_QUERY = Query(
+            MAL_LANGUAGE, 
+            """
+            (
+                (identifier) @symbol)
+            """)
+
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
     captures = query_cursor.captures(node)
@@ -132,38 +156,32 @@ def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
     
     return Point(lsp_line, byte_offset)
 
-def find_symbols_category_declaration(owner: Node) -> list[str]:
+def find_symbols_category_declaration(owner: Node) -> (list[str], list[str]):
     '''
     Given the owner of a scope that is a category declaration, we want to find
     all symbols in this scope. The only possible identifiers correspond to asset
     names, so that is what will be queried
     '''
 
-    query = Query(
-        MAL_LANGUAGE, 
-        """
-        (asset_declaration
-            id: (identifier) @asset_name )
-        """)
+    # save the cursor (to have child index)
+    cursor = owner.walk()
 
     # query and save the node's text
-    results = [asset_name.text.decode() for asset_name in run_query(owner, query)['asset_name']]
+    user_symbols = set()
+    for asset_node in run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)['asset_name']:
+        user_symbols.add(asset_node.text.decode())
 
     # also include relevant keywords in the category scope
-    results.extend([
+    keywords = [
         'abstract',
         'extends',
         'asset',
         'info', # for metas
-    ])
+    ]
 
-    # filter out repeated symbols (e.g. assets with the same name)
-    final_result = []
-    [final_result.append(x) for x in results if x not in final_result]
+    return (list(user_symbols),keywords)
 
-    return final_result
-
-def find_symbols_associations_declaration(owner: Node) -> list[str]:
+def find_symbols_associations_declaration(owner: Node) -> (list[str], list[str]):
     '''
     In an associations declaration node, the relevant identifiers are
     field, associations and asset names. However, asset names should
@@ -172,33 +190,23 @@ def find_symbols_associations_declaration(owner: Node) -> list[str]:
     the only queried things here are association names and field names.
     '''
 
-    query = Query(
-        MAL_LANGUAGE, 
-        """
-        (association
-            left_field_id: (identifier) @left_field_name
-            id: (identifier) @association_name
-            right_field_id: (identifier) @right_field_name )
-        """)
-
     # query and save the node's text
-    captures = run_query(owner, query)
+    captures = run_query(owner, FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY)
 
     # add filtered results
-    results = []
+    user_symbols = set()
     for key in captures:
         for symbol in captures[key]:
-            symbol = symbol.text.decode()
-            if symbol not in results: results.append(symbol)
+            user_symbols.add(symbol.text.decode())
 
     # also include relevant keywords in the category scope (only meta)
-    results.append(
+    keywords = [
         'info', # for metas
-    )
+    ]
 
-    return results
+    return (list(user_symbols),keywords)
 
-def find_symbols_asset_declaration(owner: Node) -> list[str]:
+def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
     '''
     Asset declarations can have many symbols, such as in
     variables, expressions or attack steps. Therefore,
@@ -212,48 +220,40 @@ def find_symbols_asset_declaration(owner: Node) -> list[str]:
     # the cursor to the child worth querying - asset_definition.
     # If this child exists, it must be the last named child
     # (this is done for efficiency, instead of going to a named child directly)
+    user_symbols = set()
     if ((child := owner.named_children[-1]).type=='asset_definition'):
         # If the child exists, query it
-        query = Query(
-            MAL_LANGUAGE, 
-            """
-            (
-                (identifier) @symbol)
-            """)
-
         # query and save the node's text
-        captures = run_query(child, query)
+        captures = run_query(child, FIND_SYMBOLS_ASSET_DECLARATION_QUERY)
 
         # add filtered results
-        results = []
         for key in captures:
             for symbol in captures[key]:
-                symbol = symbol.text.decode()
-                if symbol not in results: results.append(symbol)
+                user_symbols.add(symbol.text.decode())
 
     # also include relevant keywords in the category scope
     # TODO should we recommend probability distributions (TTC)?
-    results.extend([
+    keywords = [
         'let', # for variables
         'info', # for metas
-    ])
+    ]
 
-    return results
+    return (list(user_symbols), keywords)
 
-def find_symbols_root_node(owner: Node) -> list[str]:
+def find_symbols_root_node(owner: Node) -> (list[str], list[str]):
     '''
     Root nodes (source files) do not need to recommend any symbols
     which are user-defined, since there are no variables worth defining
     at this moment. Therefore, the only relevant keywords are the ones
     related to association declaration or category declaration.
     '''
-    return [
+    return ([], [
         'category',
         'info',
         'associations',
-    ]
+    ])
 
-def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> list[str]:
+def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> (list[str], list[str]):
     '''
     Given a cursor and a point, we want to find all available symbols in
     the current scope. Symbols can refer to identifiers, i.e. user-decided
