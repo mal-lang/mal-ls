@@ -25,6 +25,7 @@ FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
             left_field_id: (identifier) @left_field_name
             id: (identifier) @association_name
             right_field_id: (identifier) @right_field_name )
+            ( (meta) @meta)
         """)
 
 FIND_SYMBOLS_ASSET_DECLARATION_QUERY = Query(
@@ -211,14 +212,13 @@ def find_symbols_associations_declaration(owner: Node) -> (list[str], list[str])
 
     # add filtered results
     user_symbols = set()
+    keywords = []
     for key in captures:
+        if key=="meta":
+            keywords = ['info']
+            continue
         for symbol in captures[key]:
             user_symbols.add(symbol.text.decode())
-
-    # also include relevant keywords in the category scope (only meta)
-    keywords = [
-        'info', # for metas
-    ]
 
     return (list(user_symbols),keywords)
 
