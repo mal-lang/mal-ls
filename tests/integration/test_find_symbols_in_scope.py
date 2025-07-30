@@ -16,12 +16,12 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
     user_symbols = [
         "Asset1",
         "Asset2",
+        'Asset3',
     ]
     keywords = [
         "extends",
         "abstract",
         "asset",
-        "info",
     ]
 
     # we use sets to ensure order does not matter

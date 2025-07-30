@@ -3,13 +3,13 @@
 
 category Example {
 
-    asset Asset1 
+    abstract asset Asset1 
     {
       let var = c
         | compromise
         -> var.destroy
     }
-    asset Asset2 
+    asset Asset2 extends Asset3
     {
         | destroy
     }

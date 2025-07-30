@@ -10,7 +10,12 @@ FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY = Query(
         MAL_LANGUAGE, 
         """
         (asset_declaration
-            id: (identifier) @asset_name )
+            ("abstract" @abstract)*
+            "asset"
+            id: (identifier) @asset_name 
+            ("extends" (identifier) @extends)*
+            ( (meta) @meta)*
+        )
         """)
 
 FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
@@ -166,18 +171,29 @@ def find_symbols_category_declaration(owner: Node) -> (list[str], list[str]):
     # save the cursor (to have child index)
     cursor = owner.walk()
 
-    # query and save the node's text
-    user_symbols = set()
-    for asset_node in run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)['asset_name']:
+    # query
+    captures = run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)
+
+    if not captures: # if nothing was found, then there are no symbols
+        return ([], [])
+
+    user_symbols, keywords = set(), ['asset'] # otherwise, there are assets defined
+
+    # save defined assets
+    for asset_node in captures['asset_name']:
         user_symbols.add(asset_node.text.decode())
 
-    # also include relevant keywords in the category scope
-    keywords = [
-        'abstract',
-        'extends',
-        'asset',
-        'info', # for metas
-    ]
+    # if there are extends, we want to save the extended asset name and keyword
+    if 'extends' in captures:
+        keywords.append('extends')
+        for extends_node in captures['extends']:
+            user_symbols.add(extends_node.text.decode())
+
+    # include abstract if it exists
+    if 'abstract' in captures: keywords.append('abstract')
+
+    # include meta if it exists
+    if 'meta' in captures: keywords.append('info')
 
     return (list(user_symbols),keywords)
 
