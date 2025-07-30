@@ -31,8 +31,11 @@ FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
 FIND_SYMBOLS_ASSET_DECLARATION_QUERY = Query(
             MAL_LANGUAGE, 
             """
-            (
-                (identifier) @symbol)
+                [
+                    ("let" @var)
+                    ((identifier) @symbol)
+                    ((meta) @meta)
+                ]
             """)
 
 def run_query(node: Node, query: Query):
@@ -237,6 +240,7 @@ def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
     # If this child exists, it must be the last named child
     # (this is done for efficiency, instead of going to a named child directly)
     user_symbols = set()
+    keywords = []
     if ((child := owner.named_children[-1]).type=='asset_definition'):
         # If the child exists, query it
         # query and save the node's text
@@ -244,15 +248,16 @@ def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
 
         # add filtered results
         for key in captures:
+            if key == "var":
+                keywords.append("let")
+                continue
+            if key == 'meta':
+                keywords.append("info")
+                continue
             for symbol in captures[key]:
                 user_symbols.add(symbol.text.decode())
 
-    # also include relevant keywords in the category scope
     # TODO should we recommend probability distributions (TTC)?
-    keywords = [
-        'let', # for variables
-        'info', # for metas
-    ]
 
     return (list(user_symbols), keywords)
 

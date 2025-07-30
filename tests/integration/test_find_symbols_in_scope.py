@@ -70,7 +70,6 @@ def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
     ]
     keywords = [
         "let",
-        "info",
     ]
 
     # we use sets to ensure order does not matter
@@ -90,8 +89,6 @@ def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
         "destroy",
     ]
     keywords = [
-        "let",
-        "info",
     ]
 
     # we use sets to ensure order does not matter
