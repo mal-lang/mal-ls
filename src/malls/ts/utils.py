@@ -5,6 +5,12 @@ from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
 
+INCLUDED_FILES_QUERY = Query(MAL_LANGUAGE,
+        """
+            (include_declaration 
+            file: (string) @file_name)
+        """)
+
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
     captures = query_cursor.captures(node)
