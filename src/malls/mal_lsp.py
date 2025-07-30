@@ -55,6 +55,8 @@ class MALLSPServer(MethodDispatcher):
         # By default, the value is Off
         self.__trace_value = TraceValue.Off
 
+        self.__files = {}
+
     def start(self) -> None:
         """Starts the language server."""
         log.info("Starting MAL LSP language server.")
@@ -112,6 +114,9 @@ class MALLSPServer(MethodDispatcher):
     @property
     def trace_value(self) -> TraceValue:
         return self.__trace_value
+
+    def files(self) -> dict:
+        return self.__files
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
@@ -237,11 +242,11 @@ class MALLSPServer(MethodDispatcher):
         Auxiliary method to convert file:// URI back to filesystem path
         """
 
-        parsed = urlparse(uri)
+        parsed = urlparse(uri).path
 
         if os.name=='nt': # handle Windows
-            path = path[1:]
-        return path
+            parsed = parsed[1:]
+        return parsed
 
     def _recursive_parsing(self, uri_prec: str, captures: dict) -> None:
         '''
@@ -281,7 +286,7 @@ class MALLSPServer(MethodDispatcher):
 
         return
 
-    def m___did_open_text_document(self, **params: dict | None) -> None:
+    def m_text_document__did_open(self, **params: dict | None) -> None:
         '''
         This function will handle the notification that a new text document
         was open. For that, we must parse the given file and included files
@@ -298,7 +303,7 @@ class MALLSPServer(MethodDispatcher):
             return
 
         # otherwise, parse it
-        source_encoded = source.encode()
+        source_encoded = doc_text.encode()
         tree = PARSER.parse(source_encoded)
 
         # The given file might include other files, which must also
@@ -306,7 +311,10 @@ class MALLSPServer(MethodDispatcher):
         # queried
 
         # obtain general URI of files
-        path_prec = uri.rsplit('/',1)[0]+"/"
+        path_prec = doc_uri.rsplit('/',1)[0]+"/"
+
+        # save parsed file
+        self.__files[doc_uri] = tree
 
         # obtain the included files
         root_node = tree.root_node
