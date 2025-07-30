@@ -28,6 +28,14 @@ for directory, _, files in os.walk("tests/fixtures"):
         # Get full path of file so its usable by `open`
         file_path = os.path.join(directory, file_name)
 
+        def open_fixture_for_writing(file: str):
+            def template() -> typing.BinaryIO:
+                """Opens a fixture in (a)append and read (+) (b)inary mode"""
+
+                with open(file, "r+b") as file_descriptor:
+                    yield file_descriptor
+            return template
+
         def open_fixture_file(file: str):
             def template() -> typing.BinaryIO:
                 """Opens a fixture in (r)ead (b)inary mode. See `open` for more details."""
@@ -40,7 +48,7 @@ for directory, _, files in os.walk("tests/fixtures"):
         open_fixture_file.__doc__ = open.__doc__
 
         # Define the fixture from `open_file` on `file_path` as `fixture_name`
-        fixture = pytest.fixture(fixture_function=open_fixture_file(file_path), name=fixture_name)
+        fixture = pytest.fixture(fixture_function=open_fixture_file(file_path) if directory!='tests/fixtures/writeable_fixtures' else open_fixture_for_writing(file_path), name=fixture_name)
 
         # Bind `fixture` as `fixture_name` inside this module so it gets exported
         setattr(module, fixture_name, fixture)
