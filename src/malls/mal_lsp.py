@@ -259,6 +259,8 @@ class MALLSPServer(MethodDispatcher):
 
             if file_name in self.__files:
                 continue
+            if not Path(file_name).exists():
+                continue # file has not been created yet, so we just ignore it
 
             # otherwise, parse it
             with open(file_name,"rb") as file:
