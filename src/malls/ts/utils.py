@@ -201,7 +201,7 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
 
     return (user_symbols,keywords)
 
-def find_symbols_associations_declaration(owner: Node) -> (list[str], list[str]):
+def find_symbols_associations_declaration(owner: Node) -> (dict, dict):
     '''
     In an associations declaration node, the relevant identifiers are
     field, associations and asset names. However, asset names should
@@ -214,16 +214,16 @@ def find_symbols_associations_declaration(owner: Node) -> (list[str], list[str])
     captures = run_query(owner, FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY)
 
     # add filtered results
-    user_symbols = set()
-    keywords = []
+    user_symbols = {}
+    keywords = {}
     for key in captures:
         if key=="meta":
-            keywords = ['info']
+            keywords['info'] = captures[key][0]
             continue
-        for symbol in captures[key]:
-            user_symbols.add(symbol.text.decode())
+        for symbol_node in captures[key]:
+            user_symbols[symbol_node.text.decode()] = symbol_node
 
-    return (list(user_symbols),keywords)
+    return (user_symbols,keywords)
 
 def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
     '''
