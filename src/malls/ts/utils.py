@@ -165,7 +165,7 @@ def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
     
     return Point(lsp_line, byte_offset)
 
-def find_symbols_category_declaration(owner: Node) -> (list[str], list[str]):
+def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     '''
     Given the owner of a scope that is a category declaration, we want to find
     all symbols in this scope. The only possible identifiers correspond to asset
@@ -179,27 +179,27 @@ def find_symbols_category_declaration(owner: Node) -> (list[str], list[str]):
     captures = run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)
 
     if not captures: # if nothing was found, then there are no symbols
-        return ([], [])
+        return ({}, {})
 
-    user_symbols, keywords = set(), ['asset'] # otherwise, there are assets defined
+    user_symbols, keywords = {}, {'asset': captures['asset_name'][0]} # otherwise, there are assets defined
 
     # save defined assets
     for asset_node in captures['asset_name']:
-        user_symbols.add(asset_node.text.decode())
+        user_symbols[asset_node.text.decode()] = asset_node
 
     # if there are extends, we want to save the extended asset name and keyword
     if 'extends' in captures:
-        keywords.append('extends')
+        keywords['extends'] = captures['extends'][0] # we want to store where we found the keyword
         for extends_node in captures['extends']:
-            user_symbols.add(extends_node.text.decode())
+            user_symbols[extends_node.text.decode()] = extends_node
 
     # include abstract if it exists
-    if 'abstract' in captures: keywords.append('abstract')
+    if 'abstract' in captures: keywords['abstract'] = captures['abstract'][0]
 
     # include meta if it exists
-    if 'meta' in captures: keywords.append('info')
+    if 'meta' in captures: keywords['info'] = captures['info'][0]
 
-    return (list(user_symbols),keywords)
+    return (user_symbols,keywords)
 
 def find_symbols_associations_declaration(owner: Node) -> (list[str], list[str]):
     '''
