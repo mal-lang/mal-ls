@@ -399,35 +399,39 @@ def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     associations symbols
     '''
 
+    symbols = {}
+
     # current node's symbols
-    used_symbols = find_symbols_root_node(owner)
-    current_scope = (0,used_symbols)
+    current_results = find_symbols_root_node(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
 
     # iterate over categories and associations to get their symbols
-    child_symbols = []
-    child_of_child_symbols = []
     for child in owner.children:
         if child.type == 'category_declaration':
-            # The results come in the following order:
+            # The results come in the following order with
             # asset symbols, category symbols, root node symbols
             #
             # Obviously, we only want the first two, as the last corresponds
             # to the current node's symbols
-            current_child_symbols, current_child_of_child_symbols, _ = find_symbols_in_category_hierarchy(child)
-            # remove repeated and save them
-            child_symbols.extend(list(set(current_child_symbols) - set(child_symbols)))
-            child_of_child_symbols.extend(list(set(current_child_of_child_symbols) - set(child_of_child_symbols)))
+            category_results = find_symbols_in_category_hierarchy(child)
+            # add hierarchy level
+            for category_symbol, category_symbol_node, lvl in category_results.items():
+                if lvl == -1: # asset symbol, save it as child of child symbol (-2)
+                    symbols[category_symbol] = (category_symbol_node, -2)
+                elif lvl == 0: # category symbol, save it as child (-1)
+                    symbols[category_symbol] = (category_symbol_node, -1)
+                # otherwise it's a root node symbol, which we already have
         elif child.type == 'associations_declaration':
             # when it comes to associations, we can consider only the symbols in that scope,
             # since associations do not have children
-            current_child_symbols = find_symbols_associations_declaration(child)
-            # remove repeated and save
-            child_symbols.extend(list(set(current_child_symbols) - set(child_symbols)))
+            current_child_results = find_symbols_associations_declaration(child)
+            # add hierarchy level (-1)
+            for current_child_symbol, current_child_symbol_node in current_child_results.items():
+                symbols[current_child_symbol] = (current_child_symbol_node, -1)
 
-    child_scope = (-1,child_symbols)
-    child_of_child_scope = (-2,child_of_child_symbols)
-
-    return [child_of_child_scope, child_scope, current_scope]
+    return symbols
 
 def find_symbols_in_context_hiearchy(cursor: TreeCursor, point: Point) -> list[tuple[int,str]]:
     '''
