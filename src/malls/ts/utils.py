@@ -348,19 +348,21 @@ def find_symbols_in_association_hierarchy(owner: Node) -> list[tuple[int,list[st
     The association does not have any children, so we only have to obtain the current scope's
     symbols and the parent scope's symbols (root node)
     '''
-    used_symbols = []
+    symbols = {}
 
     # get the current scope's symbols
-    used_symbols = find_symbols_associations_declaration(owner)
-    current_scope = (0,used_symbols)
+    current_results = find_symbols_associations_declaration(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
 
     # get the parent scope's symbols
-    parent_symbols = find_symbols_root_node(owner.parent)
-    # remove already considered symbols
-    parent_symbols_filtered = list(set(parent_symbols) - set(used_symbols))
-    parent_scope = (1,parent_symbols_filtered)
+    parent_results = find_symbols_root_node(owner.parent)
+    # add hierarchy level (0)
+    for parent_symbol, parent_symbol_node in parent_results.items():
+        symbols[parent_symbol] = (parent_symbol_node, 1)
 
-    return [current_scope, parent_scope]
+    return symbols
 
 def find_symbols_in_asset_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     '''
