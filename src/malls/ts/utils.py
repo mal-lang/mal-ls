@@ -370,25 +370,27 @@ def find_symbols_in_asset_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     parent scope's (category) and parent of parent's (root node) symbols.
     '''
 
-    used_symbols = []
+    symbols = {}
 
     # get the current scope's symbols
-    used_symbols = find_symbols_asset_declaration(owner)
-    current_scope = (0,used_symbols)
+    current_results = find_symbols_asset_declaration(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
 
     # get the parent scope's symbols (category)
-    parent_symbols = find_symbols_category_declaration(owner.parent)
-    # remove already considered symbols
-    parent_symbols_filtered = list(set(parent_symbols) - set(used_symbols))
-    parent_scope = (1,parent_symbols_filtered)
+    parent_results = find_symbols_category_declaration(owner.parent)
+    # add hierarchy level (1)
+    for parent_symbol, parent_symbol_node in parent_results.items():
+        symbols[parent_symbol] = (parent_symbol_node, 1)
 
     # get the parent of the parent scope's symbols (root node)
-    parent_of_parent_symbols = find_symbols_root_node(owner.parent.parent)
-    # remove already considered symbols
-    parent_of_parent_symbols_filtered = list(set(parent_of_parent_symbols) - set(used_symbols))
-    parent_of_parent_scope = (2,parent_of_parent_symbols_filtered)
+    parent_of_parent_results = find_symbols_root_node(owner.parent.parent)
+    # add hierarchy level (2)
+    for parent_of_parent_symbol, parent_of_parent_symbol_node in parent_of_parent_results.items():
+        symbols[parent_of_parent_symbol] = (parent_of_parent_symbol_node, 2)
 
-    return [current_scope, parent_scope, parent_of_parent_scope]
+    return symbols
 
 def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     '''
