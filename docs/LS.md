@@ -42,3 +42,15 @@ functions the user can request to run are stored. It contains an input and outpu
 with the client, which are handled by `Streams`. In return, when a message is received, the `Endpoint` will
 ensure that the appropriate method is called. This can be found in the function `start`. As mentioned
 above, all methods start with `m_`.
+
+When the LSP Server receives requests from the clients, many of the requests require
+capabilities which are not stored directly in the server class. To keep it as simple
+as possible, the server should only be concerned with receiving and responding to
+requests. Hence, the logic is stored in `ts/utils.py`. One of the most relevant details
+is the position conversion. Clients send the positions of symbols they want to analyze
+using UTF-XX encoding of the file's text, however TreeSitter works with byte-encoded
+positions. Consequently, there is a helper function to convert from LSP positioning
+to its TreeSitter counterpart. For now, the only supported encoding is UTF-16 which is
+the default value. Furthermore, the server should be the one in charging of converting
+positions before calling other additional methods, as these should work strictly with
+TreeSitter positions.

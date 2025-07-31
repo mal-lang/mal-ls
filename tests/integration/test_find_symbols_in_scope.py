@@ -13,17 +13,22 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
     point = (4, 0)
 
     # symbols (identifiers + keywords)
-    symbols = [
+    user_symbols = [
         "Asset1",
         "Asset2",
+        'Asset3',
+    ]
+    keywords = [
         "extends",
         "abstract",
         "asset",
-        "info"
     ]
 
     # we use sets to ensure order does not matter
-    assert set(find_symbols_in_current_scope(tree.walk(), point)) == set(symbols)
+    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+
+    assert set(returned_user_symbols) == set(user_symbols)
+    assert set(returned_keywords) == set(keywords)
 
 def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
@@ -32,18 +37,23 @@ def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
     point = (17, 0)
 
     # symbols (identifiers + keywords)
-    symbols = [
+    user_symbols = [
         "a",
         "c",
         "d",
         "e",
         "L",
         "M",
+    ]
+    keywords = [
         "info",
     ]
 
     # we use sets to ensure order does not matter
-    assert set(find_symbols_in_current_scope(tree.walk(), point)) == set(symbols)
+    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+
+    assert set(returned_user_symbols) == set(user_symbols)
+    assert set(returned_keywords) == set(keywords)
 
 def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
@@ -52,17 +62,21 @@ def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
     point = (7, 10)
 
     # symbols (identifiers + keywords)
-    symbols = [
+    user_symbols = [
         "var",
         "c",
         "compromise",
         "destroy",
+    ]
+    keywords = [
         "let",
-        "info",
     ]
 
     # we use sets to ensure order does not matter
-    assert set(find_symbols_in_current_scope(tree.walk(), point)) == set(symbols)
+    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+
+    assert set(returned_user_symbols) == set(user_symbols)
+    assert set(returned_keywords) == set(keywords)
 
 def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
@@ -71,14 +85,17 @@ def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
     point = (13, 10)
 
     # symbols (identifiers + keywords)
-    symbols = [
+    user_symbols = [
         "destroy",
-        "let",
-        "info",
+    ]
+    keywords = [
     ]
 
     # we use sets to ensure order does not matter
-    assert set(find_symbols_in_current_scope(tree.walk(), point)) == set(symbols)
+    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+
+    assert set(returned_user_symbols) == set(user_symbols)
+    assert set(returned_keywords) == set(keywords)
 
 def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
@@ -87,11 +104,14 @@ def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
     point = (1, 0)
 
     # symbols (identifiers + keywords)
-    symbols = [
+    user_symbols = []
+    keywords = [
         "category",
         "associations",
-        "info",
     ]
 
     # we use sets to ensure order does not matter
-    assert set(find_symbols_in_current_scope(tree.walk(), point)) == set(symbols)
+    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+
+    assert set(returned_user_symbols) == set(user_symbols)
+    assert set(returned_keywords) == set(keywords)
