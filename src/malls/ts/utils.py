@@ -38,6 +38,16 @@ FIND_SYMBOLS_ASSET_DECLARATION_QUERY = Query(
                 ]
             """)
 
+FIND_SYMBOLS_ROOT_NODE_QUERY = Query(
+            MAL_LANGUAGE,
+            """
+                [
+                    (category_declaration "category" @category (meta)* @meta)
+                    ("associations" @associations)
+                ]
+            """
+            )
+
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
     captures = query_cursor.captures(node)
@@ -266,11 +276,18 @@ def find_symbols_root_node(owner: Node) -> (list[str], list[str]):
     at this moment. Therefore, the only relevant keywords are the ones
     related to association declaration or category declaration.
     '''
-    return ([], [
-        'category',
-        'info',
-        'associations',
-    ])
+
+    captures = run_query(owner, FIND_SYMBOLS_ROOT_NODE_QUERY)
+
+    keywords = {}
+    if 'category' in captures:
+        keywords['category'] = captures['category'][0]
+    if 'meta' in captures:
+        keywords['info'] = captures['meta'][0]
+    if 'associations' in captures:
+        keywords['associations'] = captures['associations'][0]
+
+    return ({}, keywords)
 
 def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> (list[str], list[str]):
     '''
