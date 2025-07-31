@@ -225,7 +225,7 @@ def find_symbols_associations_declaration(owner: Node) -> (dict, dict):
 
     return (user_symbols,keywords)
 
-def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
+def find_symbols_asset_declaration(owner: Node) -> (dict, dict):
     '''
     Asset declarations can have many symbols, such as in
     variables, expressions or attack steps. Therefore,
@@ -239,8 +239,8 @@ def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
     # the cursor to the child worth querying - asset_definition.
     # If this child exists, it must be the last named child
     # (this is done for efficiency, instead of going to a named child directly)
-    user_symbols = set()
-    keywords = []
+    user_symbols =  {}
+    keywords = {}
     if ((child := owner.named_children[-1]).type=='asset_definition'):
         # If the child exists, query it
         # query and save the node's text
@@ -249,17 +249,15 @@ def find_symbols_asset_declaration(owner: Node) -> (list[str], list[str]):
         # add filtered results
         for key in captures:
             if key == "var":
-                keywords.append("let")
+                keywords["let"] = captures[key]
                 continue
             if key == 'meta':
-                keywords.append("info")
+                keywords["info"] = captures[key]
                 continue
-            for symbol in captures[key]:
-                user_symbols.add(symbol.text.decode())
+            for symbol_node in captures[key]:
+                user_symbols[symbol_node.text.decode()] = symbol_node
 
-    # TODO should we recommend probability distributions (TTC)?
-
-    return (list(user_symbols), keywords)
+    return (user_symbols, keywords)
 
 def find_symbols_root_node(owner: Node) -> (list[str], list[str]):
     '''
