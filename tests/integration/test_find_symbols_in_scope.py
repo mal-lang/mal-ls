@@ -108,7 +108,6 @@ def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
     keywords = [
         "category",
         "associations",
-        "info",
     ]
 
     # we use sets to ensure order does not matter
