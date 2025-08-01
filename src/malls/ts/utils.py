@@ -413,7 +413,7 @@ def find_symbols_in_asset_hierarchy(owner: Node) -> (dict, dict):
 
     return symbols, keywords
 
-def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
+def find_symbols_root_node_hierarchy(owner: Node) -> (dict, dict):
     '''
     Root node only has children, so we have to get their symbols. For that, we will
     have to iterate over all categories and get their hierarchy symbols and the 
@@ -421,40 +421,52 @@ def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     '''
 
     symbols = {}
+    keywords = {}
 
     # current node's symbols
-    current_results = find_symbols_root_node(owner)
+    current_results_symbols, current_results_keywords = find_symbols_root_node(owner)
     # add hierarchy level (0)
-    for current_symbol, current_symbol_node in current_results.items():
+    for current_symbol, current_symbol_node in current_results_symbols.items():
         symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
 
     # iterate over categories and associations to get their symbols
-    for child in owner.children:
+    for declaration in owner.children:
+        child = declaration.children[0]
         if child.type == 'category_declaration':
             # The results come with
             # asset symbols, category symbols, root node symbols
             #
             # Obviously, we only want the first two, as the last corresponds
             # to the current node's symbols
-            category_results = find_symbols_in_category_hierarchy(child)
+            child_results_symbols, child_results_keywords  = find_symbols_in_category_hierarchy(child)
             # add hierarchy level
-            for category_symbol, category_symbol_node, lvl in category_results.items():
+            for category_symbol, (category_symbol_node, lvl) in child_results_symbols.items():
                 if lvl == -1: # asset symbol, save it as child of child symbol (-2)
                     symbols[category_symbol] = (category_symbol_node, -2)
                 elif lvl == 0: # category symbol, save it as child (-1)
                     symbols[category_symbol] = (category_symbol_node, -1)
                 # otherwise it's a root node symbol, which we already have
+            for category_keyword, (category_keyword_node, lvl) in child_results_keywords.items():
+                if lvl == -1: # asset keyword, save it as child of child symbol (-2)
+                    keywords[category_keyword] = (category_keyword_node, -2)
+                elif lvl == 0: # category keyword, save it as child (-1)
+                    keywords[category_keyword] = (category_keyword_node, -1)
+                # otherwise it's a root node symbol, which we already have
         elif child.type == 'associations_declaration':
             # when it comes to associations, we can consider only the symbols in that scope,
             # since associations do not have children
-            current_child_results = find_symbols_associations_declaration(child)
+            child_results_symbols, child_results_keywords = find_symbols_associations_declaration(child)
             # add hierarchy level (-1)
-            for current_child_symbol, current_child_symbol_node in current_child_results.items():
+            for current_child_symbol, current_child_symbol_node in child_results_symbols.items():
                 symbols[current_child_symbol] = (current_child_symbol_node, -1)
+            for current_child_keyword, current_child_keyword_node in child_results_keywords.items():
+                keywords[current_child_keyword] = (current_child_keyword_node, -1)
 
-    return symbols
+    return symbols, keywords
 
-def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> list[tuple[int,str]]:
+def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict, dict):
     '''
     This function aims to return the symbols in the hierarchy. This means finding the symbols
     in parents and children.
