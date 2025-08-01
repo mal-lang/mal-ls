@@ -37,6 +37,42 @@ def test_find_symbols_in_category_hierarchy(mal_find_symbols_in_scope):
     assert len(returned_user_symbols.keys()) == len(symbols)
     assert len(returned_keywords.keys()) == len(keywords)
 
+    # check hierarchy levels are correct
+    for symbol, lvl in symbols:
+        assert symbol in returned_user_symbols
+        assert returned_user_symbols[symbol][1] == lvl
+    for keyword, lvl in keywords:
+        assert keyword in returned_keywords
+        assert returned_keywords[keyword][1] == lvl
+
+def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
+    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+
+    # space between category and asset (category scope)
+    point = (17, 0)
+
+    # symbols (identifiers + keywords)
+    symbols = [
+        ("a",0),
+        ("c",0),
+        ("d",0),
+        ("e",0),
+        ("L",0),
+        ("M",0),
+    ]
+    keywords = [ 
+        ("info",0),
+        ("category",1),
+        ("associations",1),
+    ]
+
+    # we use sets to ensure order does not matter
+    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
+
+    assert len(returned_user_symbols.keys()) == len(symbols)
+    assert len(returned_keywords.keys()) == len(keywords)
+
+    # check hierarchy levels are correct
     for symbol, lvl in symbols:
         assert symbol in returned_user_symbols
         assert returned_user_symbols[symbol][1] == lvl
