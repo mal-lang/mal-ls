@@ -1,0 +1,45 @@
+import tree_sitter_mal as ts_mal
+from tree_sitter import Language, Parser
+
+from malls.ts.utils import find_symbols_in_context_hierarchy
+
+MAL_LANGUAGE = Language(ts_mal.language())
+PARSER = Parser(MAL_LANGUAGE)
+
+def test_find_symbols_in_category_hierarchy(mal_find_symbols_in_scope):
+    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+
+    # space between category and asset (category scope)
+    point = (4, 0)
+
+    # symbols (identifiers + keywords)
+    symbols = [
+        ("var",-1),
+        ("c",-1),
+        ("compromise",-1),
+        ("destroy",-1),
+        ('Asset1',0),
+        ('Asset2',0),
+        ('Asset3',0),
+    ]
+    keywords = [ 
+        ("let",-1),
+        ("extends",0),
+        ("abstract",0),
+        ("asset",0),
+        ("category",1),
+        ("associations",1),
+    ]
+
+    # we use sets to ensure order does not matter
+    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
+
+    assert len(returned_user_symbols.keys()) == len(symbols)
+    assert len(returned_keywords.keys()) == len(keywords)
+
+    for symbol, lvl in symbols:
+        assert symbol in returned_user_symbols
+        assert returned_user_symbols[symbol][1] == lvl
+    for keyword, lvl in keywords:
+        assert keyword in returned_keywords
+        assert returned_keywords[keyword][1] == lvl
