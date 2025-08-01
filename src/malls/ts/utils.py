@@ -357,20 +357,26 @@ def find_symbols_in_association_hierarchy(owner: Node) -> list[tuple[int,list[st
     symbols and the parent scope's symbols (root node)
     '''
     symbols = {}
+    keywords = {}
 
     # get the current scope's symbols
-    current_results = find_symbols_associations_declaration(owner)
+    current_results_symbols, current_results_keywords = find_symbols_associations_declaration(owner)
     # add hierarchy level (0)
-    for current_symbol, current_symbol_node in current_results.items():
+    for current_symbol, current_symbol_node in current_results_symbols.items():
         symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
 
     # get the parent scope's symbols
-    parent_results = find_symbols_root_node(owner.parent)
+    # again, we need to go twice to the parent
+    parent_results_symbols, parent_results_keywords = find_symbols_root_node(owner.parent.parent)
     # add hierarchy level (0)
-    for parent_symbol, parent_symbol_node in parent_results.items():
+    for parent_symbol, parent_symbol_node in parent_results_symbols.items():
         symbols[parent_symbol] = (parent_symbol_node, 1)
+    for parent_keyword, parent_keyword_node in parent_results_keywords.items():
+        keywords[parent_keyword] = (parent_keyword_node, 1)
 
-    return symbols
+    return symbols, keywords
 
 def find_symbols_in_asset_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     '''
