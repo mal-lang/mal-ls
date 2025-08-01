@@ -318,30 +318,38 @@ def find_symbols_in_category_hierarchy(owner: Node) -> list[tuple[int,list[str]]
     the children's scope, which are assets, and the parent node (root)
     '''
 
-    # symbols
+    # symbols and keywords
     symbols = {}
+    keywords = {}
 
     # iterate over the children and get the symbols in the asset declarations, in case there are any
     for child in owner.children:
         if child.type == 'asset_declaration':
-            child_results = find_symbols_asset_declaration(child)
+            child_results_symbols, child_results_keywords = find_symbols_asset_declaration(child)
             # add hierarchy level (-1)
-            for child_symbol, child_symbol_node in child_results.items():
+            for child_symbol, child_symbol_node in child_results_symbols.items():
                 symbols[child_symbol] = (child_symbol_node, -1)
+            for child_keyword, child_keyword_node in child_results_keywords.items():
+                keywords[child_keyword] = (child_keyword_node, -1)
 
     # get the current scope's symbols
-    current_results = find_symbols_category_declaration(owner)
+    current_results_symbols, current_results_keywords = find_symbols_category_declaration(owner)
     # add hierarchy level (0)
-    for current_symbol, current_symbol_node in current_results.items():
+    for current_symbol, current_symbol_node in current_results_symbols.items():
         symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
 
     # finally, get the scope for the parent (root node)
-    parent_results = find_symbols_root_node(owner.parent)
+    # We need to go to parent twice because direct parent of category is declaration
+    parent_results_symbols, parent_results_keywords = find_symbols_root_node(owner.parent.parent)
     # add hierarchy level (1)
-    for parent_symbol, parent_symbol_node in parent_results.items():
+    for parent_symbol, parent_symbol_node in parent_results_symbols.items():
         symbols[parent_symbol] = (parent_symbol_node, 1)
+    for parent_keyword, parent_keyword_node in parent_results_keywords.items():
+        keywords[parent_keyword] = (parent_keyword_node, 1)
     
-    return symbols
+    return (symbols, keywords)
 
 def find_symbols_in_association_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     '''
@@ -410,7 +418,7 @@ def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
     # iterate over categories and associations to get their symbols
     for child in owner.children:
         if child.type == 'category_declaration':
-            # The results come in the following order with
+            # The results come with
             # asset symbols, category symbols, root node symbols
             #
             # Obviously, we only want the first two, as the last corresponds
@@ -433,7 +441,7 @@ def find_symbols_root_node_hierarchy(owner: Node) -> list[tuple[int,list[str]]]:
 
     return symbols
 
-def find_symbols_in_context_hiearchy(cursor: TreeCursor, point: Point) -> list[tuple[int,str]]:
+def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> list[tuple[int,str]]:
     '''
     This function aims to return the symbols in the hierarchy. This means finding the symbols
     in parents and children.
@@ -443,11 +451,11 @@ def find_symbols_in_context_hiearchy(cursor: TreeCursor, point: Point) -> list[t
     owner = find_current_scope(cursor, point)
 
     match owner.type:
-        case 'find_symbols_in_category_hierarchy':
+        case 'category_declaration':
             return find_symbols_in_category_hierarchy(owner)
-        case 'find_symbols_in_association_hierarchy':
+        case 'associations_declaration':
             return find_symbols_in_association_hierarchy(owner)
-        case 'find_symbols_in_asset_hierarchy':
+        case 'asset_declaration':
             return find_symbols_in_asset_hierarchy(owner)
         case _: # defaults to root node
             return find_symbols_root_node_hierarchy(owner)
