@@ -48,7 +48,6 @@ def test_find_symbols_in_category_hierarchy(mal_find_symbols_in_scope):
 def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
-    # space between category and asset (category scope)
     point = (17, 0)
 
     # symbols (identifiers + keywords)
@@ -83,7 +82,6 @@ def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
 def test_find_symbols_in_asset1_hierarchy(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
-    # space between category and asset (category scope)
     point = (6, 4)
 
     # symbols (identifiers + keywords)
@@ -122,7 +120,6 @@ def test_find_symbols_in_asset1_hierarchy(mal_find_symbols_in_scope):
 def test_find_symbols_in_asset2_hierarchy(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
-    # space between category and asset (category scope)
     point = (12, 4)
 
     # symbols (identifiers + keywords)
@@ -138,6 +135,50 @@ def test_find_symbols_in_asset2_hierarchy(mal_find_symbols_in_scope):
         ("asset",1),
         ("category",2),
         ("associations",2),
+    ]
+
+    # we use sets to ensure order does not matter
+    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
+
+    assert len(returned_user_symbols.keys()) == len(symbols)
+    assert len(returned_keywords.keys()) == len(keywords)
+
+    # check hierarchy levels are correct
+    for symbol, lvl in symbols:
+        assert symbol in returned_user_symbols
+        assert returned_user_symbols[symbol][1] == lvl
+    for keyword, lvl in keywords:
+        assert keyword in returned_keywords
+        assert returned_keywords[keyword][1] == lvl
+
+def test_find_symbols_in_root_node_hierarchy(mal_find_symbols_in_scope):
+    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+
+    point = (0, 0)
+
+    # symbols (identifiers + keywords)
+    symbols = [
+        ("var",-2),
+        ("compromise",-2),
+        ("destroy",-2),
+        ('Asset1',-1),
+        ('Asset2',-1),
+        ('Asset3',-1),
+        ("a",-1),
+        ("d",-1),
+        ("e",-1),
+        ("L",-1),
+        ("M",-1),
+        ("c",-1),
+    ]
+    keywords = [ 
+        ("let",-2),
+        ("extends",-1),
+        ("abstract",-1),
+        ("asset",-1),
+        ("info", -1),
+        ("category",0),
+        ("associations",0),
     ]
 
     # we use sets to ensure order does not matter
