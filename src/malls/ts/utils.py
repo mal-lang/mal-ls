@@ -194,9 +194,6 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     names, so that is what will be queried
     """
 
-    # save the cursor (to have child index)
-    cursor = owner.walk()
-
     # query
     captures = run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)
 
