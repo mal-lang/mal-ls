@@ -13,7 +13,7 @@ FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY = Query(
         (asset_declaration
             ("abstract" @abstract)*
             "asset"
-            id: (identifier) @asset_name 
+            id: (identifier) @asset_name
             ("extends" (identifier) @extends)*
             ( (meta) @meta)*
         )
