@@ -2497,22 +2497,22 @@ class ClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
 
-    workspace: WorkspaceProperty
+    workspace: WorkspaceProperty | None
     """Workspace specific client capabilities."""
 
-    text_document: TextDocumentClientCapabilities
+    text_document: TextDocumentClientCapabilities | None
     """Text document specific client capabilities."""
 
-    notebook_document: NotebookDocumentClientCapabilities
+    notebook_document: NotebookDocumentClientCapabilities | None
     """Capabilities specific to the notebook document support."""
 
-    window: WindowProperty
+    window: WindowProperty | None
     """Window specific client capabilities."""
 
-    general: GeneralProperty
+    general: GeneralProperty | None
     """General client capabilities."""
 
-    experimental: LSPAny
+    experimental: LSPAny | None
     """Experimental client capabilities."""
 
     model_config = base_config
