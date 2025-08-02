@@ -58,7 +58,7 @@ def test_open_file_without_include(writeable_fixtures_did_open_notif_in: typing.
 
     # Ensure LSP stored everything correctly
     assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path]) == Tree
+    assert type(ls.files()[simplified_file_path].tree) == Tree
 
     output.close()
 
@@ -100,9 +100,9 @@ def test_open_file_with_include(writeable_fixtures_did_open_notif_in: typing.Bin
     # Ensure LSP stored everything correctly
     assert len(ls.files().keys())==2
     assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path]) == Tree
+    assert type(ls.files()[simplified_file_path].tree) == Tree
     assert included_path_file in ls.files().keys()
-    assert type(ls.files()[included_path_file]) == Tree
+    assert type(ls.files()[included_path_file].tree) == Tree
 
     output.close()
 
@@ -144,7 +144,7 @@ def test_open_file_with_non_existant_include(writeable_fixtures_did_open_notif_i
     # Ensure LSP stored everything correctly
     assert len(ls.files().keys())== 1
     assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path]) == Tree
+    assert type(ls.files()[simplified_file_path].tree) == Tree
     
     # Ensure there is an error on the response corresponding to invalid
     # parameter, since "traceValue" is wrong

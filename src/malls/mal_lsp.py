@@ -13,6 +13,7 @@ from pathlib import Path
 from .lsp import enums, models
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
+from .lsp.classes import Document
 from .ts.utils import INCLUDED_FILES_QUERY, run_query
 
 log = logging.getLogger(__name__)
@@ -275,7 +276,7 @@ class MALLSPServer(MethodDispatcher):
             root_node = tree.root_node
 
             # save parsed file
-            self.__files[file_name] = tree
+            self.__files[file_name] = Document(tree,source)
 
             # check if there are other includes to process
             new_captures = run_query(root_node, INCLUDED_FILES_QUERY)
@@ -314,7 +315,7 @@ class MALLSPServer(MethodDispatcher):
         path_prec = doc_uri.rsplit('/',1)[0]+"/"
 
         # save parsed file
-        self.__files[doc_uri] = tree
+        self.__files[doc_uri] = Document(tree,source_encoded)
 
         # obtain the included files
         root_node = tree.root_node
