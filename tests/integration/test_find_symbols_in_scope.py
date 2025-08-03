@@ -6,6 +6,7 @@ from malls.ts.utils import find_symbols_in_current_scope
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 
+
 def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
@@ -16,7 +17,7 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
     user_symbols = [
         "Asset1",
         "Asset2",
-        'Asset3',
+        "Asset3",
     ]
     keywords = [
         "extends",
@@ -29,6 +30,7 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
 
     assert set(returned_user_symbols) == set(user_symbols)
     assert set(returned_keywords) == set(keywords)
+
 
 def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
@@ -55,6 +57,7 @@ def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
     assert set(returned_user_symbols) == set(user_symbols)
     assert set(returned_keywords) == set(keywords)
 
+
 def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
@@ -78,6 +81,7 @@ def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
     assert set(returned_user_symbols) == set(user_symbols)
     assert set(returned_keywords) == set(keywords)
 
+
 def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
 
@@ -88,14 +92,14 @@ def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
     user_symbols = [
         "destroy",
     ]
-    keywords = [
-    ]
+    keywords = []
 
     # we use sets to ensure order does not matter
     returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
 
     assert set(returned_user_symbols) == set(user_symbols)
     assert set(returned_keywords) == set(keywords)
+
 
 def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
     tree = PARSER.parse(mal_find_symbols_in_scope.read())
