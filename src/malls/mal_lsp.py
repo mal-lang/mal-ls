@@ -116,6 +116,7 @@ class MALLSPServer(MethodDispatcher):
     def trace_value(self) -> TraceValue:
         return self.__trace_value
 
+    @property
     def files(self) -> dict:
         return self.__files
 
@@ -327,3 +328,24 @@ class MALLSPServer(MethodDispatcher):
 
         # with the opened file and included files parsed, we are done
         return
+
+    def m_text_document__did_change(self, **params: dict | None) -> None:
+        '''
+        This function will process changes to files. To do this, the source
+        code must be edited, TreeSitter alerted of the location of the changes
+        and finally the code must be reparsed.
+        '''
+
+        # Obtain text document
+        doc_uri = self._uri_to_path(params['textDocument']['uri'])
+        document = self.__files[doc_uri]
+
+        # There could be various changes, so we need to iterate over them
+        for change in params['contentChanges']:
+            changed_range = change['range']
+            if type(change['text']) == str:
+                text = change['text'].encode()
+                document.execute_changes(changed_range, text)
+            else:
+                text = change['text']['text'].encode() # whole file change
+                document.change_whole_file(text)
