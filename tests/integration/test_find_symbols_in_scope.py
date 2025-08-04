@@ -46,6 +46,8 @@ def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
         "e",
         "L",
         "M",
+        "Asset1",
+        "Asset2",
     ]
     keywords = [
         "info",

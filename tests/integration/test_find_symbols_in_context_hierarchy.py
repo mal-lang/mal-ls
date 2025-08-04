@@ -60,6 +60,8 @@ def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
         ("e", 0),
         ("L", 0),
         ("M", 0),
+        ("Asset1", 0),
+        ("Asset2", 0),
     ]
     keywords = [
         ("info", 0),

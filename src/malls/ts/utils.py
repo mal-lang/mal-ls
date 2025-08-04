@@ -24,9 +24,11 @@ FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
     MAL_LANGUAGE,
     """
         (association
+            left_id: (identifier) @left_asset
             left_field_id: (identifier) @left_field_name
             id: (identifier) @association_name
             right_field_id: (identifier) @right_field_name )
+            right_id: (identifier) @right_asset
             ( (meta) @meta)
         """,
 )
@@ -497,6 +499,9 @@ def find_symbols_root_node_hierarchy(owner: Node) -> (dict, dict):
     for current_keyword, current_keyword_node in current_results_keywords.items():
         keywords[current_keyword] = (current_keyword_node, 0)
 
+    # get children symbols
+    find_children_symbols_for_root_node(owner, symbols, keywords)
+
     return symbols, keywords
 
 
@@ -518,3 +523,4 @@ def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict
             return find_symbols_in_asset_hierarchy(owner)
         case _:  # defaults to root node
             return find_symbols_root_node_hierarchy(owner)
+
