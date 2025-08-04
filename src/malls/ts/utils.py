@@ -133,7 +133,7 @@ def find_current_scope(cursor: TreeCursor, point: Point):
                     owner = owner.parent
                 break
                 # no need to go any further, this is the "deepest" possible owner
-                #of the scope.
+                # of the scope.
             case "associations_declaration":
                 owner = cursor.node
 
@@ -447,6 +447,7 @@ def find_symbols_in_asset_hierarchy(owner: Node) -> (dict, dict):
 
     return symbols, keywords
 
+
 def find_children_symbols_for_root_node(owner: Node, symbols: dict, keywords: dict):
     # iterate over categories and associations to get their symbols
     for declaration in owner.children:
@@ -463,11 +464,11 @@ def find_children_symbols_for_root_node(owner: Node, symbols: dict, keywords: di
             # add hierarchy level
             for category_symbol, (category_symbol_node, lvl) in child_results_symbols.items():
                 if lvl == -1 or lvl == 0:  # asset symbol, save it as child of child symbol (-2)
-                    symbols[category_symbol] = (category_symbol_node, lvl-1)
+                    symbols[category_symbol] = (category_symbol_node, lvl - 1)
                 # otherwise it's a root node symbol, which we already have
             for category_keyword, (category_keyword_node, lvl) in child_results_keywords.items():
                 if lvl == -1 or lvl == 0:
-                    keywords[category_keyword] = (category_keyword_node, lvl-1)
+                    keywords[category_keyword] = (category_keyword_node, lvl - 1)
                 # otherwise it's a root node symbol, which we already have
         elif child.type == "associations_declaration":
             # when it comes to associations, we can consider only the symbols in that scope,
@@ -480,6 +481,7 @@ def find_children_symbols_for_root_node(owner: Node, symbols: dict, keywords: di
                 symbols[current_child_symbol] = (current_child_symbol_node, -1)
             for current_child_keyword, current_child_keyword_node in child_results_keywords.items():
                 keywords[current_child_keyword] = (current_child_keyword_node, -1)
+
 
 def find_symbols_root_node_hierarchy(owner: Node) -> (dict, dict):
     """
@@ -523,4 +525,3 @@ def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict
             return find_symbols_in_asset_hierarchy(owner)
         case _:  # defaults to root node
             return find_symbols_root_node_hierarchy(owner)
-

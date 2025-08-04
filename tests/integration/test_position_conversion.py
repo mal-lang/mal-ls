@@ -1,4 +1,3 @@
-
 from malls.lsp.models import Position
 from malls.ts.utils import lsp_to_tree_sitter_position
 
