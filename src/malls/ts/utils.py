@@ -24,9 +24,11 @@ FIND_SYMBOLS_ASSOCIATIONS_DECLARATION_QUERY = Query(
     MAL_LANGUAGE,
     """
         (association
+            left_id: (identifier) @left_asset
             left_field_id: (identifier) @left_field_name
             id: (identifier) @association_name
             right_field_id: (identifier) @right_field_name )
+            right_id: (identifier) @right_asset
             ( (meta) @meta)
         """,
 )
@@ -317,7 +319,7 @@ def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> (list[str
     A list of all symbols is returned.
     """
 
-    # obtain owner of the scope
+    # Firstly, obtain the owner of the scope
     owner = find_current_scope(cursor, point)
 
     match owner.type:
@@ -329,3 +331,196 @@ def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> (list[str
             return find_symbols_asset_declaration(owner)
         case _:  # defaults to root node
             return find_symbols_root_node(owner)
+
+
+def find_symbols_in_category_hierarchy(owner: Node) -> (dict, dict):
+    """
+    Given a category declaration, we want to find the symbols in the current scope,
+    the children's scope, which are assets, and the parent node (root)
+    """
+
+    # symbols and keywords
+    symbols = {}
+    keywords = {}
+
+    # iterate over the children and get the symbols in the asset declarations, in case there are any
+    for child in owner.children:
+        if child.type == "asset_declaration":
+            child_results_symbols, child_results_keywords = find_symbols_asset_declaration(child)
+            # add hierarchy level (-1)
+            for child_symbol, child_symbol_node in child_results_symbols.items():
+                symbols[child_symbol] = (child_symbol_node, -1)
+            for child_keyword, child_keyword_node in child_results_keywords.items():
+                keywords[child_keyword] = (child_keyword_node, -1)
+
+    # get the current scope's symbols
+    current_results_symbols, current_results_keywords = find_symbols_category_declaration(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results_symbols.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
+
+    # finally, get the scope for the parent (root node)
+    # We need to go to parent twice because direct parent of category is declaration
+    parent_results_symbols, parent_results_keywords = find_symbols_root_node(owner.parent.parent)
+    # add hierarchy level (1)
+    for parent_symbol, parent_symbol_node in parent_results_symbols.items():
+        symbols[parent_symbol] = (parent_symbol_node, 1)
+    for parent_keyword, parent_keyword_node in parent_results_keywords.items():
+        keywords[parent_keyword] = (parent_keyword_node, 1)
+
+    return (symbols, keywords)
+
+
+def find_symbols_in_association_hierarchy(owner: Node) -> (dict, dict):
+    """
+    The association does not have any children, so we only have to obtain the current scope's
+    symbols and the parent scope's symbols (root node)
+    """
+    symbols = {}
+    keywords = {}
+
+    # get the current scope's symbols
+    current_results_symbols, current_results_keywords = find_symbols_associations_declaration(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results_symbols.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
+
+    # get the parent scope's symbols
+    # again, we need to go twice to the parent
+    parent_results_symbols, parent_results_keywords = find_symbols_root_node(owner.parent.parent)
+    # add hierarchy level (0)
+    for parent_symbol, parent_symbol_node in parent_results_symbols.items():
+        symbols[parent_symbol] = (parent_symbol_node, 1)
+    for parent_keyword, parent_keyword_node in parent_results_keywords.items():
+        keywords[parent_keyword] = (parent_keyword_node, 1)
+
+    return symbols, keywords
+
+
+def find_symbols_in_asset_hierarchy(owner: Node) -> (dict, dict):
+    """
+    An asset does not have any children, so we only have to return the current scope's,
+    parent scope's (category) and parent of parent's (root node) symbols.
+    """
+
+    symbols = {}
+    keywords = {}
+
+    # get the current scope's symbols
+    current_results_symbols, current_results_keywords = find_symbols_asset_declaration(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results_symbols.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
+
+    # get the parent scope's symbols (category)
+    parent_results_symbols, parent_results_keywords = find_symbols_category_declaration(
+        owner.parent
+    )
+    # add hierarchy level (1)
+    for parent_symbol, parent_symbol_node in parent_results_symbols.items():
+        symbols[parent_symbol] = (parent_symbol_node, 1)
+    for parent_keyword, parent_keyword_node in parent_results_keywords.items():
+        keywords[parent_keyword] = (parent_keyword_node, 1)
+
+    # get the parent of the parent scope's symbols (root node)
+    parent_of_parent_results_symbols, parent_of_parent_results_keywords = find_symbols_root_node(
+        owner.parent.parent.parent
+    )
+    # add hierarchy level (2)
+    for (
+        parent_of_parent_symbol,
+        parent_of_parent_symbol_node,
+    ) in parent_of_parent_results_symbols.items():
+        symbols[parent_of_parent_symbol] = (parent_of_parent_symbol_node, 2)
+    for (
+        parent_of_parent_keyword,
+        parent_of_parent_keyword_node,
+    ) in parent_of_parent_results_keywords.items():
+        keywords[parent_of_parent_keyword] = (parent_of_parent_keyword_node, 2)
+
+    return symbols, keywords
+
+
+def find_children_symbols_for_root_node(owner: Node, symbols: dict, keywords: dict):
+    # iterate over categories and associations to get their symbols
+    for declaration in owner.children:
+        child = declaration.children[0]
+        if child.type == "category_declaration":
+            # The results come with
+            # asset symbols, category symbols, root node symbols
+            #
+            # Obviously, we only want the first two, as the last corresponds
+            # to the current node's symbols
+            child_results_symbols, child_results_keywords = find_symbols_in_category_hierarchy(
+                child
+            )
+            # add hierarchy level
+            for category_symbol, (category_symbol_node, lvl) in child_results_symbols.items():
+                if lvl == -1 or lvl == 0:  # asset symbol, save it as child of child symbol (-2)
+                    symbols[category_symbol] = (category_symbol_node, lvl - 1)
+                # otherwise it's a root node symbol, which we already have
+            for category_keyword, (category_keyword_node, lvl) in child_results_keywords.items():
+                if lvl == -1 or lvl == 0:
+                    keywords[category_keyword] = (category_keyword_node, lvl - 1)
+                # otherwise it's a root node symbol, which we already have
+        elif child.type == "associations_declaration":
+            # when it comes to associations, we can consider only the symbols in that scope,
+            # since associations do not have children
+            child_results_symbols, child_results_keywords = find_symbols_associations_declaration(
+                child
+            )
+            # add hierarchy level (-1)
+            for current_child_symbol, current_child_symbol_node in child_results_symbols.items():
+                symbols[current_child_symbol] = (current_child_symbol_node, -1)
+            for current_child_keyword, current_child_keyword_node in child_results_keywords.items():
+                keywords[current_child_keyword] = (current_child_keyword_node, -1)
+
+
+def find_symbols_root_node_hierarchy(owner: Node) -> (dict, dict):
+    """
+    Root node only has children, so we have to get their symbols. For that, we will
+    have to iterate over all categories and get their hierarchy symbols and the
+    associations symbols
+    """
+
+    symbols = {}
+    keywords = {}
+
+    # current node's symbols
+    current_results_symbols, current_results_keywords = find_symbols_root_node(owner)
+    # add hierarchy level (0)
+    for current_symbol, current_symbol_node in current_results_symbols.items():
+        symbols[current_symbol] = (current_symbol_node, 0)
+    for current_keyword, current_keyword_node in current_results_keywords.items():
+        keywords[current_keyword] = (current_keyword_node, 0)
+
+    # get children symbols
+    find_children_symbols_for_root_node(owner, symbols, keywords)
+
+    return symbols, keywords
+
+
+def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict, dict):
+    """
+    This function aims to return the symbols in the hierarchy. This means finding the symbols
+    in parents and children.
+    """
+
+    # Firstly, obtain the owner of the scope
+    owner = find_current_scope(cursor, point)
+
+    match owner.type:
+        case "category_declaration":
+            return find_symbols_in_category_hierarchy(owner)
+        case "associations_declaration":
+            return find_symbols_in_association_hierarchy(owner)
+        case "asset_declaration":
+            return find_symbols_in_asset_hierarchy(owner)
+        case _:  # defaults to root node
+            return find_symbols_root_node_hierarchy(owner)
