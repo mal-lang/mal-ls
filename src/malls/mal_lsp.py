@@ -246,9 +246,11 @@ class MALLSPServer(MethodDispatcher):
         as well, since they might contain info worth providing to the user
         """
 
+        # validate params
+        instance = models.DidOpenTextDocumentParams(**params)
         # obtain the document URI and text
-        doc_uri = uri_to_path(params["textDocument"]["uri"])
-        doc_text = params["textDocument"]["text"]
+        doc_uri = uri_to_path(instance.textDocument.uri)
+        doc_text = instance.textDocument.text
 
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
@@ -274,11 +276,8 @@ class MALLSPServer(MethodDispatcher):
 
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
-        log.info("\n\n\n")
-        log.info(self.__files)
         if captures:  # If there are included files, start recursive parsing
             self.__files = recursive_parsing(path_prec, captures["file_name"], self.__files)
-        log.info(self.__files)
 
         # with the opened file and included files parsed, we are done
         return

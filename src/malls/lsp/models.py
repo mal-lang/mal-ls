@@ -1,13 +1,20 @@
 from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_snake
+from pydantic.alias_generators import to_camel
 from typing_extensions import TypeAliasType
 from uritools import isuri
 
 from . import enums
 
-base_config = ConfigDict(alias_generator=to_snake)
+base_config = ConfigDict(alias_generator=to_camel)
+
+
+def is_uri(value):
+    if not isuri(value):
+        raise ValueError(f"{value} is not an URI")
+    return value
+
 
 Integer = Annotated[
     int,
@@ -19,7 +26,7 @@ UInteger = Annotated[
 ]
 Uri = Annotated[
     str,
-    AfterValidator(isuri),
+    AfterValidator(is_uri),
     """
                 URI’s are transferred as strings. The URI’s format is defined in https://tools.ietf.org/html/rfc3986
 
@@ -2600,3 +2607,11 @@ class SetTraceParams(BaseModel):
     """
     The new value that should be assigned to the trace setting.
     """
+
+
+class DidOpenTextDocumentParams(BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didOpenTextDocumentParams
+    """
+
+    textDocument: TextDocumentItem
