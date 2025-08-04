@@ -34,6 +34,7 @@ for directory, _, files in os.walk("tests/fixtures"):
 
                 with open(file, "r+b") as file_descriptor:
                     yield file_descriptor
+
             return template
 
         def open_fixture_file(file: str):
@@ -48,7 +49,12 @@ for directory, _, files in os.walk("tests/fixtures"):
         open_fixture_file.__doc__ = open.__doc__
 
         # Define the fixture from `open_file` on `file_path` as `fixture_name`
-        fixture = pytest.fixture(fixture_function=open_fixture_file(file_path) if directory!='tests/fixtures/writeable_fixtures' else open_fixture_for_writing(file_path), name=fixture_name)
+        fixture = pytest.fixture(
+            fixture_function=open_fixture_file(file_path)
+            if directory != "tests/fixtures/writeable_fixtures"
+            else open_fixture_for_writing(file_path),
+            name=fixture_name,
+        )
 
         # Bind `fixture` as `fixture_name` inside this module so it gets exported
         setattr(module, fixture_name, fixture)

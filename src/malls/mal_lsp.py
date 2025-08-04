@@ -1,19 +1,19 @@
 import logging
+import os
 import typing
+from pathlib import Path
+from urllib.parse import urlparse
 
 import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 from tree_sitter import Language, Parser
-import os
-from urllib.parse import urlparse
-from pathlib import Path
 
 from .lsp import enums, models
+from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.classes import Document
 from .ts.utils import INCLUDED_FILES_QUERY, run_query
 
 log = logging.getLogger(__name__)
@@ -248,19 +248,19 @@ class MALLSPServer(MethodDispatcher):
 
         parsed = urlparse(uri).path
 
-        if os.name=='nt': # handle Windows
+        if os.name == "nt":  # handle Windows
             parsed = parsed[1:]
         return parsed
 
     def _recursive_parsing(self, uri_prec: str, captures: dict) -> None:
-        '''
+        """
         Auxiliary method to parse included files recursively
-        '''
+        """
 
         while captures:
             # build file path
-            file_name = uri_prec + captures.pop(0).text.decode().strip("\"")
-            
+            file_name = uri_prec + captures.pop(0).text.decode().strip('"')
+
             # if the file has already been processed, ignore it
             # (this can happen if file A was opened with a didOpen notification
             # and then file B which extends file A is also opened. By logical order,
@@ -269,17 +269,17 @@ class MALLSPServer(MethodDispatcher):
             if file_name in self.__files:
                 continue
             if not Path(file_name).exists():
-                continue # file has not been created yet, so we just ignore it
+                continue  # file has not been created yet, so we just ignore it
 
             # otherwise, parse it
-            with open(file_name,"rb") as file:
+            with open(file_name, "rb") as file:
                 source = file.read()
 
             tree = PARSER.parse(source)
             root_node = tree.root_node
 
             # save parsed file
-            self.__files[file_name] = Document(tree,source)
+            self.__files[file_name] = Document(tree, source)
 
             # check if there are other includes to process
             new_captures = run_query(root_node, INCLUDED_FILES_QUERY)
@@ -291,15 +291,15 @@ class MALLSPServer(MethodDispatcher):
         return
 
     def m_text_document__did_open(self, **params: dict | None) -> None:
-        '''
+        """
         This function will handle the notification that a new text document
         was open. For that, we must parse the given file and included files
         as well, since they might contain info worth providing to the user
-        '''
+        """
 
         # obtain the document URI and text
-        doc_uri = self._uri_to_path(params['textDocument']['uri'])
-        doc_text = params['textDocument']['text']
+        doc_uri = self._uri_to_path(params["textDocument"]["uri"])
+        doc_text = params["textDocument"]["text"]
 
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
@@ -315,17 +315,17 @@ class MALLSPServer(MethodDispatcher):
         # queried
 
         # obtain general URI of files
-        path_prec = doc_uri.rsplit('/',1)[0]+"/"
+        path_prec = doc_uri.rsplit("/", 1)[0] + "/"
 
         # save parsed file
-        self.__files[doc_uri] = Document(tree,source_encoded)
+        self.__files[doc_uri] = Document(tree, source_encoded)
 
         # obtain the included files
         root_node = tree.root_node
 
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
-        if captures: # If there are included files, start recursive parsing
+        if captures:  # If there are included files, start recursive parsing
             self._recursive_parsing(path_prec, captures["file_name"])
 
         # with the opened file and included files parsed, we are done
