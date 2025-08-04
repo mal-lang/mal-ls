@@ -1,8 +1,5 @@
 import logging
-import os
 import typing
-from pathlib import Path
-from urllib.parse import urlparse
 
 import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
@@ -14,6 +11,7 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
+from .lsp.utils import recursive_parsing, uri_to_path
 from .ts.utils import INCLUDED_FILES_QUERY, run_query
 
 log = logging.getLogger(__name__)
@@ -241,55 +239,6 @@ class MALLSPServer(MethodDispatcher):
             finally:
                 return
 
-    def _uri_to_path(self, uri: str) -> Path:
-        """
-        Auxiliary method to convert file:// URI back to filesystem path
-        """
-
-        parsed = urlparse(uri).path
-
-        if os.name == "nt":  # handle Windows
-            parsed = parsed[1:]
-        return parsed
-
-    def _recursive_parsing(self, uri_prec: str, captures: dict) -> None:
-        """
-        Auxiliary method to parse included files recursively
-        """
-
-        while captures:
-            # build file path
-            file_name = uri_prec + captures.pop(0).text.decode().strip('"')
-
-            # if the file has already been processed, ignore it
-            # (this can happen if file A was opened with a didOpen notification
-            # and then file B which extends file A is also opened. By logical order,
-            # A was parsed already, so we do not need to do it, since it hasn't changed)
-
-            if file_name in self.__files:
-                continue
-            if not Path(file_name).exists():
-                continue  # file has not been created yet, so we just ignore it
-
-            # otherwise, parse it
-            with open(file_name, "rb") as file:
-                source = file.read()
-
-            tree = PARSER.parse(source)
-            root_node = tree.root_node
-
-            # save parsed file
-            self.__files[file_name] = Document(tree, source)
-
-            # check if there are other includes to process
-            new_captures = run_query(root_node, INCLUDED_FILES_QUERY)
-
-            # if there are new includes, add them to the list
-            if new_captures:
-                captures.extend(new_captures["file_name"])
-
-        return
-
     def m_text_document__did_open(self, **params: dict | None) -> None:
         """
         This function will handle the notification that a new text document
@@ -298,7 +247,7 @@ class MALLSPServer(MethodDispatcher):
         """
 
         # obtain the document URI and text
-        doc_uri = self._uri_to_path(params["textDocument"]["uri"])
+        doc_uri = uri_to_path(params["textDocument"]["uri"])
         doc_text = params["textDocument"]["text"]
 
         # if the file has been parsed (e.g. was included by another file)
@@ -325,8 +274,11 @@ class MALLSPServer(MethodDispatcher):
 
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
+        log.info("\n\n\n")
+        log.info(self.__files)
         if captures:  # If there are included files, start recursive parsing
-            self._recursive_parsing(path_prec, captures["file_name"])
+            self.__files = recursive_parsing(path_prec, captures["file_name"], self.__files)
+        log.info(self.__files)
 
         # with the opened file and included files parsed, we are done
         return
