@@ -88,9 +88,12 @@ def test_pre_initialized_shutdown_errs(pre_initialized_shutdown_in: typing.Binar
     output.seek(0)
 
     response = get_lsp_json(output)
+    assert "result" in response
     assert "capabilities" in response["result"]
 
     response = get_lsp_json(output)
+    assert "error" in response
+    assert "code" in response["error"]
     assert response["error"]["code"] == ErrorCodes.InvalidRequest
 
     output.close()

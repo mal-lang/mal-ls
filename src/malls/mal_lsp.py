@@ -115,8 +115,10 @@ class MALLSPServer(MethodDispatcher):
             case enums.TraceValue.Off | enums.TraceValue.Messages | enums.TraceValue.Verbose:
                 self.__trace_value = new_trace_value
             case _:
-                error_msg = f"Unrecognized trace value: `{new_trace_value}`. Options are: `off`, \
-                `messages` and `verbose`."
+                error_msg = (
+                    f"Unrecognized trace value: `{new_trace_value}`."
+                    " Options are: `off`, `messages` and `verbose`."
+                )
                 log.error(error_msg)
                 raise MALLSPException(ErrorCodes.InvalidParams, error_msg)
 

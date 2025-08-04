@@ -126,14 +126,13 @@ def find_current_scope(cursor: TreeCursor, point: Point):
             case "asset_declaration":
                 owner = cursor.node
                 # but first, we need to know if the child is before or after the '{'.
-                # we can query to find the position of '{' and check if the position
-                # is before or after
+                # we can query to find the position of '{' and check if the position is before or
+                # after
 
                 if query_and_compare_scope_pos("asset_declaration", cursor, point):
                     owner = owner.parent
+                # no need to go any further, this is the "deepest" possible owner of the scope.
                 break
-                # no need to go any further, this is the "deepest" possible owner
-                # of the scope.
             case "associations_declaration":
                 owner = cursor.node
 
