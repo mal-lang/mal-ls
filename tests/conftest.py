@@ -2,8 +2,16 @@ import logging
 import os
 import sys
 import typing
+from io import BytesIO
 
 import pytest
+
+from .util import (
+    BASE_OPEN_FILE,
+    OPEN_FILE_WITH_FAKE_INCLUDE,
+    OPEN_FILE_WITH_INCLUDED_FILE,
+    build_payload,
+)
 
 logging.getLogger().setLevel(logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -28,12 +36,15 @@ for directory, _, files in os.walk("tests/fixtures"):
         # Get full path of file so its usable by `open`
         file_path = os.path.join(directory, file_name)
 
-        def open_fixture_for_writing(file: str):
+        def open_fixture_for_writing(file: str, payload: bytes):
             def template() -> typing.BinaryIO:
-                """Opens a fixture in (a)append and read (+) (b)inary mode"""
+                with open(file, "rb") as file_descriptor:
+                    bio = BytesIO(file_descriptor.read())
 
-                with open(file, "r+b") as file_descriptor:
-                    yield file_descriptor
+                bio.seek(0, 2)
+                bio.write(payload)
+                bio.seek(0)
+                return bio
 
             return template
 
@@ -49,12 +60,24 @@ for directory, _, files in os.walk("tests/fixtures"):
         open_fixture_file.__doc__ = open.__doc__
 
         # Define the fixture from `open_file` on `file_path` as `fixture_name`
-        fixture = pytest.fixture(
-            fixture_function=open_fixture_file(file_path)
-            if directory != "tests/fixtures/writeable_fixtures"
-            else open_fixture_for_writing(file_path),
-            name=fixture_name,
-        )
-
-        # Bind `fixture` as `fixture_name` inside this module so it gets exported
-        setattr(module, fixture_name, fixture)
+        if directory == "tests/fixtures/writeable_fixtures":
+            # create different fixtures from the sabe base file
+            payloads = [
+                ([BASE_OPEN_FILE], fixture_name + "_base_open_file"),
+                ([OPEN_FILE_WITH_INCLUDED_FILE], fixture_name + "_with_included_file"),
+                ([OPEN_FILE_WITH_FAKE_INCLUDE], fixture_name + "_with_fake_include"),
+            ]
+            for payload, new_name in payloads:
+                fixture = pytest.fixture(
+                    open_fixture_for_writing(file_path, build_payload(payload)),
+                    name=new_name,
+                )
+                # Bind `fixture` as `fixture_name` inside this module so it gets exported
+                setattr(module, new_name, fixture)
+        else:
+            fixture = pytest.fixture(
+                open_fixture_file(file_path),
+                name=fixture_name,
+            )
+            # Bind `fixture` as `fixture_name` inside this module so it gets exported
+            setattr(module, fixture_name, fixture)
