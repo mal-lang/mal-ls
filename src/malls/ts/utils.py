@@ -7,6 +7,16 @@ MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
 
 # Pre-made queries
+
+INCLUDED_FILES_QUERY = Query(
+    MAL_LANGUAGE,
+    """
+            (include_declaration
+            file: (string) @file_name)
+        """,
+)
+
+
 FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY = Query(
     MAL_LANGUAGE,
     """

@@ -5,15 +5,19 @@ import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-from tree_sitter import Language
+from tree_sitter import Language, Parser
 
 from .lsp import enums, models
+from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
+from .lsp.utils import recursive_parsing, uri_to_path
+from .ts.utils import INCLUDED_FILES_QUERY, run_query
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
+PARSER = Parser(MAL_LANGUAGE)
 
 
 class MALLSPException(Exception):
@@ -49,6 +53,8 @@ class MALLSPServer(MethodDispatcher):
 
         # By default, the value is Off
         self.__trace_value = TraceValue.Off
+
+        self.__files = {}
 
     def start(self) -> None:
         """Starts the language server."""
@@ -107,6 +113,9 @@ class MALLSPServer(MethodDispatcher):
     @property
     def trace_value(self) -> TraceValue:
         return self.__trace_value
+
+    def files(self) -> dict:
+        return self.__files
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
@@ -229,3 +238,46 @@ class MALLSPServer(MethodDispatcher):
                 self._change_trace_value(parameters.value)
             finally:
                 return
+
+    def m_text_document__did_open(self, **params: dict | None) -> None:
+        """
+        This function will handle the notification that a new text document
+        was open. For that, we must parse the given file and included files
+        as well, since they might contain info worth providing to the user
+        """
+
+        # validate params
+        instance = models.DidOpenTextDocumentParams(**params)
+        # obtain the document URI and text
+        doc_uri = uri_to_path(instance.textDocument.uri)
+        doc_text = instance.textDocument.text
+
+        # if the file has been parsed (e.g. was included by another file)
+        # we do not need to parse it again
+        if doc_uri in self.__files:
+            return
+
+        # otherwise, parse it
+        source_encoded = doc_text.encode()
+        tree = PARSER.parse(source_encoded)
+
+        # The given file might include other files, which must also
+        # be parsed, as they could contain information that will be
+        # queried
+
+        # obtain general URI of files
+        path_prec = doc_uri.rsplit("/", 1)[0] + "/"
+
+        # save parsed file
+        self.__files[doc_uri] = Document(tree, source_encoded)
+
+        # obtain the included files
+        root_node = tree.root_node
+
+        captures = run_query(root_node, INCLUDED_FILES_QUERY)
+
+        if captures:  # If there are included files, start recursive parsing
+            self.__files = recursive_parsing(path_prec, captures["file_name"], self.__files)
+
+        # with the opened file and included files parsed, we are done
+        return
