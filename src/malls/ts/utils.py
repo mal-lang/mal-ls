@@ -343,35 +343,6 @@ def find_symbols_in_current_scope(cursor: TreeCursor, point: Point) -> (list[str
             return find_symbols_root_node(owner)
 
 
-def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Point:
-    '''
-    Since we are in a category declaration, the symbol, sine it is user-defined,
-    must be the category name. So we only need to return the start point of
-    the current node.
-    '''
-
-    return node.start_point
-
-def find_symbol_definition(node: Node, symbol: str) -> Point:
-    '''
-    Given a node and a symbol, this function will find the point
-    where that symbol is defined.
-
-    Since the node can be of any type, we need to go up the parent
-    tree until we find a parent from which we can extract relevant
-    information.
-    '''
-
-    while True:
-        match node.type:
-            case 'category_declaration':
-                return find_symbol_definition_category_declaration(node, symbol)
-            case _:
-                node = node.parent # go to parent if no info proved relevant
-        # terminate if there are no more parents
-        if node is None:
-            return None
-
 def find_symbols_in_category_hierarchy(owner: Node) -> (dict, dict):
     """
     Given a category declaration, we want to find the symbols in the current scope,
@@ -563,3 +534,45 @@ def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict
             return find_symbols_in_asset_hierarchy(owner)
         case _:  # defaults to root node
             return find_symbols_root_node_hierarchy(owner)
+
+
+def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Point:
+    '''
+    Since we are in a category declaration, the symbol, since it is user-defined,
+    must be the category name. So we only need to return the start point of
+    the current node.
+    '''
+
+    return node.start_point
+
+def find_symbol_definition_asset_declaration(node: Node, symbol: str) -> Point:
+    '''
+    Since we are in an asset declaration, the symbol, since it is user-defined,
+    must be the category name. So we only need to return the start point of
+    the current node.
+    '''
+
+    return node.start_point
+
+def find_symbol_definition(node: Node, symbol: str) -> Point:
+    '''
+    Given a node and a symbol, this function will find the point
+    where that symbol is defined.
+
+    Since the node can be of any type, we need to go up the parent
+    tree until we find a parent from which we can extract relevant
+    information.
+    '''
+
+    while True:
+        match node.type:
+            case 'category_declaration':
+                return find_symbol_definition_category_declaration(node, symbol)
+            case 'asset_declaration':
+                return find_symbol_definition_asset_declaration(node, symbol)
+            case _:
+                node = node.parent # go to parent if no info proved relevant
+        # terminate if there are no more parents
+        if node is None:
+            return None
+
