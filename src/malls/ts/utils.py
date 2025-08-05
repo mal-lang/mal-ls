@@ -1,8 +1,10 @@
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
+import logging
 
 from ..lsp.models import Position
 
+log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
 
@@ -64,6 +66,22 @@ FIND_SYMBOLS_ROOT_NODE_QUERY = Query(
             """,
 )
 
+
+FIND_EXTENDED_ASSET = Query(
+    MAL_LANGUAGE,
+    """
+        ("extends" (identifier) @identifier_node)
+    """
+)
+
+FIND_ASSET_DECLARATION = Query(
+    MAL_LANGUAGE,
+    """
+        (asset_declaration 
+            "asset"
+            (identifier) ) @asset_declaration
+    """
+)
 
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
@@ -537,42 +555,82 @@ def find_symbols_in_context_hierarchy(cursor: TreeCursor, point: Point) -> (dict
 
 
 def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Point:
-    '''
+    """
     Since we are in a category declaration, the symbol, since it is user-defined,
     must be the category name. So we only need to return the start point of
     the current node.
-    '''
+    """
 
     return node.start_point
 
-def find_symbol_definition_asset_declaration(node: Node, symbol: str) -> Point:
-    '''
+def bfs_search(doc, query, key, symbol, storage):
+
+    def search_match(file, query, nodes, symbol):
+        captures = run_query(file.tree.root_node, query)
+        if captures:
+            nodes = captures[key]
+            for node in nodes:
+                identifier = node.children_by_field_name("id")
+                # if it has identifiers, it must be the first
+                if identifier[0].text == symbol:
+                    return node
+        return None
+
+    # First, check if the asset is defined in the current file
+    file = storage[doc]
+
+    if (result:= search_match(file, query, key, symbol)) is not None:
+        return result
+
+    # otherwise, we have to check for the included files
+    # for that, we will use a BFS (breadth-first search)
+    included_files = storage[doc].included_files
+
+    while included_files:
+        file = included_files.pop(0)
+        if (result := search_match(file, query, key, symbol)) is not None:
+            return result
+        included_files.extend(storage[file.uri].included_files)
+
+    return None
+
+def find_symbol_definition_asset_declaration(node: Node, symbol: str, document_uri, storage) -> Point:
+    """
     Since we are in an asset declaration, the symbol, since it is user-defined,
-    must be the category name. So we only need to return the start point of
-    the current node.
-    '''
+    can either be the asset name or the extended asset. So we only need to
+    check which one it is.
+    """
 
+    # find extended asset
+    captures = run_query(node,FIND_EXTENDED_ASSET)
+
+    if captures and captures['identifier_node'][0].text==symbol:
+        key = 'asset_declaration'
+        # in this case, we have to find this asset
+        result_node = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
+        return result_node.start_point if result_node else None
+    # we are sure it must be the asset name
     return node.start_point
 
-def find_symbol_definition(node: Node, symbol: str) -> Point:
-    '''
+
+def find_symbol_definition(node: Node, symbol: str, document_uri: str = None, storage: list = None) -> Point:
+    """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
 
     Since the node can be of any type, we need to go up the parent
     tree until we find a parent from which we can extract relevant
     information.
-    '''
+    """
 
     while True:
         match node.type:
-            case 'category_declaration':
+            case "category_declaration":
                 return find_symbol_definition_category_declaration(node, symbol)
-            case 'asset_declaration':
-                return find_symbol_definition_asset_declaration(node, symbol)
+            case "asset_declaration":
+                return find_symbol_definition_asset_declaration(node, symbol, document_uri, storage)
             case _:
-                node = node.parent # go to parent if no info proved relevant
+                node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
         if node is None:
             return None
-
