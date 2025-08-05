@@ -1,0 +1,6 @@
+category Cat2 {
+
+    asset Asset2
+    {
+    }
+}
