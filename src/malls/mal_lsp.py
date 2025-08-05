@@ -269,7 +269,7 @@ class MALLSPServer(MethodDispatcher):
         path_prec = doc_uri.rsplit("/", 1)[0] + "/"
 
         # save parsed file
-        self.__files[doc_uri] = Document(tree, source_encoded)
+        self.__files[doc_uri] = Document(tree, source_encoded, doc_uri)
 
         # obtain the included files
         root_node = tree.root_node
@@ -277,7 +277,7 @@ class MALLSPServer(MethodDispatcher):
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
         if captures:  # If there are included files, start recursive parsing
-            self.__files = recursive_parsing(path_prec, captures["file_name"], self.__files)
+            recursive_parsing(path_prec, captures["file_name"], self.__files, doc_uri)
 
         # with the opened file and included files parsed, we are done
         return

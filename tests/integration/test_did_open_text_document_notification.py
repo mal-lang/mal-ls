@@ -52,6 +52,8 @@ def test_open_file_with_include(
     assert type(ls.files()[simplified_file_path].tree) is Tree
     assert included_path_file in ls.files().keys()
     assert type(ls.files()[included_path_file].tree) is Tree
+    assert len(ls.files()[simplified_file_path].included_files) == 1
+    assert ls.files()[simplified_file_path].included_files[0].uri == included_path_file
 
     output.close()
 
