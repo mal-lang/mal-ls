@@ -2,12 +2,37 @@ import asyncio
 import io
 import json
 import typing
+from pathlib import Path
 
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
 from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
+
+
+def build_payload(to_include: list):
+    result = b""
+    for payload in to_include:
+        # get the length of the payload (+1 for the newline)
+        json_string = json.dumps(payload, separators=(",", ":"))  # Remove extra spaces
+        json_payload = json_string.encode("utf-8")
+        payload_size = str(len(json_payload) + 1)
+
+        # write payload and size to file
+        result += b"Content-Length: " + payload_size.encode() + b"\n\n" + json_string.encode()
+    return result
+
+
+def filepath_to_uri(filepath: str) -> str:
+    """
+    Converts a native filesystem path to a file:// URI.
+    """
+    path_obj = Path(filepath)
+
+    absolute_path_obj = path_obj.resolve()
+
+    return absolute_path_obj.as_uri()
 
 
 def get_lsp_json(input_: io.BytesIO) -> tuple[dict, int]:
@@ -94,3 +119,58 @@ def server_output(
         raise e
 
     return intermediary, ls, time_out_err
+
+
+######################
+# Pre-built payloads #
+######################
+
+# create fake uri for the MAL file being parsed
+# (won't be used by the server, so there is no issue if the file does not actually exist)
+FILE_PATH = str(Path(__file__).parent.resolve()) + "/fixtures/mal/"
+main_simplified_file_path = FILE_PATH + "main.mal"
+main_file_path = filepath_to_uri(main_simplified_file_path)
+
+BASE_OPEN_FILE = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory\
+            System {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
+        }
+    },
+}
+
+OPEN_FILE_WITH_INCLUDED_FILE = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
+            \ninclude "find_current_scope_function.mal"\ncategory System\
+            {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
+        }
+    },
+}
+
+OPEN_FILE_WITH_FAKE_INCLUDE = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
+            \ninclude "random_file_that_does_not_exist.mal"\ncategory System\
+            {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
+        }
+    },
+}
