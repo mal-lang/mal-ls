@@ -137,3 +137,81 @@ def test_symbol_definition_in_attack_step(mal_find_symbols_in_scope):
     # we have to make sure we ignore whitespaces,
     # the only thing that maters are non-empty characters
     assert response == (8, 8)
+
+
+def test_symbol_definition_in_variable_call(
+    mal_symbol_def_extended_asset_main,
+):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_extended_asset_main.mal"
+    source_encoded = mal_symbol_def_extended_asset_main.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    # obtain the included files
+    root_node = tree.root_node
+
+    captures = run_query(root_node, INCLUDED_FILES_QUERY)
+    recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri)
+
+    ###################################
+
+    # go to name of asset
+    point = (9, 11)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    # found in the 3rd auxiliary file
+    assert response == (4, 6)
+
+
+def test_symbol_definition_in_variable_call_extend_chain(
+    mal_symbol_def_variable_call_extend_chain_main,
+):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_variable_call_extend_chain_main.mal"
+    source_encoded = mal_symbol_def_variable_call_extend_chain_main.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    # obtain the included files
+    root_node = tree.root_node
+
+    captures = run_query(root_node, INCLUDED_FILES_QUERY)
+    recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri)
+
+    ###################################
+
+    # go to name of asset
+    point = (9, 11)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    # found in the 3rd auxiliary file
+    assert response == (5, 6)
