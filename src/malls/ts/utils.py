@@ -1,6 +1,7 @@
+import logging
+
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
-import logging
 
 from ..lsp.models import Position
 
@@ -71,17 +72,18 @@ FIND_EXTENDED_ASSET = Query(
     MAL_LANGUAGE,
     """
         ("extends" (identifier) @identifier_node)
-    """
+    """,
 )
 
 FIND_ASSET_DECLARATION = Query(
     MAL_LANGUAGE,
     """
-        (asset_declaration 
+        (asset_declaration
             "asset"
             (identifier) ) @asset_declaration
-    """
+    """,
 )
+
 
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
@@ -563,8 +565,8 @@ def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Poin
 
     return node.start_point
 
-def bfs_search(doc, query, key, symbol, storage):
 
+def bfs_search(doc, query, key, symbol, storage):
     def search_match(file, query, nodes, symbol):
         captures = run_query(file.tree.root_node, query)
         if captures:
@@ -579,7 +581,7 @@ def bfs_search(doc, query, key, symbol, storage):
     # First, check if the asset is defined in the current file
     file = storage[doc]
 
-    if (result:= search_match(file, query, key, symbol)) is not None:
+    if (result := search_match(file, query, key, symbol)) is not None:
         return result
 
     # otherwise, we have to check for the included files
@@ -594,7 +596,10 @@ def bfs_search(doc, query, key, symbol, storage):
 
     return None
 
-def find_symbol_definition_asset_declaration(node: Node, symbol: str, document_uri, storage) -> Point:
+
+def find_symbol_definition_asset_declaration(
+    node: Node, symbol: str, document_uri, storage
+) -> Point:
     """
     Since we are in an asset declaration, the symbol, since it is user-defined,
     can either be the asset name or the extended asset. So we only need to
@@ -602,10 +607,10 @@ def find_symbol_definition_asset_declaration(node: Node, symbol: str, document_u
     """
 
     # find extended asset
-    captures = run_query(node,FIND_EXTENDED_ASSET)
+    captures = run_query(node, FIND_EXTENDED_ASSET)
 
-    if captures and captures['identifier_node'][0].text==symbol:
-        key = 'asset_declaration'
+    if captures and captures["identifier_node"][0].text == symbol:
+        key = "asset_declaration"
         # in this case, we have to find this asset
         result_node = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
         return result_node.start_point if result_node else None
@@ -613,7 +618,19 @@ def find_symbol_definition_asset_declaration(node: Node, symbol: str, document_u
     return node.start_point
 
 
-def find_symbol_definition(node: Node, symbol: str, document_uri: str = None, storage: list = None) -> Point:
+def find_symbol_definition_variable_declaration(node: Node, symbol: str):
+    """
+    Since we are in a variable declaration, the only relevant symbol has
+    to be the variable name itself, so we just need to return the current
+    node's position
+    """
+
+    return node.start_point
+
+
+def find_symbol_definition(
+    node: Node, symbol: str, document_uri: str = None, storage: list = None
+) -> Point:
     """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
@@ -629,6 +646,8 @@ def find_symbol_definition(node: Node, symbol: str, document_uri: str = None, st
                 return find_symbol_definition_category_declaration(node, symbol)
             case "asset_declaration":
                 return find_symbol_definition_asset_declaration(node, symbol, document_uri, storage)
+            case "asset_variable":
+                return find_symbol_definition_variable_declaration(node, symbol)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents

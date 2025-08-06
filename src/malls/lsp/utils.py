@@ -64,6 +64,6 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
         included_file_node = included_file_document.tree.root_node
         new_captures = run_query(included_file_node, INCLUDED_FILES_QUERY)
         if new_captures:
-            recursive_parsing(uri_prec, new_captures['file_name'], storage, included_file_uri)
+            recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri)
 
     return storage
