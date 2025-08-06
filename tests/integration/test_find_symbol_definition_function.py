@@ -115,3 +115,25 @@ def test_symbol_definition_in_asset_variable(mal_find_symbols_in_scope):
     # we have to make sure we ignore whitespaces,
     # the only thing that maters are non-empty characters
     assert response == (7, 6)
+
+
+def test_symbol_definition_in_attack_step(mal_find_symbols_in_scope):
+    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+
+    # go to name of variable
+    point = (8, 10)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    response = find_symbol_definition(cursor.node, cursor.node.text)
+
+    # ensure position is start of asset declaration
+    # we have to make sure we ignore whitespaces,
+    # the only thing that maters are non-empty characters
+    assert response == (8, 8)
