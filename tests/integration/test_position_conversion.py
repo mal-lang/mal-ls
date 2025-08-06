@@ -15,7 +15,7 @@ def test_ascii_chars_only():
 
 
 def test_with_emoji():
-    text = 'a🚀b'.encode() # emoji takes 2 UTF-16 characters, so the emoji is 4 bytes
+    text = "a🚀b".encode()  # emoji takes 2 UTF-16 characters, so the emoji is 4 bytes
 
     # a  🚀   b
     # 0  1 2  3
@@ -29,7 +29,7 @@ def test_with_emoji():
 
 
 def test_ascii_and_multibyte_chars():
-    text = 'ßç🐍'.encode()
+    text = "ßç🐍".encode()
 
     # ß ç  🐍
     # 0 1  2 3
@@ -43,7 +43,7 @@ def test_ascii_and_multibyte_chars():
 
 
 def test_empty_string():
-    text = b' '
+    text = b" "
 
     position = Position(line=0, character=0)
 

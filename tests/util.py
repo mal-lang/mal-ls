@@ -17,7 +17,7 @@ def build_payload(to_include: list):
         # get the length of the payload (+1 for the newline)
         json_string = json.dumps(payload, separators=(",", ":"))  # Remove extra spaces
         json_payload = json_string.encode("utf-8")
-        payload_size = str(len(json_payload) + 1)
+        payload_size = str(len(json_payload))
 
         # write payload and size to file
         result += b"Content-Length: " + payload_size.encode() + b"\n\n" + json_string.encode()
@@ -139,8 +139,8 @@ BASE_OPEN_FILE = {
             "uri": main_file_path,
             "languageId": "mal",
             "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory\
-            System {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
+            + "System {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n",
         }
     },
 }
@@ -172,5 +172,112 @@ OPEN_FILE_WITH_FAKE_INCLUDE = {
             \ninclude "random_file_that_does_not_exist.mal"\ncategory System\
             {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
         }
+    },
+}
+
+CHANGE_FILE_1 = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 5, "character": 6},
+                    "end": {"line": 6, "character": 0},
+                },
+                "text": "FooFoo extends Foo {}\n",
+            }
+        ],
+    },
+}
+
+CHANGE_FILE_2 = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 4, "character": 15},
+                    "end": {"line": 5, "character": 24},
+                },
+                "text": "Bar {}\nasset Foo extends Bar {}",
+            }
+        ],
+    },
+}
+
+CHANGE_FILE_3 = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 7, "character": 0},
+                    "end": {"line": 9, "character": 0},
+                },
+                "text": "\nassociations {\n}\n",
+            }
+        ],
+    },
+}
+
+CHANGE_FILE_4 = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 4, "character": 15},
+                    "end": {"line": 5, "character": 24},
+                },
+                "text": "Bar {}\nasset Foo extends Bar {}",
+            },
+            {
+                "range": {
+                    "start": {"line": 5, "character": 6},
+                    "end": {"line": 5, "character": 9},
+                },
+                "text": "Qux",
+            },
+        ],
+    },
+}
+
+CHANGE_FILE_5 = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 0, "character": 0},
+                    "end": {"line": 0, "character": 12},
+                },
+                "text": {"text": '#id: "a.b.c"\n'},
+            }
+        ],
     },
 }
