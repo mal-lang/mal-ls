@@ -628,6 +628,16 @@ def find_symbol_definition_variable_declaration(node: Node, symbol: str):
     return node.start_point
 
 
+def find_symbol_definition_attack_step_declaration(node: Node, symbol: str):
+    """
+    Since we are in an attack step declaration, the only relevant symbol has
+    to be the attack step's name itself, so we just need to return the current
+    node's position
+    """
+
+    return node.start_point
+
+
 def find_symbol_definition(
     node: Node, symbol: str, document_uri: str = None, storage: list = None
 ) -> Point:
@@ -648,6 +658,8 @@ def find_symbol_definition(
                 return find_symbol_definition_asset_declaration(node, symbol, document_uri, storage)
             case "asset_variable":
                 return find_symbol_definition_variable_declaration(node, symbol)
+            case "attack_step":
+                return find_symbol_definition_attack_step_declaration(node, symbol)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
