@@ -85,6 +85,18 @@ FIND_ASSET_DECLARATION = Query(
 )
 
 
+def find_variable_query(variable_name: str):
+    query = Query(
+        MAL_LANGUAGE,
+        """
+            (asset_variable
+                "let"
+                id: (identifier) @var_identifier
+        """+ f"(#eq? @var_identifier \"{variable_name.decode()}\") ) @variable_declaration"
+    )
+    return query
+
+
 def run_query(node: Node, query: Query):
     query_cursor = QueryCursor(query)
     captures = query_cursor.captures(node)
@@ -578,7 +590,7 @@ def bfs_search(doc, query, key, symbol, storage):
                     return node
         return None
 
-    # First, check if the asset is defined in the current file
+    # First, check if the item is defined in the current file
     file = storage[doc]
 
     if (result := search_match(file, query, key, symbol)) is not None:
@@ -591,7 +603,7 @@ def bfs_search(doc, query, key, symbol, storage):
     while included_files:
         file = included_files.pop(0)
         if (result := search_match(file, query, key, symbol)) is not None:
-            return result
+            return (result, file)
         included_files.extend(storage[file.uri].included_files)
 
     return None
@@ -612,7 +624,7 @@ def find_symbol_definition_asset_declaration(
     if captures and captures["identifier_node"][0].text == symbol:
         key = "asset_declaration"
         # in this case, we have to find this asset
-        result_node = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
+        result_node, result_file = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
         return result_node.start_point if result_node else None
     # we are sure it must be the asset name
     return node.start_point
@@ -638,6 +650,48 @@ def find_symbol_definition_attack_step_declaration(node: Node, symbol: str):
     return node.start_point
 
 
+def find_symbol_definition_variable_substitution(node: Node, symbol: str, document_uri: str, storage: dict):
+    """
+    Since we are in a variable substitution, we need to find where the
+    variable is defined. This means querying this asset, its parent if
+    there is one, and so on.
+    """
+
+    # first, we need to go to the asset itself
+    while (node.type != "asset_declaration"):
+        node = node.parent
+
+    # start by querying the current file
+    captures = run_query(node, find_variable_query(symbol))
+
+    # if the query returns something, we found the variable in
+    # the current file
+    if captures:
+        return captures['variable_declaration'][0].start_point
+
+    # otherwise, we have to up the hierarchy (extended assets)
+    # to try and find one where the variable is defined
+    while True:
+        captures = run_query(node, FIND_EXTENDED_ASSET)
+        
+        # if no included node, stop
+        if not captures: return None
+
+        # otherwise, try to find the extended asset
+        extended_asset_name = captures['identifier_node'][0].text
+        results = bfs_search(document_uri, FIND_ASSET_DECLARATION, "asset_declaration", extended_asset_name, storage)
+
+        # extended asset not found
+        if not results: return None
+
+        # update node and file
+        node, file = results
+        document_uri = file.uri
+
+        if(captures := run_query(node, find_variable_query(symbol))):
+            return captures['variable_declaration'][0].start_point
+
+
 def find_symbol_definition(
     node: Node, symbol: str, document_uri: str = None, storage: list = None
 ) -> Point:
@@ -660,6 +714,8 @@ def find_symbol_definition(
                 return find_symbol_definition_variable_declaration(node, symbol)
             case "attack_step":
                 return find_symbol_definition_attack_step_declaration(node, symbol)
+            case "asset_variable_substitution":
+                return find_symbol_definition_variable_substitution(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
