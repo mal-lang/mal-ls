@@ -6,14 +6,12 @@ from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 from tree_sitter import Language, Parser
-import os
-from urllib.parse import urlparse
-from pathlib import Path
 
 from .lsp import enums, models
+from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.classes import Document
+from .lsp.utils import recursive_parsing, uri_to_path
 from .ts.utils import INCLUDED_FILES_QUERY, run_query
 
 log = logging.getLogger(__name__)
@@ -127,7 +125,10 @@ class MALLSPServer(MethodDispatcher):
             case enums.TraceValue.Off | enums.TraceValue.Messages | enums.TraceValue.Verbose:
                 self.__trace_value = new_trace_value
             case _:
-                error_msg = f"Unrecognized trace value: `{new_trace_value}`. Options are: `off`, `messages` and `verbose`."
+                error_msg = (
+                    f"Unrecognized trace value: `{new_trace_value}`."
+                    " Options are: `off`, `messages` and `verbose`."
+                )
                 log.error(error_msg)
                 raise MALLSPException(ErrorCodes.InvalidParams, error_msg)
 
@@ -239,65 +240,18 @@ class MALLSPServer(MethodDispatcher):
             finally:
                 return
 
-    def _uri_to_path(self, uri: str) -> Path:
-        """
-        Auxiliary method to convert file:// URI back to filesystem path
-        """
-
-        parsed = urlparse(uri).path
-
-        if os.name=='nt': # handle Windows
-            parsed = parsed[1:]
-        return parsed
-
-    def _recursive_parsing(self, uri_prec: str, captures: dict) -> None:
-        '''
-        Auxiliary method to parse included files recursively
-        '''
-
-        while captures:
-            # build file path
-            file_name = uri_prec + captures.pop(0).text.decode().strip("\"")
-            
-            # if the file has already been processed, ignore it
-            # (this can happen if file A was opened with a didOpen notification
-            # and then file B which extends file A is also opened. By logical order,
-            # A was parsed already, so we do not need to do it, since it hasn't changed)
-
-            if file_name in self.__files:
-                continue
-            if not Path(file_name).exists():
-                continue # file has not been created yet, so we just ignore it
-
-            # otherwise, parse it
-            with open(file_name,"rb") as file:
-                source = file.read()
-
-            tree = PARSER.parse(source)
-            root_node = tree.root_node
-
-            # save parsed file
-            self.__files[file_name] = Document(tree,source)
-
-            # check if there are other includes to process
-            new_captures = run_query(root_node, INCLUDED_FILES_QUERY)
-
-            # if there are new includes, add them to the list
-            if new_captures:
-                captures.extend(new_captures["file_name"])
-
-        return
-
     def m_text_document__did_open(self, **params: dict | None) -> None:
-        '''
+        """
         This function will handle the notification that a new text document
         was open. For that, we must parse the given file and included files
         as well, since they might contain info worth providing to the user
-        '''
+        """
 
+        # validate params
+        instance = models.DidOpenTextDocumentParams(**params)
         # obtain the document URI and text
-        doc_uri = self._uri_to_path(params['textDocument']['uri'])
-        doc_text = params['textDocument']['text']
+        doc_uri = uri_to_path(instance.textDocument.uri)
+        doc_text = instance.textDocument.text
 
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
@@ -313,18 +267,18 @@ class MALLSPServer(MethodDispatcher):
         # queried
 
         # obtain general URI of files
-        path_prec = doc_uri.rsplit('/',1)[0]+"/"
+        path_prec = doc_uri.rsplit("/", 1)[0] + "/"
 
         # save parsed file
-        self.__files[doc_uri] = Document(tree,source_encoded)
+        self.__files[doc_uri] = Document(tree, source_encoded)
 
         # obtain the included files
         root_node = tree.root_node
 
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
-        if captures: # If there are included files, start recursive parsing
-            self._recursive_parsing(path_prec, captures["file_name"])
+        if captures:  # If there are included files, start recursive parsing
+            self.__files = recursive_parsing(path_prec, captures["file_name"], self.__files)
 
         # with the opened file and included files parsed, we are done
         return

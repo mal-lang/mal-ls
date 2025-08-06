@@ -15,8 +15,9 @@ class Document:
     Includes text and tree, to be easily
     edited by TreeSitter
     """
+
     def __init__(self, tree: Tree, text: str):
-        self.text = text # text is in bytes
+        self.text = text  # text is in bytes
         self.tree = tree
 
     def _pos_to_byte(self, point: Point):
