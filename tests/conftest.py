@@ -8,6 +8,11 @@ import pytest
 
 from .util import (
     BASE_OPEN_FILE,
+    CHANGE_FILE_1,
+    CHANGE_FILE_2,
+    CHANGE_FILE_3,
+    CHANGE_FILE_4,
+    CHANGE_FILE_5,
     OPEN_FILE_WITH_FAKE_INCLUDE,
     OPEN_FILE_WITH_INCLUDED_FILE,
     build_payload,
@@ -66,6 +71,11 @@ for directory, _, files in os.walk("tests/fixtures"):
                 ([BASE_OPEN_FILE], fixture_name + "_base_open_file"),
                 ([OPEN_FILE_WITH_INCLUDED_FILE], fixture_name + "_with_included_file"),
                 ([OPEN_FILE_WITH_FAKE_INCLUDE], fixture_name + "_with_fake_include"),
+                ([BASE_OPEN_FILE, CHANGE_FILE_1], "change_middle_of_file_single_line"),
+                ([BASE_OPEN_FILE, CHANGE_FILE_2], "change_middle_of_file_multiple_lines"),
+                ([BASE_OPEN_FILE, CHANGE_FILE_3], "change_end_of_file"),
+                ([BASE_OPEN_FILE, CHANGE_FILE_4], "change_middle_of_file_twice"),
+                ([BASE_OPEN_FILE, CHANGE_FILE_5], "change_whole_file"),
             ]
             for payload, new_name in payloads:
                 fixture = pytest.fixture(

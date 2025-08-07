@@ -156,7 +156,7 @@ def find_current_scope(cursor: TreeCursor, point: Point):
     return owner
 
 
-def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
+def lsp_to_tree_sitter_position(text: str, pos: Position, new_text: str = None) -> Point:
     """
     Converts an LSP position (UTF-16 character index) to a Tree-sitter position (UTF-8 byte offset).
     """
@@ -164,8 +164,13 @@ def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
 
     lines = text.splitlines(keepends=True)
 
-    # Get correct line
-    line_text = lines[lsp_line]
+    if lsp_line >= len(lines):
+        # there is an extension to the text itself (didChange)
+        # so we have to consider the line being written
+        line_text = new_text.splitlines(keepends=True)[lsp_line - len(lines)]
+    else:
+        # Get correct line
+        line_text = lines[lsp_line]
 
     # The idea is to conver the string to UTF-16.
     # Since UTF-16 characters correspond to 2 bytes,
@@ -175,7 +180,7 @@ def lsp_to_tree_sitter_position(text: str, pos: Position) -> Point:
 
     # Convert to UTF-16 (each UTF-16 code unit is 2 bytes)
     # https://en.wikipedia.org/wiki/UTF-16#Byte-order_encoding_schemes
-    line_utf16 = line_text.encode("utf-16")
+    line_utf16 = line_text.decode().encode("utf-16")
 
     # check for BOM
     bom_size = 0
