@@ -291,15 +291,16 @@ class MALLSPServer(MethodDispatcher):
         """
 
         # Obtain text document
-        doc_uri = uri_to_path(params["textDocument"]["uri"])
+        textDocument = models.DidChangeTextDocumentParams(**params)
+        doc_uri = uri_to_path(textDocument.text_document.uri)
         document = self.__files[doc_uri]
 
         # There could be various changes, so we need to iterate over them
-        for change in params["contentChanges"]:
-            changed_range = change["range"]
-            if type(change["text"]) is str:
-                text = change["text"].encode()
+        for change in textDocument.content_changes:
+            changed_range = change.range
+            if type(change.text) is str:
+                text = change.text.encode()
                 document.execute_changes(changed_range, text)
             else:
-                text = change["text"]["text"].encode()  # whole file change
+                text = change.text.text.encode()  # whole file change
                 document.change_whole_file(text)

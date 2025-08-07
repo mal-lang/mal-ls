@@ -70,10 +70,10 @@ class Document:
 
         # start by converting the range to TreeSitter positions
         start_position_lsp = Position(
-            line=change_range["start"]["line"], character=change_range["start"]["character"]
+            line=change_range.start.line, character=change_range.start.character
         )
         end_position_lsp = Position(
-            line=change_range["end"]["line"], character=change_range["end"]["character"]
+            line=change_range.end.line, character=change_range.end.character
         )
 
         start_position = lsp_to_tree_sitter_position(self.text, start_position_lsp, text)
