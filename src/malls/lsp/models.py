@@ -2616,6 +2616,7 @@ class DidOpenTextDocumentParams(BaseModel):
 
     textDocument: TextDocumentItem
 
+
 class WholeFileChange(BaseModel):
     """
     Class to represent a change to the whole file
@@ -2623,10 +2624,12 @@ class WholeFileChange(BaseModel):
 
     text: str
 
+
 class TextDocumentContentChangeEvent(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent
     """
+
     range: Range
 
     range_length: int | None = None
@@ -2635,13 +2638,14 @@ class TextDocumentContentChangeEvent(BaseModel):
 
     model_config = base_config
 
+
 class DidChangeTextDocumentParams(BaseModel):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeTextDocumentParams
     """
+
     text_document: VersionedTextDocumentIdentifier
 
     content_changes: list[TextDocumentContentChangeEvent]
 
     model_config = base_config
-
