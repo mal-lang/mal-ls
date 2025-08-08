@@ -84,6 +84,13 @@ FIND_ASSET_DECLARATION = Query(
     """,
 )
 
+FIND_PERIOD = Query(
+    MAL_LANGUAGE,
+    """
+        ("." @period_node)
+    """
+)
+
 
 def find_variable_query(variable_name: str):
     query = Query(
@@ -672,7 +679,7 @@ def find_symbol_definition_variable_substitution(
     # if the query returns something, we found the variable in
     # the current file
     if captures:
-        return captures["variable_declaration"][0].start_point
+        return captures["variable_declaration"][0]
 
     # otherwise, we have to up the hierarchy (extended assets)
     # to try and find one where the variable is defined
@@ -698,7 +705,139 @@ def find_symbol_definition_variable_substitution(
         document_uri = file.uri
 
         if captures := run_query(node, find_variable_query(symbol)):
-            return captures["variable_declaration"][0].start_point
+            return captures["variable_declaration"][0]
+
+
+def visit_expr(cursor, found, document_uri: str = None, storage: dict = None):
+    if cursor.node.type == 'identifier':
+        found.append(cursor.node.text)
+    elif cursor.node.text == b'(':
+        cursor.goto_next_sibling()
+        visit_expr(cursor, found, document_uri, storage)
+        cursor.goto_next_sibling()
+    elif cursor.node.type == 'asset_variable_substitution':
+        # get where the variable is referenced
+        var_node = find_symbol_definition_variable_substitution(
+            cursor.node,
+            cursor.node.children_by_field_name('id')[0].text,
+            document_uri,
+            storage
+        )
+        # visit the variable definition
+        var_cursor = var_node.walk()
+        var_cursor.goto_first_child()
+        var_cursor.goto_next_sibling() # skip 'let'
+        var_cursor.goto_next_sibling() # skip name of var
+        var_cursor.goto_next_sibling() # skip '='
+        var_cursor.goto_first_child()  # visit the definition
+        visit_expr(var_cursor, found, document_uri, storage)
+    else:
+        match cursor.node.type:
+            case 'asset_expr_binop':
+                if cursor.node.children_by_field_name('operator')[0].text == b'.':
+                    cursor.goto_first_child()
+                    visit_expr(cursor, found, document_uri, storage)
+                    cursor.goto_next_sibling() # ignore operator
+                    cursor.goto_next_sibling()
+                    visit_expr(cursor, found, document_uri, storage)
+                    cursor.goto_parent()
+                else:
+                    # in other operators these assets have a common ancestor,
+                    # so we can just return one of them and, when we search for
+                    # the association recursively, we will eventually find
+                    # the association
+                    cursor.goto_first_child()
+                    visit_expr(cursor, found, document_uri, storage)
+                    cursor.goto_parent()
+            case 'asset_expr_unop':
+                cursor.goto_first_child()
+                visit_expr(cursor,found, document_uri, storage)
+                cursor.goto_parent()
+            case 'asset_expr_type':
+                # a type is simply mentioning a "subasset", i.e.
+                # if we have a[b] then there is an asset b that extends a.
+                # This simplifies the process quite a lot, since we don't
+                # really need to know what comes before, only the symbol 'b'
+                found.clear()
+                found.append(cursor.node.children_by_field_name("type_id")[0].text)
+
+
+def find_asset_from_expr():
+    '''
+    The objective of this function is to find the node where an asset
+    is defined.
+    We will start by querying for an association where the field is mentioned.
+    If there is only one, we return it. If there are multiple, we will go 'back'
+    to the asset referencing that association. I.e., if we found multiple associations
+    mentioning A, we will go up until we find B.A to query for an association that
+    mentions A and B. We repeat this process until we find a single association.
+    '''
+
+    # 1st - find what is the name of the asset.
+    # We have complicated expressions of the form A.B.(C \/ D).E[F]
+    # so we have to find what is the name of the asset.
+    #
+    # The easiest way is to go up the hierarchy and, according to
+    # the type of node, decide what to do
+
+    cursor = node.walk()
+    while True:
+        if node_parent.text[0] == b'(':
+            pass
+        match node_parent.type:
+            case 'asset_expr_binop':
+                pass
+            case 'asset_expr_unop':
+                pass
+            case 'asset_expr_type':
+                pass
+
+
+def find_symbol_reaching(
+    node: Node, symbol: str, pos: (Point, Point), document_uri: str, storage: dict
+):
+    """
+    Since we are in a binop expression, we need to determine if
+    the node is an attack step or a field
+    """
+    
+    # first check the parent
+    if node.parent.type in ("asset_variable", "preconditions"):
+        # if it's a variable or a precondition, we are certainly
+        # talking about fields and only need to find the association
+        # where they are defined
+        pass
+
+    # otherwise, it's either a field or an attack step
+    # query the node to see if there is a `.` following the start_point
+    query_cursor = QueryCursor(FIND_PERIOD)
+    query_cursor.set_point_range(pos[0],node.end_point)
+    captures = query_cursor.captures(node)
+
+    # if there are captures, then we know there is a period `.`
+    # after our symbol, so it's a field
+    if captures:
+        # find a field
+        pass
+    else:
+        # otherwise, it's an attack step
+        # find attack step
+        pass
+
+    '''
+    while True:
+        # check if it's to the left or right of '.'
+        child = node.descendant_for_point_range(pos[0], pos[1])
+
+        if asset_expr_binop_node.field_name_for_child(node_at_point.index) == 'left':
+            # if the field name is 'left' then it certainly is a field,
+            # and we only have to find the association where it is
+            # mentioned .
+            
+            # TODO find field
+    '''
+
+
 
 
 def find_symbol_definition(
@@ -713,6 +852,8 @@ def find_symbol_definition(
     information.
     """
 
+    original_position = (node.start_point, node.end_point)
+
     while True:
         match node.type:
             case "category_declaration":
@@ -726,7 +867,9 @@ def find_symbol_definition(
             case "asset_variable_substitution":
                 return find_symbol_definition_variable_substitution(
                     node, symbol, document_uri, storage
-                )
+                ).start_point
+            case "asset_expr_binop":
+                return find_symbol_definition_binop(node, symbol, original_position)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
