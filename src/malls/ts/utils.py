@@ -913,12 +913,12 @@ def find_symbol_reaching(
         # otherwise, it's an attack step
         assets = []
         visit_expr(node.children[0].walk(), assets, document_uri, storage)
-        assets.pop(-1) # remove last element (which is the attack step)
+        assets.pop(-1)  # remove last element (which is the attack step)
         # get the asset where the attack step is defined (last element)
-        if assets: # go down the chain
+        if assets:  # go down the chain
             asset = find_asset_from_expr(node, assets[-1], document_uri, storage, assets)
         else:
-            asset = node.parent.parent.parent # go to asset
+            asset = node.parent.parent.parent  # go to asset
         # and finally find the attack step declaration
         query = Query(
             MAL_LANGUAGE,
@@ -927,11 +927,11 @@ def find_symbol_reaching(
                 id: (identifier) @name
                 (#eq? @name "{symbol.decode()}")
             ) @attack_step
-            """
+            """,
         )
         log.info(asset.text)
-        if(captures := run_query(asset, query)):
-            point = captures['attack_step'][0].start_point
+        if captures := run_query(asset, query):
+            point = captures["attack_step"][0].start_point
             return point[0], point[1]
         return None
 
