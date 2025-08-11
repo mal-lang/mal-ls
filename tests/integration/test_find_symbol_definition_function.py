@@ -327,3 +327,115 @@ def test_symbol_definition_in_variable_declaration_complex(
 
     # ensure position is start of asset declaration
     assert response == (15, 4)
+
+
+def test_symbol_definition_preconditions(mal_symbol_def_preconditions):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_preconditions.mal"
+    source_encoded = mal_symbol_def_preconditions.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    ###################################
+
+    # go to name of asset
+    point = (11, 15)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (5, 4)
+
+
+def test_symbol_definition_preconditions_extended_asset(
+    mal_symbol_def_preconditions,
+):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_preconditions.mal"
+    source_encoded = mal_symbol_def_preconditions.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    ###################################
+
+    # go to symbol
+    point = (19, 13)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (14, 4)
+
+
+def test_symbol_definition_preconditions_complex(
+    mal_symbol_def_preconditions,
+):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_preconditions.mal"
+    source_encoded = mal_symbol_def_preconditions.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    ###################################
+
+    # go to symbol
+    point = (24, 28)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (16, 4)
+
+    ###################################
+    # go to symbol
+    point = (26, 28)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (16, 4)
