@@ -1,0 +1,24 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Category {
+
+    asset Asset  {
+        & attackStep
+    }
+    asset Asset1 {}
+    asset Asset2 {}
+    asset Asset3
+    {
+      | step1 
+        -> a.b.c.attackStep,
+           step2
+      | step2
+    }
+
+}
+associations {
+    Asset3 [a1] * <-- L1 --> * [a] Asset2
+    Asset1 [b] * <-- L2 --> * [a2] Asset2
+    Asset1 [a3] * <-- L3 --> * [c] Asset
+  }

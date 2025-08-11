@@ -439,3 +439,63 @@ def test_symbol_definition_preconditions_complex(
 
     # ensure position is start of asset declaration
     assert response == (16, 4)
+
+
+def test_symbol_definition_reaches(mal_symbol_def_reaches):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_reaches.mal"
+    source_encoded = mal_symbol_def_reaches.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    ###################################
+
+    # go to name of asset
+    point = (13, 22)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (6, 8)
+
+
+def test_symbol_definition_reaches_single_attack_step(mal_symbol_def_reaches):
+    # build the storage (mimicks the file parsing in the server)
+    storage = {}
+
+    doc_uri = FILE_PATH + "symbol_def_reaches.mal"
+    source_encoded = mal_symbol_def_reaches.read()
+    tree = PARSER.parse(source_encoded)
+
+    storage[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+    ###################################
+
+    # go to name of asset
+    point = (14, 14)
+
+    # get the node
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+
+    # confirm it's an identifier
+    assert cursor.node.type == "identifier"
+
+    # we use sets to ensure order does not matter
+    response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
+
+    # ensure position is start of asset declaration
+    assert response == (15, 6)
