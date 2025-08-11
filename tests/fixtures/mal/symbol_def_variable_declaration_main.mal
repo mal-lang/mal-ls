@@ -1,0 +1,36 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Category {
+
+    asset Asset  {}
+    asset Asset1 {}
+    asset Asset2 {}
+    asset Asset3
+    {
+      let var = a.b.c
+    }
+
+    asset Asset4 {}
+    asset Asset5 {}
+    asset Asset6 extends Asset5 {}
+    asset Asset7 {
+        let var2 = d.e
+    }
+    
+    asset Asset8 {
+        let var3 = (f \/ g[Asset7]).d
+        let var4 = (g[Asset7] \/ f).d
+    }
+}
+associations {
+    Asset3 [a1] * <-- L1 --> * [a] Asset2
+    Asset1 [b] * <-- L2 --> * [a2] Asset2
+    Asset1 [a3] * <-- L3 --> * [c] Asset
+
+    Asset7 [a4] * <-- L4 --> * [d] Asset6
+    Asset5 [a5] * <-- L5 --> * [e] Asset4
+
+    Asset8 [a6] * <-- L6 --> * [f] Asset7
+    Asset8 [a7] * <-- L7 --> * [g] Asset6
+  }
