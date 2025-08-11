@@ -839,7 +839,6 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
     # This will make it easier to follow the chain of expressions
     assets = []
     visit_expr(node.children[0].walk(), assets, document_uri, storage)
-    log.info(assets)
 
     # with this list we can easily follow the chain of associations.
     # We start with the current asset and find an association that contains
