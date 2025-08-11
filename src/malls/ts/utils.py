@@ -88,7 +88,7 @@ FIND_PERIOD = Query(
     MAL_LANGUAGE,
     """
         ("." @period_node)
-    """
+    """,
 )
 
 
@@ -709,42 +709,39 @@ def find_symbol_definition_variable_substitution(
 
 
 def visit_expr(cursor, found, document_uri: str = None, storage: dict = None):
-    '''
+    r"""
     Given a complex expression, this function will be able to partition it
     and return a list with only the relevant component of each set. For instance,
     A.(B \/ C).D.G would return [A,B,D,G] to facilitate following the chain of
     associations.
-    '''
+    """
 
-    if cursor.node.type == 'identifier':
+    if cursor.node.type == "identifier":
         found.append(cursor.node.text)
-    elif cursor.node.text == b'(':
+    elif cursor.node.text == b"(":
         cursor.goto_next_sibling()
         visit_expr(cursor, found, document_uri, storage)
         cursor.goto_next_sibling()
-    elif cursor.node.type == 'asset_variable_substitution':
+    elif cursor.node.type == "asset_variable_substitution":
         # get where the variable is referenced
         var_node = find_symbol_definition_variable_substitution(
-            cursor.node,
-            cursor.node.children_by_field_name('id')[0].text,
-            document_uri,
-            storage
+            cursor.node, cursor.node.children_by_field_name("id")[0].text, document_uri, storage
         )
         # visit the variable definition
         var_cursor = var_node.walk()
         var_cursor.goto_first_child()
-        var_cursor.goto_next_sibling() # skip 'let'
-        var_cursor.goto_next_sibling() # skip name of var
-        var_cursor.goto_next_sibling() # skip '='
+        var_cursor.goto_next_sibling()  # skip 'let'
+        var_cursor.goto_next_sibling()  # skip name of var
+        var_cursor.goto_next_sibling()  # skip '='
         var_cursor.goto_first_child()  # visit the definition
         visit_expr(var_cursor, found, document_uri, storage)
     else:
         match cursor.node.type:
-            case 'asset_expr_binop':
-                if cursor.node.children_by_field_name('operator')[0].text == b'.':
+            case "asset_expr_binop":
+                if cursor.node.children_by_field_name("operator")[0].text == b".":
                     cursor.goto_first_child()
                     visit_expr(cursor, found, document_uri, storage)
-                    cursor.goto_next_sibling() # ignore operator
+                    cursor.goto_next_sibling()  # ignore operator
                     cursor.goto_next_sibling()
                     visit_expr(cursor, found, document_uri, storage)
                     cursor.goto_parent()
@@ -756,24 +753,26 @@ def visit_expr(cursor, found, document_uri: str = None, storage: dict = None):
                     cursor.goto_first_child()
                     visit_expr(cursor, found, document_uri, storage)
                     cursor.goto_parent()
-            case 'asset_expr_unop':
+            case "asset_expr_unop":
                 cursor.goto_first_child()
-                visit_expr(cursor,found, document_uri, storage)
+                visit_expr(cursor, found, document_uri, storage)
                 cursor.goto_parent()
-            case 'asset_expr_type':
+            case "asset_expr_type":
                 # a type is simply mentioning a "subasset", i.e.
                 # if we have a[b] then there is an asset b that extends a.
                 # This simplifies the process quite a lot, since we don't
                 # really need to know what comes before, only the symbol 'b'
                 found.clear()
-                found.append((cursor.node.children_by_field_name("type_id")[0].text,'asset'))
+                found.append((cursor.node.children_by_field_name("type_id")[0].text, "asset"))
 
 
-def find_asset_from_association(node: Node, asset_name: str, field_name: str, document_uri: str, storage: dict):
+def find_asset_from_association(
+    node: Node, asset_name: str, field_name: str, document_uri: str, storage: dict
+):
     # build query to find association where the field name corresponds to our search
     query = Query(
-    MAL_LANGUAGE,
-    f"""
+        MAL_LANGUAGE,
+        f"""
     [
         (association
             left_id: (identifier) @asset_id
@@ -788,7 +787,7 @@ def find_asset_from_association(node: Node, asset_name: str, field_name: str, do
             (#eq? @field_id "{field_name.decode()}")
         )
     ] @association
-    """
+    """,
     )
 
     # find association
@@ -800,40 +799,42 @@ def find_asset_from_association(node: Node, asset_name: str, field_name: str, do
         captures = run_query(node, FIND_EXTENDED_ASSET)
         if not captures:
             return None
-        extended_asset_name = captures['identifier_node'][0].text
+        extended_asset_name = captures["identifier_node"][0].text
         result = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, "asset_declaration", extended_asset_name, storage
         )
-        return find_asset_from_association(result, extended_asset_name, field_name, document_uri, storage)
+        return find_asset_from_association(
+            result, extended_asset_name, field_name, document_uri, storage
+        )
 
     # return node
-    if result_node.children_by_field_name('left_id')[0].text == asset_name:
+    if result_node.children_by_field_name("left_id")[0].text == asset_name:
         return bfs_search(
-                document_uri,
-                FIND_ASSET_DECLARATION,
-                'asset_declaration', 
-                result_node.children_by_field_name('right_id')[0].text,
-                storage
+            document_uri,
+            FIND_ASSET_DECLARATION,
+            "asset_declaration",
+            result_node.children_by_field_name("right_id")[0].text,
+            storage,
         )
     else:
         return bfs_search(
-                document_uri,
-                FIND_ASSET_DECLARATION,
-                'asset_declaration', 
-                result_node.children_by_field_name('left_id')[0].text,
-                storage
+            document_uri,
+            FIND_ASSET_DECLARATION,
+            "asset_declaration",
+            result_node.children_by_field_name("left_id")[0].text,
+            storage,
         )
 
 
 def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict):
-    '''
+    """
     The objective of this function is to find the node where an asset
     is defined.
 
     We will start by obtaining a list that is the breakdown of the association chain.
     From that, we will follow the associations until we reach the one where the chosen
     symbol is located.
-    '''
+    """
 
     # 1st we get the list of relevant components of the expr.
     # This will make it easier to follow the chain of expressions
@@ -846,8 +847,9 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
     # the second element in the list. And so on
 
     # get asset name
-    while(node.type != 'asset_declaration'): node = node.parent
-    asset_name = node.children_by_field_name('id')[0].text
+    while node.type != "asset_declaration":
+        node = node.parent
+    asset_name = node.children_by_field_name("id")[0].text
 
     # This loop will start by retrieving the first field form the list and find an association
     # where the current asset mentions this field. From that association we get the asset name
@@ -858,18 +860,22 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
         el = assets.pop(0)
         # if we have a tuple, then we have to find the asset directly, not from the association
         if type(el) is tuple:
-            node = bfs_search(document_uri, FIND_ASSET_DECLARATION, 'asset_declaration', el[0], storage)
+            node = bfs_search(
+                document_uri, FIND_ASSET_DECLARATION, "asset_declaration", el[0], storage
+            )
         else:
             # retrieve name of asset
             node = find_asset_from_association(node, asset_name, el, document_uri, storage)
         if not node:
             break
-        asset_name = node.children_by_field_name('id')[0].text
+        asset_name = node.children_by_field_name("id")[0].text
         if el == symbol:
             if type(el) is tuple:
                 result = node
             else:
-                result = bfs_search(document_uri, FIND_ASSET_DECLARATION, 'asset_declaration', asset_name, storage)
+                result = bfs_search(
+                    document_uri, FIND_ASSET_DECLARATION, "asset_declaration", asset_name, storage
+                )
             return result.start_point[0], result.start_point[1]
     return None
 
@@ -881,7 +887,7 @@ def find_symbol_reaching(
     Since we are in a binop expression, we need to determine if
     the node is an attack step or a field
     """
-    
+
     # first check the parent
     if node.parent.type in ("asset_variable", "preconditions"):
         # if it's a variable or a precondition, we are certainly
@@ -892,7 +898,7 @@ def find_symbol_reaching(
     # otherwise, it's either a field or an attack step
     # query the node to see if there is a `.` following the start_point
     query_cursor = QueryCursor(FIND_PERIOD)
-    query_cursor.set_point_range(pos[0],node.end_point)
+    query_cursor.set_point_range(pos[0], node.end_point)
     captures = query_cursor.captures(node)
 
     # if there are captures, then we know there is a period `.`

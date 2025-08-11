@@ -247,7 +247,9 @@ def test_symbol_definition_in_variable_declaration(mal_symbol_def_variable_decla
     assert response == (5, 4)
 
 
-def test_symbol_definition_in_variable_declaration_extended_asset(mal_symbol_def_variable_declaration_main):
+def test_symbol_definition_in_variable_declaration_extended_asset(
+    mal_symbol_def_variable_declaration_main,
+):
     # build the storage (mimicks the file parsing in the server)
     storage = {}
 
@@ -277,7 +279,9 @@ def test_symbol_definition_in_variable_declaration_extended_asset(mal_symbol_def
     assert response == (13, 4)
 
 
-def test_symbol_definition_in_variable_declaration_complex(mal_symbol_def_variable_declaration_main):
+def test_symbol_definition_in_variable_declaration_complex(
+    mal_symbol_def_variable_declaration_main,
+):
     # build the storage (mimicks the file parsing in the server)
     storage = {}
 
