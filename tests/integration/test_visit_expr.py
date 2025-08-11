@@ -118,7 +118,7 @@ def test_visit_expr_single_type(mal_visit_expr):
     found = []
     visit_expr(cursor, found)
 
-    assert found == [b'd']
+    assert found == [(b'd','asset')]
 
 
 def test_visit_expr_various_type(mal_visit_expr):
@@ -134,7 +134,7 @@ def test_visit_expr_various_type(mal_visit_expr):
     found = []
     visit_expr(cursor, found)
 
-    assert found == [b'g',b'h',b'i']
+    assert found == [(b'g','asset'),b'h',b'i']
 
 
 def test_visit_expr_variable(mal_visit_expr):
