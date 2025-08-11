@@ -826,7 +826,7 @@ def find_asset_from_association(
         )
 
 
-def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict):
+def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict, assets: list):
     """
     The objective of this function is to find the node where an asset
     is defined.
@@ -838,8 +838,9 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
 
     # 1st we get the list of relevant components of the expr.
     # This will make it easier to follow the chain of expressions
-    assets = []
-    visit_expr(node.children[0].walk(), assets, document_uri, storage)
+    if not assets:
+        assets = []
+        visit_expr(node.children[0].walk(), assets, document_uri, storage)
 
     # with this list we can easily follow the chain of associations.
     # We start with the current asset and find an association that contains
@@ -876,7 +877,7 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
                 result = bfs_search(
                     document_uri, FIND_ASSET_DECLARATION, "asset_declaration", asset_name, storage
                 )
-            return result.start_point[0], result.start_point[1]
+            return result
     return None
 
 
@@ -893,7 +894,8 @@ def find_symbol_reaching(
         # if it's a variable or a precondition, we are certainly
         # talking about fields and only need to find the association
         # where they are defined
-        return find_asset_from_expr(node, symbol, document_uri, storage)
+        result = find_asset_from_expr(node, symbol, document_uri, storage, [])
+        return result.start_point[0], result.start_point[1]
 
     # otherwise, it's either a field or an attack step
     # query the node to see if there is a `.` following the start_point
@@ -905,11 +907,33 @@ def find_symbol_reaching(
     # after our symbol, so it's a field
     if captures:
         # find a field
-        return find_asset_from_expr(node, symbol, document_uri, storage)
+        result = find_asset_from_expr(node, symbol, document_uri, storage, [])
+        return result.start_point[0], result.start_point[1]
     else:
         # otherwise, it's an attack step
-        # find attack step
-        pass
+        assets = []
+        visit_expr(node.children[0].walk(), assets, document_uri, storage)
+        assets.pop(-1) # remove last element (which is the attack step)
+        # get the asset where the attack step is defined (last element)
+        if assets: # go down the chain
+            asset = find_asset_from_expr(node, assets[-1], document_uri, storage, assets)
+        else:
+            asset = node.parent.parent.parent # go to asset
+        # and finally find the attack step declaration
+        query = Query(
+            MAL_LANGUAGE,
+            f"""
+            (attack_step
+                id: (identifier) @name
+                (#eq? @name "{symbol.decode()}")
+            ) @attack_step
+            """
+        )
+        log.info(asset.text)
+        if(captures := run_query(asset, query)):
+            point = captures['attack_step'][0].start_point
+            return point[0], point[1]
+        return None
 
 
 def find_symbol_definition(
