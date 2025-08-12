@@ -31,7 +31,7 @@ def test_symbol_definition_in_category_declaration(mal_find_symbols_in_scope):
     response = find_symbol_definition(cursor.node, cursor.node.text)
 
     # ensure position is start of category declaration
-    assert response == (3, 0)
+    assert response[0].start_point == (3, 0)
 
 
 def test_symbol_definition_in_asset_declaration_asset_name(mal_find_symbols_in_scope):
@@ -53,7 +53,7 @@ def test_symbol_definition_in_asset_declaration_asset_name(mal_find_symbols_in_s
     # ensure position is start of asset declaration
     # we have to make sure we ignore whitespaces,
     # the only thing that maters are non-empty characters
-    assert response == (11, 4)
+    assert response[0].start_point == (11, 4)
 
 
 def test_symbol_definition_in_asset_declaration_extended_asset(
@@ -92,7 +92,7 @@ def test_symbol_definition_in_asset_declaration_extended_asset(
 
     # ensure position is start of asset declaration
     # found in the 3rd auxiliary file
-    assert response == (2, 4)
+    assert response[0].start_point == (2, 4)
 
 
 def test_symbol_definition_in_asset_variable(mal_find_symbols_in_scope):
@@ -114,7 +114,7 @@ def test_symbol_definition_in_asset_variable(mal_find_symbols_in_scope):
     # ensure position is start of asset declaration
     # we have to make sure we ignore whitespaces,
     # the only thing that maters are non-empty characters
-    assert response == (7, 6)
+    assert response[0].start_point == (7, 6)
 
 
 def test_symbol_definition_in_attack_step(mal_find_symbols_in_scope):
@@ -136,7 +136,7 @@ def test_symbol_definition_in_attack_step(mal_find_symbols_in_scope):
     # ensure position is start of asset declaration
     # we have to make sure we ignore whitespaces,
     # the only thing that maters are non-empty characters
-    assert response == (8, 8)
+    assert response[0].start_point == (8, 8)
 
 
 def test_symbol_definition_in_variable_call(
@@ -175,7 +175,7 @@ def test_symbol_definition_in_variable_call(
 
     # ensure position is start of asset declaration
     # found in the 3rd auxiliary file
-    assert response == (4, 6)
+    assert response[0].start_point == (4, 6)
 
 
 def test_symbol_definition_in_variable_call_extend_chain(
@@ -214,7 +214,7 @@ def test_symbol_definition_in_variable_call_extend_chain(
 
     # ensure position is start of asset declaration
     # found in the 3rd auxiliary file
-    assert response == (5, 6)
+    assert response[0].start_point == (5, 6)
 
 
 def test_symbol_definition_in_variable_declaration(mal_symbol_def_variable_declaration_main):
@@ -244,7 +244,7 @@ def test_symbol_definition_in_variable_declaration(mal_symbol_def_variable_decla
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (5, 4)
+    assert response[0].start_point == (5, 4)
 
 
 def test_symbol_definition_in_variable_declaration_extended_asset(
@@ -276,7 +276,7 @@ def test_symbol_definition_in_variable_declaration_extended_asset(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (13, 4)
+    assert response[0].start_point == (13, 4)
 
 
 def test_symbol_definition_in_variable_declaration_complex(
@@ -308,7 +308,7 @@ def test_symbol_definition_in_variable_declaration_complex(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (15, 4)
+    assert response[0].start_point == (15, 4)
 
     ###################################
     # go to symbol
@@ -326,7 +326,7 @@ def test_symbol_definition_in_variable_declaration_complex(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (15, 4)
+    assert response[0].start_point == (15, 4)
 
 
 def test_symbol_definition_preconditions(mal_symbol_def_preconditions):
@@ -356,7 +356,7 @@ def test_symbol_definition_preconditions(mal_symbol_def_preconditions):
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (5, 4)
+    assert response[0].start_point == (5, 4)
 
 
 def test_symbol_definition_preconditions_extended_asset(
@@ -388,7 +388,7 @@ def test_symbol_definition_preconditions_extended_asset(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (14, 4)
+    assert response[0].start_point == (14, 4)
 
 
 def test_symbol_definition_preconditions_complex(
@@ -420,7 +420,7 @@ def test_symbol_definition_preconditions_complex(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (16, 4)
+    assert response[0].start_point == (16, 4)
 
     ###################################
     # go to symbol
@@ -438,7 +438,7 @@ def test_symbol_definition_preconditions_complex(
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (16, 4)
+    assert response[0].start_point == (16, 4)
 
 
 def test_symbol_definition_reaches(mal_symbol_def_reaches):
@@ -468,7 +468,7 @@ def test_symbol_definition_reaches(mal_symbol_def_reaches):
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (6, 8)
+    assert response[0].start_point == (6, 8)
 
 
 def test_symbol_definition_reaches_single_attack_step(mal_symbol_def_reaches):
@@ -498,7 +498,7 @@ def test_symbol_definition_reaches_single_attack_step(mal_symbol_def_reaches):
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (15, 6)
+    assert response[0].start_point == (15, 6)
 
 
 def test_symbol_definition_in_association_asset_name(mal_symbol_def_variable_declaration_main):
@@ -528,7 +528,7 @@ def test_symbol_definition_in_association_asset_name(mal_symbol_def_variable_dec
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (8, 4)
+    assert response[0].start_point == (8, 4)
 
     point = (27, 37)
 
@@ -544,7 +544,7 @@ def test_symbol_definition_in_association_asset_name(mal_symbol_def_variable_dec
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of asset declaration
-    assert response == (7, 4)
+    assert response[0].start_point == (7, 4)
 
 
 def test_symbol_definition_in_association_field_name(mal_symbol_def_variable_declaration_main):
@@ -574,7 +574,7 @@ def test_symbol_definition_in_association_field_name(mal_symbol_def_variable_dec
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of association declaration
-    assert response == (28, 4)
+    assert response[0].start_point == (28, 4)
 
     # go to name of asset
     point = (28, 32)
@@ -591,7 +591,7 @@ def test_symbol_definition_in_association_field_name(mal_symbol_def_variable_dec
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of association declaration
-    assert response == (28, 4)
+    assert response[0].start_point == (28, 4)
 
 
 def test_symbol_definition_in_association_link_name(mal_symbol_def_variable_declaration_main):
@@ -621,4 +621,4 @@ def test_symbol_definition_in_association_link_name(mal_symbol_def_variable_decl
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
     # ensure position is start of association declaration
-    assert response == (30, 4)
+    assert response[0].start_point == (30, 4)
