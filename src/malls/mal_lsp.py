@@ -316,7 +316,7 @@ class MALLSPServer(MethodDispatcher):
         definition = models.DefinitionParams(**params)
 
         # obtain document uri and position
-        document_uri = uri_to_path(definition.textDocument.uri)
+        document_uri = uri_to_path(definition.text_document.uri)
         position_lsp = definition.position
 
         # obtain node and position in TS from the LSP position
@@ -346,9 +346,18 @@ class MALLSPServer(MethodDispatcher):
 
         # build response
         result_range = models.Range(start=result_lsp_position_start, end=result_lsp_position_end)
-        result_uri = path_to_uri(result_doc)
+        result_uri = path_to_uri(result_doc.uri)
 
         return {
             "uri": result_uri,
-            "range": result_range,
+            "range": {
+                "start": {
+                    "line": result_range.start.line,
+                    "character":result_range.start.character,
+                },
+                "end": {
+                    "line": result_range.end.line,
+                    "character": result_range.end.character,
+                } 
+            },
         }

@@ -1036,7 +1036,7 @@ def position_to_node(tree: Tree, text: str, position: Position):
 
     # convert position
     point = lsp_to_tree_sitter_position(text, position)
-    node = tree.root_node
-    while node.goto_first_child_for_point(point) is not None:
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
         continue
-    return (node, point, node.text)
+    return (cursor.node, point, cursor.node.text)
