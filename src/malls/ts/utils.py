@@ -602,7 +602,7 @@ def bfs_search(doc, query, key, symbol, storage):
     file = storage[doc]
 
     if (result := search_match(file, query, key, symbol)) is not None:
-        return result
+        return (result, file)
 
     # otherwise, we have to check for the included files
     # for that, we will use a BFS (breadth-first search)
@@ -614,7 +614,7 @@ def bfs_search(doc, query, key, symbol, storage):
             return (result, file)
         included_files.extend(storage[file.uri].included_files)
 
-    return None
+    return (None, file)
 
 
 def find_symbol_definition_asset_declaration(
@@ -791,7 +791,7 @@ def find_asset_from_association(
     )
 
     # find association
-    result_node = bfs_search(document_uri, query, "association", None, storage)
+    result_node, _ = bfs_search(document_uri, query, "association", None, storage)
 
     # if the association is not found, it possibly was defined in an extended asset,
     # so we have to try and find it higher up in the hierarchy
@@ -800,7 +800,7 @@ def find_asset_from_association(
         if not captures:
             return None
         extended_asset_name = captures["identifier_node"][0].text
-        result = bfs_search(
+        result, _ = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, "asset_declaration", extended_asset_name, storage
         )
         return find_asset_from_association(
@@ -809,21 +809,23 @@ def find_asset_from_association(
 
     # return node
     if result_node.children_by_field_name("left_id")[0].text == asset_name:
-        return bfs_search(
+        result, _ = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("right_id")[0].text,
             storage,
         )
+        return result
     else:
-        return bfs_search(
+        result, _ = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("left_id")[0].text,
             storage,
         )
+        return result
 
 
 def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict, assets: list):
@@ -861,7 +863,7 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
         el = assets.pop(0)
         # if we have a tuple, then we have to find the asset directly, not from the association
         if type(el) is tuple:
-            node = bfs_search(
+            node, _ = bfs_search(
                 document_uri, FIND_ASSET_DECLARATION, "asset_declaration", el[0], storage
             )
         else:
@@ -874,7 +876,7 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
             if type(el) is tuple:
                 result = node
             else:
-                result = bfs_search(
+                result, _ = bfs_search(
                     document_uri, FIND_ASSET_DECLARATION, "asset_declaration", asset_name, storage
                 )
             return result
@@ -936,6 +938,26 @@ def find_symbol_reaching(
         return None
 
 
+def find_symbol_definition_association(node: Node, symbol: str, document_uri: str, storage: dict) -> Point:
+    """
+    In an association, if the symbol corresponds to either the right or left asset, we have
+    to find where that asset is defined. Otherwise, we simply need to return the current node,
+    as that is where the association name and fields are defined.
+    """
+    if symbol in (
+        node.child_by_field_name('left_id').text,
+        node.child_by_field_name('right_id').text,
+    ):
+        key = "asset_declaration"
+        # in this case, we have to find this asset
+        result_node, _ = bfs_search(
+            document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
+        )
+        return result_node.start_point if result_node else None
+    else:
+        return node.start_point
+
+
 def find_symbol_definition(
     node: Node, symbol: str, document_uri: str = None, storage: list = None
 ) -> Point:
@@ -966,6 +988,8 @@ def find_symbol_definition(
                 ).start_point
             case "asset_expr":
                 return find_symbol_reaching(node, symbol, original_position, document_uri, storage)
+            case 'association':
+                return find_symbol_definition_association(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
