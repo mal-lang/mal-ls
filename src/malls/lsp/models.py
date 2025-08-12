@@ -2649,3 +2649,10 @@ class DidChangeTextDocumentParams(BaseModel):
     content_changes: list[TextDocumentContentChangeEvent]
 
     model_config = base_config
+
+
+class DefinitionParams(TextDocumentPositionParams, WorkDoneProgressParams, PartialResultParams, BaseModel):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionParams
+    """
+    model_config = base_config
