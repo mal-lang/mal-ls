@@ -1,7 +1,7 @@
 import logging
 
 import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor, Tree
+from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCursor
 
 from ..lsp.models import Position
 
@@ -255,13 +255,13 @@ def tree_sitter_to_lsp_position(text: str, pos: Point, new_text: str = None) -> 
     line_text = lines[ts_line]
 
     # Decode the line text from UTF-8 to a string
-    line_string = line_text.decode('utf-8')
+    line_string = line_text.decode("utf-8")
 
     # Get the slice of the string up to the byte offset
-    string_slice = line_string.encode('utf-8')[:ts_byte_offset].decode('utf-8')
+    string_slice = line_string.encode("utf-8")[:ts_byte_offset].decode("utf-8")
 
     # The length of this slice in UTF-16 code units is the LSP character position
-    lsp_char = len(string_slice.encode('utf-16-le')) // 2
+    lsp_char = len(string_slice.encode("utf-16-le")) // 2
 
     return Position(line=ts_line, character=lsp_char)
 
@@ -945,7 +945,9 @@ def find_symbol_reaching(
         assets.pop(-1)  # remove last element (which is the attack step)
         # get the asset where the attack step is defined (last element)
         if assets:  # go down the chain
-            asset, result_file = find_asset_from_expr(node, assets[-1], document_uri, storage, assets)
+            asset, result_file = find_asset_from_expr(
+                node, assets[-1], document_uri, storage, assets
+            )
         else:
             asset = node.parent.parent.parent  # go to asset
             result_file = document_uri
@@ -979,7 +981,9 @@ def find_symbol_definition_association(
     ):
         key = "asset_declaration"
         # in this case, we have to find this asset
-        result_node, result_file = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
+        result_node, result_file = bfs_search(
+            document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
+        )
         return (result_node, result_file) if result_node else (None, document_uri)
     else:
         return (node, document_uri)
@@ -1025,13 +1029,14 @@ def find_symbol_definition(
 
 
 def position_to_node(tree: Tree, text: str, position: Position):
-    '''
+    """
     Given a tree and an LSP position, this function will obtain the innermost
     node in that position
-    '''
+    """
 
     # convert position
     point = lsp_to_tree_sitter_position(text, position)
     node = tree.root_node
-    while(node.goto_first_child_for_point(point) != None): continue
+    while node.goto_first_child_for_point(point) is not None:
+        continue
     return (node, point, node.text)
