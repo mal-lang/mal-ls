@@ -244,6 +244,28 @@ def lsp_to_tree_sitter_position(text: str, pos: Position, new_text: str = None) 
     return Point(lsp_line, byte_offset)
 
 
+def tree_sitter_to_lsp_position(text: str, pos: Point, new_text: str = None) -> Position:
+    """
+    Converts a Tree-sitter position (UTF-8 byte offset) to an LSP position (UTF-16 character index).
+    """
+    ts_line, ts_byte_offset = pos.row, pos.column
+
+    lines = text.splitlines(keepends=True)
+
+    line_text = lines[ts_line]
+
+    # Decode the line text from UTF-8 to a string
+    line_string = line_text.decode('utf-8')
+
+    # Get the slice of the string up to the byte offset
+    string_slice = line_string.encode('utf-8')[:ts_byte_offset].decode('utf-8')
+
+    # The length of this slice in UTF-16 code units is the LSP character position
+    lsp_char = len(string_slice.encode('utf-16-le')) // 2
+
+    return Position(line=ts_line, character=lsp_char)
+
+
 def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     """
     Given the owner of a scope that is a category declaration, we want to find
