@@ -938,21 +938,21 @@ def find_symbol_reaching(
         return None
 
 
-def find_symbol_definition_association(node: Node, symbol: str, document_uri: str, storage: dict) -> Point:
+def find_symbol_definition_association(
+    node: Node, symbol: str, document_uri: str, storage: dict
+) -> Point:
     """
     In an association, if the symbol corresponds to either the right or left asset, we have
     to find where that asset is defined. Otherwise, we simply need to return the current node,
     as that is where the association name and fields are defined.
     """
     if symbol in (
-        node.child_by_field_name('left_id').text,
-        node.child_by_field_name('right_id').text,
+        node.child_by_field_name("left_id").text,
+        node.child_by_field_name("right_id").text,
     ):
         key = "asset_declaration"
         # in this case, we have to find this asset
-        result_node, _ = bfs_search(
-            document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
-        )
+        result_node, _ = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
         return result_node.start_point if result_node else None
     else:
         return node.start_point
@@ -988,7 +988,7 @@ def find_symbol_definition(
                 ).start_point
             case "asset_expr":
                 return find_symbol_reaching(node, symbol, original_position, document_uri, storage)
-            case 'association':
+            case "association":
                 return find_symbol_definition_association(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
