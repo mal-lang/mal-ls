@@ -1,0 +1,7 @@
+category Cat2 {
+
+    asset Asset2
+    {
+      let var = something
+    }
+}

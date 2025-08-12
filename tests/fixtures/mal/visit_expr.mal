@@ -1,0 +1,25 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Example {
+
+    abstract asset Asset1 
+    {
+      let var = w.x.y.z
+        | compromise
+        <- a.b.c,
+           a.(z.b).c,
+           a.(z.(b.y)).c.(f.l).((h.n).m.((e.x).u)).t,
+           a.b*.c,
+           a.b.c /\ d,
+           a.(b /\ c).d.e.(f \/ g).h.i*  - j,
+           a.b.c[d],
+           a.b.c[d].e.f[g].h.i,
+           var().a
+    }
+}
+associations 
+{
+    Asset1 [a] * <-- L --> * [c] Asset2 developer info: some info
+    Asset2 [d] 1 <-- M --> 1 [e] Asset2
+}

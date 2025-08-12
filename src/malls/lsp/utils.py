@@ -27,7 +27,7 @@ def uri_to_path(uri: str) -> Path:
     return path_component
 
 
-def recursive_parsing(uri_prec: str, captures: dict, storage: dict) -> None:
+def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: str) -> None:
     """
     Auxiliary method to parse included files recursively
     """
@@ -51,16 +51,19 @@ def recursive_parsing(uri_prec: str, captures: dict, storage: dict) -> None:
             source = file.read()
 
         tree = PARSER.parse(source)
-        root_node = tree.root_node
 
         # save parsed file
-        storage[file_name] = Document(tree, source)
+        storage[file_name] = Document(tree, source, file_name)
 
+        # save as included file
+        storage[cur_file].included_files.append(storage[file_name])
+
+    for included_file_document in storage[cur_file].included_files:
         # check if there are other includes to process
-        new_captures = run_query(root_node, INCLUDED_FILES_QUERY)
-
-        # if there are new includes, add them to the list
+        included_file_uri = included_file_document.uri
+        included_file_node = included_file_document.tree.root_node
+        new_captures = run_query(included_file_node, INCLUDED_FILES_QUERY)
         if new_captures:
-            captures.extend(new_captures["file_name"])
+            recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri)
 
     return storage

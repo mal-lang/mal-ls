@@ -1,0 +1,6 @@
+category Cat1 {
+
+    asset NotThisAsset
+    {
+    }
+}

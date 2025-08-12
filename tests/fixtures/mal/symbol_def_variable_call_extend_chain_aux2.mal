@@ -1,0 +1,8 @@
+category Cat3 {
+
+    asset Asset3
+    {
+      let anotherVar = somethingElse
+      let var = something
+    }
+}

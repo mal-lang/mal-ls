@@ -19,9 +19,11 @@ class Document:
     edited by TreeSitter
     """
 
-    def __init__(self, tree: Tree, text: str):
+    def __init__(self, tree: Tree, text: str, uri: str):
         self.text = text  # text is in bytes
         self.tree = tree
+        self.uri = uri
+        self.included_files = []
 
     def _pos_to_byte(self, point: Point):
         line, column = point.row, point.column

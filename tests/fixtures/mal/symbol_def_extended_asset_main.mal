@@ -1,0 +1,12 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+include "symbol_def_extended_asset_aux1.mal"
+
+category Example {
+
+    asset Asset1 extends Asset2
+    {
+        | destroy
+        -> var().do
+    }
+}

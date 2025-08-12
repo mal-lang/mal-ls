@@ -1,0 +1,9 @@
+include "symbol_def_extended_asset_aux2.mal"
+include "symbol_def_variable_call_extend_chain_aux2.mal"
+
+category Cat2 {
+
+    asset Asset2 extends Asset3
+    {
+    }
+}
