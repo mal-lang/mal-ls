@@ -999,7 +999,7 @@ def find_symbol_definition(
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
         if node is None:
-            return None
+            return (None, document_uri)
 
 
 def position_to_node(tree: Tree, text: str, position: Position):
