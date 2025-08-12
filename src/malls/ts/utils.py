@@ -897,7 +897,7 @@ def find_symbol_reaching(
         # talking about fields and only need to find the association
         # where they are defined
         result = find_asset_from_expr(node, symbol, document_uri, storage, [])
-        return result.start_point[0], result.start_point[1]
+        return result.start_point
 
     # otherwise, it's either a field or an attack step
     # query the node to see if there is a `.` following the start_point
@@ -910,7 +910,7 @@ def find_symbol_reaching(
     if captures:
         # find a field
         result = find_asset_from_expr(node, symbol, document_uri, storage, [])
-        return result.start_point[0], result.start_point[1]
+        return result.start_point
     else:
         # otherwise, it's an attack step
         assets = []
@@ -934,7 +934,7 @@ def find_symbol_reaching(
         log.info(asset.text)
         if captures := run_query(asset, query):
             point = captures["attack_step"][0].start_point
-            return point[0], point[1]
+            return point
         return None
 
 
