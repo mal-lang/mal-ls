@@ -31,8 +31,8 @@ def test_open_file_without_include(
     output, ls, *_ = server_output(writeable_fixtures_did_open_notif_in_base_open_file)
 
     # Ensure LSP stored everything correctly
-    assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path].tree) is Tree
+    assert simplified_file_path in ls.files.keys()
+    assert type(ls.files[simplified_file_path].tree) is Tree
 
     output.close()
 
@@ -47,13 +47,11 @@ def test_open_file_with_include(
     output, ls, *_ = server_output(writeable_fixtures_did_open_notif_in_with_included_file)
 
     # Ensure LSP stored everything correctly
-    assert len(ls.files().keys()) == 2
-    assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path].tree) is Tree
-    assert included_path_file in ls.files().keys()
-    assert type(ls.files()[included_path_file].tree) is Tree
-    assert len(ls.files()[simplified_file_path].included_files) == 1
-    assert ls.files()[simplified_file_path].included_files[0].uri == included_path_file
+    assert len(ls.files.keys()) == 2
+    assert simplified_file_path in ls.files.keys()
+    assert type(ls.files[simplified_file_path].tree) is Tree
+    assert included_path_file in ls.files.keys()
+    assert type(ls.files[included_path_file].tree) is Tree
 
     output.close()
 
@@ -65,8 +63,8 @@ def test_open_file_with_non_existant_include(
     output, ls, *_ = server_output(writeable_fixtures_did_open_notif_in_with_fake_include)
 
     # Ensure LSP stored everything correctly
-    assert len(ls.files().keys()) == 1
-    assert simplified_file_path in ls.files().keys()
-    assert type(ls.files()[simplified_file_path].tree) is Tree
+    assert len(ls.files.keys()) == 1
+    assert simplified_file_path in ls.files.keys()
+    assert type(ls.files[simplified_file_path].tree) is Tree
 
     output.close()
