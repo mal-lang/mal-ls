@@ -130,6 +130,7 @@ def server_output(
 FILE_PATH = str(Path(__file__).parent.resolve()) + "/fixtures/mal/"
 main_simplified_file_path = FILE_PATH + "main.mal"
 main_file_path = filepath_to_uri(main_simplified_file_path)
+find_symbols_in_scope_path = filepath_to_uri(FILE_PATH + "find_symbols_in_scope.mal")
 
 BASE_OPEN_FILE = {
     "jsonrpc": "2.0",
@@ -281,3 +282,31 @@ CHANGE_FILE_5 = {
         ],
     },
 }
+
+FIND_SYMBOL_1_OPEN_FILE = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": 'include "find_symbols_in_scope.mal"',
+        }
+    },
+}
+
+FIND_SYMBOL_1 = {
+    "id": 1,
+    "jsonrpc": "2.0",
+    "method": "textDocument/definition",
+    "params": {
+        "textDocument": {
+            "uri": find_symbols_in_scope_path,
+        },
+        "position": {
+            "line": 3,
+            "character": 12,
+        }
+    }
+}   
