@@ -965,7 +965,7 @@ def find_symbol_definition_association(
 
 def find_symbol_definition(
     node: Node, symbol: str, document_uri: str = None, storage: list = None
-) -> Point:
+) -> (Node, str):
     """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
@@ -1000,3 +1000,16 @@ def find_symbol_definition(
         # terminate if there are no more parents
         if node is None:
             return None
+
+
+def position_to_node(tree: Tree, text: str, position: Position):
+    '''
+    Given a tree and an LSP position, this function will obtain the innermost
+    node in that position
+    '''
+
+    # convert position
+    point = lsp_to_tree_sitter_position(text, position)
+    node = tree.root_node
+    while(node.goto_first_child_for_point(point) != None): continue
+    return (node, point, node.text)
