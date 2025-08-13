@@ -436,6 +436,20 @@ OPEN_FILE_WITH_INCLUDE_WITH_ERROR = {
     },
 }
 
+file_with_error_path = filepath_to_uri(FILE_PATH + "file_with_error.mal")
+OPEN_INCLUDED_FILE_WITH_ERROR = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": file_with_error_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": 'class Category {\n    Asset1 {}\n  }\n'
+        }
+    },
+}
+
 CHANGE_FILE_WITH_ERROR = {
     "jsonrpc": "2.0",
     "method": "textDocument/didChange",
