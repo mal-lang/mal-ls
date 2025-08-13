@@ -1103,12 +1103,16 @@ def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_stor
     if "error-node" in captures:
         for error_node in captures["error-node"]:
             diagnostic = build_diagnostic(error_node, text, True)
-            if doc_uri in notification_storage : notification_storage[doc_uri].append(diagnostic)
-            else: notification_storage[doc_uri] = [diagnostic]
+            if doc_uri in notification_storage:
+                notification_storage[doc_uri].append(diagnostic)
+            else:
+                notification_storage[doc_uri] = [diagnostic]
     if "missing-node" in captures:
         for missing_node in captures["missing-node"]:
             diagnostic = build_diagnostic(missing_node, text, False)
-            if doc_uri in notification_storage : notification_storage[doc_uri].append(diagnostic)
-            else: notification_storage[doc_uri] = [diagnostic]
+            if doc_uri in notification_storage:
+                notification_storage[doc_uri].append(diagnostic)
+            else:
+                notification_storage[doc_uri] = [diagnostic]
 
     return

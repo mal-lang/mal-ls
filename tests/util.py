@@ -407,3 +407,51 @@ GOTO_DEFINITION_PAYLOADS = (
         for (line, char, name) in mal_symbol_def_reaches_points
     ]
 )
+
+OPEN_FILE_WITH_ERROR = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
+            + "System {\nabstract aet Foo {}\nasset Bar extends Foo {}\n}\n\n",
+        }
+    },
+}
+
+OPEN_FILE_WITH_INCLUDE_WITH_ERROR = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didOpen",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "languageId": "mal",
+            "version": 0,
+            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
+            \ninclude "file_with_error.mal"',
+        }
+    },
+}
+
+CHANGE_FILE_WITH_ERROR = {
+    "jsonrpc": "2.0",
+    "method": "textDocument/didChange",
+    "params": {
+        "textDocument": {
+            "uri": main_file_path,
+            "version": 1,
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {"line": 5, "character": 6},
+                    "end": {"line": 6, "character": 0},
+                },
+                "text": "FooFoo extds Foo {}\n",
+            }
+        ],
+    },
+}
