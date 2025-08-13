@@ -2,6 +2,7 @@ import logging
 import os
 from pathlib import Path
 
+from pylsp_jsonrpc.endpoint import Endpoint
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Parser
 from uritools import urisplit
@@ -85,3 +86,17 @@ def path_to_uri(filepath: str) -> str:
     absolute_path_obj = path_obj.resolve()
 
     return absolute_path_obj.as_uri()
+
+
+def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> None:
+    """
+    Helper function to gather all diagnostics for the current file and notify the client
+    """
+    publish_diagnostics_dict = {
+        "uri": file_uri,
+        "diagnostics": diagnostics,
+    }
+
+    endpoint.notify('textDocument/publishDiagnostics',publish_diagnostics_dict)
+
+    return
