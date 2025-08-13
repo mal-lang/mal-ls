@@ -330,6 +330,9 @@ class MALLSPServer(MethodDispatcher):
 
         # after changing and reparsing the file, find all possible errors
         query_for_error_nodes(document.tree, document.text, doc_uri, self.__diagnostics)
+        if doc_uri in self.__diagnostics:
+            # the document was properly changed but had errors
+            send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
 
     def m_text_document__definition(self, **params: dict | None) -> None:
         # validate parameters
