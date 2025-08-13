@@ -140,7 +140,7 @@ def test_symbol_definition_with_storage(
 
     captures = run_query(root_node, INCLUDED_FILES_QUERY)
     if "file_name" in captures:
-        recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri)
+        recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri, [])
 
     ###################################
 

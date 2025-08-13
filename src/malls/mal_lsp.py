@@ -289,7 +289,9 @@ class MALLSPServer(MethodDispatcher):
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
         if captures:  # If there are included files, start recursive parsing
-            recursive_parsing(path_prec, captures["file_name"], self.__files, doc_uri)
+            recursive_parsing(
+                path_prec, captures["file_name"], self.__files, doc_uri, self.__diagnostics
+            )
 
         # with the opened file and included files parsed, we are done
         return
