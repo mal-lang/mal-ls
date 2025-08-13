@@ -18,6 +18,7 @@ from .ts.utils import (
     position_to_node,
     run_query,
     tree_sitter_to_lsp_position,
+    query_for_error_nodes,
 )
 
 log = logging.getLogger(__name__)
@@ -61,6 +62,7 @@ class MALLSPServer(MethodDispatcher):
         self.__trace_value = TraceValue.Off
 
         self.__files = {}
+        self.__diagnostics = []
 
     def start(self) -> None:
         """Starts the language server."""
@@ -277,6 +279,9 @@ class MALLSPServer(MethodDispatcher):
 
         # save parsed file
         self.__files[doc_uri] = Document(tree, source_encoded, doc_uri)
+
+        # find all possible errors
+        query_for_error_nodes(tree, source_encoded, self.__diagnostics)
 
         # obtain the included files
         root_node = tree.root_node
