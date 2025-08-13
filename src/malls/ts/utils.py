@@ -613,7 +613,24 @@ def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Poin
     return node
 
 
-def bfs_search(doc, query, key, symbol, storage):
+def bfs_search(doc: str, query: Query, key: str, symbol: str, storage: dict):
+    """
+    The objective of this function is to find a given symbol in the file
+    hierarchy. Since a file might include others, we will query all files
+    in a breadth-first search (BFS) manner until we find the symbol we want.
+
+    In this scenario, `doc` refers to the starting file, from which we will
+    traverse the included files. The `query` is what we will be searching for
+    in each while, and the `key` is what must be in the capture in case there
+    is a possible match. Since many matches can be retrieved given a query,
+    we will try to find which one matches the `symbol` (done in `search_match()`).
+    Finally, to traverse the included files, we will use the `storage`, which
+    is where all files are saved.
+
+    For more information on the algoritm:
+    https://en.wikipedia.org/wiki/Breadth-first_search
+    """
+
     def search_match(file, query, nodes, symbol):
         captures = run_query(file.tree.root_node, query)
         if captures:
