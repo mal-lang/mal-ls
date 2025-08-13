@@ -347,6 +347,7 @@ mal_symbol_def_preconditions_points = [
 mal_symbol_def_reaches_points = [
     (13, 22, "goto_def_21"),  # reaches
     (14, 14, "goto_def_22"),  # reaches single attack step
+    (10, 7, "goto_def_23"),  # random non-user defined symbol
 ]
 GOTO_DEFINITION_PAYLOADS = (
     [

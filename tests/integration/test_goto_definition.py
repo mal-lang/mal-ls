@@ -76,3 +76,22 @@ def test_goto_definition(request, fixture_name, expected_point, expected_file):
     assert file == filepath_to_uri(FILE_PATH + expected_file + ".mal")
 
     output.close()
+
+
+def test_goto_definition_wrong_symbol(goto_def_23):
+    """
+    This test aims to check that the LS can handle
+    requests for symbols which are not user-defined
+    """
+    # send to server
+    output, ls, *_ = server_output(goto_def_23)
+
+    output.seek(0)
+    response = get_lsp_json(output)
+    response = get_lsp_json(output)
+
+    result = response["result"]
+
+    assert result is None
+
+    output.close()
