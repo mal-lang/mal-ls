@@ -2651,9 +2651,7 @@ class DidChangeTextDocumentParams(BaseModel):
     model_config = base_config
 
 
-class DefinitionParams(
-    TextDocumentPositionParams, WorkDoneProgressParams, PartialResultParams, BaseModel
-):
+class DefinitionParams(TextDocumentPositionParams, WorkDoneProgressParams, PartialResultParams):
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionParams
     """
