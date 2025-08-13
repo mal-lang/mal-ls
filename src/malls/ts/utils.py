@@ -679,7 +679,7 @@ def find_symbol_definition_asset_declaration(
         result_node, result_file = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
         )
-        return result_node, result_file
+        return result_node, result_file.uri
     # we are sure it must be the asset name
     return node, document_uri
 
@@ -853,23 +853,23 @@ def find_asset_from_association(
 
     # return node
     if result_node.children_by_field_name("left_id")[0].text == asset_name:
-        result = bfs_search(
+        result_point, result_file = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("right_id")[0].text,
             storage,
         )
-        return result
+        return result_point, result_file.uri
     else:
-        result = bfs_search(
+        result_point, result_file = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("left_id")[0].text,
             storage,
         )
-        return result
+        return result_point, result_file.uri
 
 
 def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict, assets: list):
@@ -923,7 +923,7 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
                 result, file = bfs_search(
                     document_uri, FIND_ASSET_DECLARATION, "asset_declaration", asset_name, storage
                 )
-            return (result, file)
+            return (result, file.uri)
     return (None, document_uri)
 
 
@@ -1001,7 +1001,7 @@ def find_symbol_definition_association(
         result_node, result_file = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
         )
-        return (result_node, result_file) if result_node else (None, document_uri)
+        return (result_node, result_file.uri) if result_node else (None, document_uri)
     else:
         return (node, document_uri)
 
