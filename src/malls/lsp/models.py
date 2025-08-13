@@ -18,7 +18,7 @@ def is_uri(value):
 
 Integer = Annotated[
     int,
-    Field(ge=-2 ** 31, le=2 ** 31 - 1),
+    Field(ge=-(2**31), le=2**31 - 1),
     """Defines an integer number in the range of -2^31 to 2^31 - 1.""",
 ]
 UInteger = Annotated[

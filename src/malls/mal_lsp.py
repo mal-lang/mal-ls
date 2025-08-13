@@ -353,11 +353,11 @@ class MALLSPServer(MethodDispatcher):
             "range": {
                 "start": {
                     "line": result_range.start.line,
-                    "character":result_range.start.character,
+                    "character": result_range.start.character,
                 },
                 "end": {
                     "line": result_range.end.line,
                     "character": result_range.end.character,
-                } 
+                },
             },
         }

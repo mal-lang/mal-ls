@@ -283,6 +283,7 @@ CHANGE_FILE_5 = {
     },
 }
 
+
 def build_goto_definition_payload(text: str, uri: str, line: int, char: int, name: str):
     open_message = {
         "jsonrpc": "2.0",
@@ -307,10 +308,11 @@ def build_goto_definition_payload(text: str, uri: str, line: int, char: int, nam
             "position": {
                 "line": line,
                 "character": char,
-            }
-        }
+            },
+        },
     }
     return ([open_message, goto_message], name)
+
 
 mal_find_symbols_in_scope_points = [
     (3, 12, "goto_def_1"),  # category_declaration
@@ -319,86 +321,88 @@ mal_find_symbols_in_scope_points = [
     (8, 10, "goto_def_4"),  # attack step
 ]
 mal_symbol_def_extended_asset_main_points = [
-    (6, 25,"goto_def_5"),  # asset declaration, extended asset
-    (9, 11,"goto_def_6"),  # variable call
+    (6, 25, "goto_def_5"),  # asset declaration, extended asset
+    (9, 11, "goto_def_6"),  # variable call
 ]
 mal_symbol_def_variable_call_extend_chain_main_points = [
-    (9, 11,"goto_def_7")  # variable call, extend chain
+    (9, 11, "goto_def_7")  # variable call, extend chain
 ]
 symbol_def_variable_declaration_main_points = [
-    (10, 20,"goto_def_8"),  # variable declaration
-    (17, 21,"goto_def_9"),  # variable declaration, extended asset
-    (21, 36,"goto_def_10"),  # variable declaration complex 1
-    (22, 36,"goto_def_11"),  # variable declaration complex 2
-    (26, 6,"goto_def_12"),  # association asset name 1
-    (27, 37,"goto_def_13"),  # association asset name 2
-    (28, 12,"goto_def_14"),  # association field name 1
-    (28, 32,"goto_def_15"),  # association field name 2
-    (30, 22,"goto_def_16"),  # link name
+    (10, 20, "goto_def_8"),  # variable declaration
+    (17, 21, "goto_def_9"),  # variable declaration, extended asset
+    (21, 36, "goto_def_10"),  # variable declaration complex 1
+    (22, 36, "goto_def_11"),  # variable declaration complex 2
+    (26, 6, "goto_def_12"),  # association asset name 1
+    (27, 37, "goto_def_13"),  # association asset name 2
+    (28, 12, "goto_def_14"),  # association field name 1
+    (28, 32, "goto_def_15"),  # association field name 2
+    (30, 22, "goto_def_16"),  # link name
 ]
 mal_symbol_def_preconditions_points = [
-    (11, 15,"goto_def_17"),  # preconditions
-    (19, 13,"goto_def_18"),  # preconditions extended asset
-    (24, 28,"goto_def_19"),  # preconditions complex 1
-    (26, 28,"goto_def_20"),  # preconditions complex 1
+    (11, 15, "goto_def_17"),  # preconditions
+    (19, 13, "goto_def_18"),  # preconditions extended asset
+    (24, 28, "goto_def_19"),  # preconditions complex 1
+    (26, 28, "goto_def_20"),  # preconditions complex 1
 ]
 mal_symbol_def_reaches_points = [
-    (13, 22,"goto_def_21"),  # reaches
-    (14, 14,"goto_def_22"),  # reaches single attack step
+    (13, 22, "goto_def_21"),  # reaches
+    (14, 14, "goto_def_22"),  # reaches single attack step
 ]
-GOTO_DEFINITION_PAYLOADS = [
-    build_goto_definition_payload(
-        'include "find_symbols_in_scope.mal"', find_symbols_in_scope_path, line, char, name
-    )
-    for (line, char, name) in mal_find_symbols_in_scope_points
-] + \
-[
-    build_goto_definition_payload(
-        'include "symbol_def_extended_asset_main.mal"',
-        filepath_to_uri(FILE_PATH + "symbol_def_extended_asset_main.mal"),
-        line,
-        char,
-        name
-    )
-    for (line, char, name) in mal_symbol_def_extended_asset_main_points
-] + \
-[
-    build_goto_definition_payload(
-        'include "symbol_def_variable_call_extend_chain_main.mal"',
-        filepath_to_uri(FILE_PATH + "symbol_def_variable_call_extend_chain_main.mal"),
-        line,
-        char,
-        name
-    )
-    for (line, char, name) in mal_symbol_def_variable_call_extend_chain_main_points
-] + \
-[
-    build_goto_definition_payload(
-        'include "symbol_def_variable_declaration_main.mal"',
-        filepath_to_uri(FILE_PATH + "symbol_def_variable_declaration_main.mal"),
-        line,
-        char,
-        name
-    )
-    for (line, char, name) in symbol_def_variable_declaration_main_points
-] + \
-[
-    build_goto_definition_payload(
-        'include "symbol_def_preconditions.mal"',
-        filepath_to_uri(FILE_PATH + "symbol_def_preconditions.mal"),
-        line,
-        char,
-        name
-    )
-    for (line, char, name) in mal_symbol_def_preconditions_points
-] + \
-[
-    build_goto_definition_payload(
-        'include "symbol_def_reaches.mal"',
-        filepath_to_uri(FILE_PATH + "symbol_def_reaches.mal"),
-        line,
-        char,
-        name
-    )
-    for (line, char, name) in mal_symbol_def_reaches_points
-]
+GOTO_DEFINITION_PAYLOADS = (
+    [
+        build_goto_definition_payload(
+            'include "find_symbols_in_scope.mal"', find_symbols_in_scope_path, line, char, name
+        )
+        for (line, char, name) in mal_find_symbols_in_scope_points
+    ]
+    + [
+        build_goto_definition_payload(
+            'include "symbol_def_extended_asset_main.mal"',
+            filepath_to_uri(FILE_PATH + "symbol_def_extended_asset_main.mal"),
+            line,
+            char,
+            name,
+        )
+        for (line, char, name) in mal_symbol_def_extended_asset_main_points
+    ]
+    + [
+        build_goto_definition_payload(
+            'include "symbol_def_variable_call_extend_chain_main.mal"',
+            filepath_to_uri(FILE_PATH + "symbol_def_variable_call_extend_chain_main.mal"),
+            line,
+            char,
+            name,
+        )
+        for (line, char, name) in mal_symbol_def_variable_call_extend_chain_main_points
+    ]
+    + [
+        build_goto_definition_payload(
+            'include "symbol_def_variable_declaration_main.mal"',
+            filepath_to_uri(FILE_PATH + "symbol_def_variable_declaration_main.mal"),
+            line,
+            char,
+            name,
+        )
+        for (line, char, name) in symbol_def_variable_declaration_main_points
+    ]
+    + [
+        build_goto_definition_payload(
+            'include "symbol_def_preconditions.mal"',
+            filepath_to_uri(FILE_PATH + "symbol_def_preconditions.mal"),
+            line,
+            char,
+            name,
+        )
+        for (line, char, name) in mal_symbol_def_preconditions_points
+    ]
+    + [
+        build_goto_definition_payload(
+            'include "symbol_def_reaches.mal"',
+            filepath_to_uri(FILE_PATH + "symbol_def_reaches.mal"),
+            line,
+            char,
+            name,
+        )
+        for (line, char, name) in mal_symbol_def_reaches_points
+    ]
+)
