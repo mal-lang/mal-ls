@@ -315,6 +315,9 @@ class MALLSPServer(MethodDispatcher):
             else:
                 text = change.text.text.encode()  # whole file change
                 document.change_whole_file(text)
+        
+        # after changing and reparsing the file, find all possible errors
+        query_for_error_nodes(document.tree, document.text, self.__diagnostics)
 
     def m_text_document__definition(self, **params: dict | None) -> None:
         # validate parameters
