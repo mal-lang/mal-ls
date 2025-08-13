@@ -445,7 +445,7 @@ OPEN_INCLUDED_FILE_WITH_ERROR = {
             "uri": file_with_error_path,
             "languageId": "mal",
             "version": 0,
-            "text": 'class Category {\n    Asset1 {}\n  }\n'
+            "text": "class Category {\n    Asset1 {}\n  }\n",
         }
     },
 }

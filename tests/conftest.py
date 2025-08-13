@@ -84,7 +84,10 @@ for directory, _, files in os.walk("tests/fixtures"):
                 ([OPEN_FILE_WITH_ERROR], "open_file_with_error"),
                 ([OPEN_FILE_WITH_INCLUDE_WITH_ERROR], "open_file_with_include_error"),
                 ([BASE_OPEN_FILE, CHANGE_FILE_WITH_ERROR], "change_file_with_error"),
-                ([OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR], "open_file_with_include_error_and_open_file")
+                (
+                    [OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR],
+                    "open_file_with_include_error_and_open_file",
+                ),
             ] + GOTO_DEFINITION_PAYLOADS
             for payload, new_name in payloads:
                 fixture = pytest.fixture(

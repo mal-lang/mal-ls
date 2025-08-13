@@ -26,15 +26,16 @@ def test_diagnostics_when_opening_file_with_error(
     response = get_lsp_json(output)
     response = get_lsp_json(output)
 
-    assert 'textDocument/publishDiagnostics' in response['method']
-    params = response['params']
-    assert len(params['diagnostics']) == 1
+    assert "textDocument/publishDiagnostics" in response["method"]
+    params = response["params"]
+    assert len(params["diagnostics"]) == 1
 
-    start_point = params['diagnostics'][0]['range']['start']
-    assert (start_point['line'],start_point['character']) == (4,9)
-    assert params['diagnostics'][0]['severity'] == DiagnosticSeverity.Error
+    start_point = params["diagnostics"][0]["range"]["start"]
+    assert (start_point["line"], start_point["character"]) == (4, 9)
+    assert params["diagnostics"][0]["severity"] == DiagnosticSeverity.Error
 
     output.close()
+
 
 def test_diagnostics_when_opening_file_with_include_error(
     open_file_with_include_error: typing.BinaryIO,
@@ -43,7 +44,7 @@ def test_diagnostics_when_opening_file_with_include_error(
     output, ls, *_ = server_output(open_file_with_include_error)
 
     output.seek(0)
-    response = get_lsp_json(output)
+    get_lsp_json(output)
 
     # ensure buffer has no more content
     # (diagnostic should not be sent because the problematic
@@ -53,6 +54,7 @@ def test_diagnostics_when_opening_file_with_include_error(
     assert current_pos == output.tell()
 
     output.close()
+
 
 def test_diagnostics_when_opening_file_with_include_error_and_opening_bad_file(
     open_file_with_include_error_and_open_file: typing.BinaryIO,
@@ -66,15 +68,16 @@ def test_diagnostics_when_opening_file_with_include_error_and_opening_bad_file(
 
     # this time the problematic file was opened, so there should be a diagnostic
     log.info(response)
-    assert 'textDocument/publishDiagnostics' in response['method']
-    params = response['params']
-    assert len(params['diagnostics']) == 1
+    assert "textDocument/publishDiagnostics" in response["method"]
+    params = response["params"]
+    assert len(params["diagnostics"]) == 1
 
-    start_point = params['diagnostics'][0]['range']['start']
-    assert (start_point['line'],start_point['character']) == (0,0)
-    assert params['diagnostics'][0]['severity'] == DiagnosticSeverity.Error
+    start_point = params["diagnostics"][0]["range"]["start"]
+    assert (start_point["line"], start_point["character"]) == (0, 0)
+    assert params["diagnostics"][0]["severity"] == DiagnosticSeverity.Error
 
     output.close()
+
 
 def test_diagnostics_when_changing_file_with_error(
     change_file_with_error: typing.BinaryIO,
@@ -88,12 +91,12 @@ def test_diagnostics_when_changing_file_with_error(
 
     # this time the problematic file was opened, so there should be a diagnostic
     log.info(response)
-    assert 'textDocument/publishDiagnostics' in response['method']
-    params = response['params']
-    assert len(params['diagnostics']) == 1
+    assert "textDocument/publishDiagnostics" in response["method"]
+    params = response["params"]
+    assert len(params["diagnostics"]) == 1
 
-    start_point = params['diagnostics'][0]['range']['start']
-    assert (start_point['line'],start_point['character']) == (5,13)
-    assert params['diagnostics'][0]['severity'] == DiagnosticSeverity.Error
+    start_point = params["diagnostics"][0]["range"]["start"]
+    assert (start_point["line"], start_point["character"]) == (5, 13)
+    assert params["diagnostics"][0]["severity"] == DiagnosticSeverity.Error
 
     output.close()
