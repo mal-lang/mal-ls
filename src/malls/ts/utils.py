@@ -3,6 +3,7 @@ import logging
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCursor
 
+from ..lsp.enums import DiagnosticSeverity
 from ..lsp.models import Position
 
 log = logging.getLogger(__name__)
@@ -88,6 +89,17 @@ FIND_PERIOD = Query(
     MAL_LANGUAGE,
     """
         ("." @period_node)
+    """,
+)
+
+
+ERRORS_QUERY = Query(
+    MAL_LANGUAGE,
+    """
+    [
+        ((ERROR) @error-node)
+        ((MISSING) @missing-node)
+    ]
     """,
 )
 
@@ -1057,3 +1069,50 @@ def position_to_node(tree: Tree, text: str, position: Position):
     while cursor.goto_first_child_for_point(point) is not None:
         continue
     return (cursor.node, point, cursor.node.text)
+
+
+def build_diagnostic(node: Node, text: str, error: bool) -> dict:
+    """
+    Helper function to build a dictionary corresponding to a diagonstic,
+    so it can be sent to the Client as is
+    """
+    # start by converting the position
+    start_position = tree_sitter_to_lsp_position(text, node.start_point)
+    end_position = tree_sitter_to_lsp_position(text, node.end_point)
+
+    # TODO find better messages and information about error/missing nodes
+    return {
+        "range": {
+            "start": {"line": start_position.line, "character": start_position.character},
+            "end": {"line": end_position.line, "character": end_position.character},
+        },
+        "severity": DiagnosticSeverity.Error if error else DiagnosticSeverity.Warning,
+        "message": "Node not recongized" if error else "Node missing",
+    }
+
+
+def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_storage: dict):
+    """
+    This function will find all error/missing nodes and save the diagnostic
+    in case any problem is found
+    """
+
+    # Find all error/missing nodes
+    captures = run_query(tree.root_node, ERRORS_QUERY)
+
+    if "error-node" in captures:
+        for error_node in captures["error-node"]:
+            diagnostic = build_diagnostic(error_node, text, True)
+            if doc_uri in notification_storage:
+                notification_storage[doc_uri].append(diagnostic)
+            else:
+                notification_storage[doc_uri] = [diagnostic]
+    if "missing-node" in captures:
+        for missing_node in captures["missing-node"]:
+            diagnostic = build_diagnostic(missing_node, text, False)
+            if doc_uri in notification_storage:
+                notification_storage[doc_uri].append(diagnostic)
+            else:
+                notification_storage[doc_uri] = [diagnostic]
+
+    return

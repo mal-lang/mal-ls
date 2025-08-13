@@ -11,11 +11,12 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.utils import path_to_uri, recursive_parsing, uri_to_path
+from .lsp.utils import path_to_uri, recursive_parsing, send_diagnostics, uri_to_path
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
     find_symbol_definition,
     position_to_node,
+    query_for_error_nodes,
     run_query,
     tree_sitter_to_lsp_position,
 )
@@ -61,6 +62,7 @@ class MALLSPServer(MethodDispatcher):
         self.__trace_value = TraceValue.Off
 
         self.__files = {}
+        self.__diagnostics = {}
 
     def start(self) -> None:
         """Starts the language server."""
@@ -123,6 +125,10 @@ class MALLSPServer(MethodDispatcher):
     @property
     def files(self) -> dict:
         return self.__files
+
+    @property
+    def diagnostics(self) -> dict:
+        return self.__diagnostics
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
@@ -262,6 +268,9 @@ class MALLSPServer(MethodDispatcher):
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
         if doc_uri in self.__files:
+            # the document was already parsed but had errors
+            if doc_uri in self.__diagnostics:
+                send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
             return
 
         # otherwise, parse it
@@ -278,13 +287,21 @@ class MALLSPServer(MethodDispatcher):
         # save parsed file
         self.__files[doc_uri] = Document(tree, source_encoded, doc_uri)
 
+        # find all possible errors
+        query_for_error_nodes(tree, source_encoded, doc_uri, self.__diagnostics)
+        if doc_uri in self.__diagnostics:
+            # the document was properly opened but had errors
+            send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
+
         # obtain the included files
         root_node = tree.root_node
 
         captures = run_query(root_node, INCLUDED_FILES_QUERY)
 
         if captures:  # If there are included files, start recursive parsing
-            recursive_parsing(path_prec, captures["file_name"], self.__files, doc_uri)
+            recursive_parsing(
+                path_prec, captures["file_name"], self.__files, doc_uri, self.__diagnostics
+            )
 
         # with the opened file and included files parsed, we are done
         return
@@ -310,6 +327,12 @@ class MALLSPServer(MethodDispatcher):
             else:
                 text = change.text.text.encode()  # whole file change
                 document.change_whole_file(text)
+
+        # after changing and reparsing the file, find all possible errors
+        query_for_error_nodes(document.tree, document.text, doc_uri, self.__diagnostics)
+        if doc_uri in self.__diagnostics:
+            # the document was properly changed but had errors
+            send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
 
     def m_text_document__definition(self, **params: dict | None) -> None:
         # validate parameters

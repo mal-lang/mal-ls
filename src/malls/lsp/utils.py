@@ -3,10 +3,11 @@ import os
 from pathlib import Path
 
 import tree_sitter_mal as ts_mal
+from pylsp_jsonrpc.endpoint import Endpoint
 from tree_sitter import Language, Parser
 from uritools import urisplit
 
-from ..ts.utils import INCLUDED_FILES_QUERY, run_query
+from ..ts.utils import INCLUDED_FILES_QUERY, query_for_error_nodes, run_query
 from .classes import Document
 
 MAL_LANGUAGE = Language(ts_mal.language())
@@ -27,7 +28,9 @@ def uri_to_path(uri: str) -> Path:
     return path_component
 
 
-def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: str) -> None:
+def recursive_parsing(
+    uri_prec: str, captures: list, storage: dict, cur_file: str, diagnostics_storage: list
+) -> None:
     """
     Auxiliary method to parse included files recursively
     """
@@ -55,6 +58,9 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
         # save parsed file
         storage[file_name] = Document(tree, source, file_name)
 
+        # find all possible errors
+        query_for_error_nodes(tree, source, file_name, diagnostics_storage)
+
         # save as included file
         storage[cur_file].included_files.append(storage[file_name])
 
@@ -64,7 +70,9 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
         included_file_node = included_file_document.tree.root_node
         new_captures = run_query(included_file_node, INCLUDED_FILES_QUERY)
         if new_captures:
-            recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri)
+            recursive_parsing(
+                uri_prec, new_captures["file_name"], storage, included_file_uri, diagnostics_storage
+            )
 
     return storage
 
@@ -78,3 +86,17 @@ def path_to_uri(filepath: str) -> str:
     absolute_path_obj = path_obj.resolve()
 
     return absolute_path_obj.as_uri()
+
+
+def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> None:
+    """
+    Helper function to gather all diagnostics for the current file and notify the client
+    """
+    publish_diagnostics_dict = {
+        "uri": file_uri,
+        "diagnostics": diagnostics,
+    }
+
+    endpoint.notify("textDocument/publishDiagnostics", publish_diagnostics_dict)
+
+    return
