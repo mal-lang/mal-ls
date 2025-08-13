@@ -6,7 +6,7 @@ import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Parser
 from uritools import urisplit
 
-from ..ts.utils import INCLUDED_FILES_QUERY, run_query
+from ..ts.utils import INCLUDED_FILES_QUERY, run_query, query_for_error_nodes
 from .classes import Document
 
 MAL_LANGUAGE = Language(ts_mal.language())
@@ -27,7 +27,7 @@ def uri_to_path(uri: str) -> Path:
     return path_component
 
 
-def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: str) -> None:
+def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: str, diagnostics_storage: list) -> None:
     """
     Auxiliary method to parse included files recursively
     """
@@ -55,6 +55,9 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
         # save parsed file
         storage[file_name] = Document(tree, source, file_name)
 
+        # find all possible errors
+        query_for_error_nodes(tree, source, diagnostics_storage)
+
         # save as included file
         storage[cur_file].included_files.append(storage[file_name])
 
@@ -64,7 +67,7 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
         included_file_node = included_file_document.tree.root_node
         new_captures = run_query(included_file_node, INCLUDED_FILES_QUERY)
         if new_captures:
-            recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri)
+            recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri, diagnostics_storage)
 
     return storage
 
