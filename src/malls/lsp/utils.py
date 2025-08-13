@@ -2,8 +2,8 @@ import logging
 import os
 from pathlib import Path
 
-from pylsp_jsonrpc.endpoint import Endpoint
 import tree_sitter_mal as ts_mal
+from pylsp_jsonrpc.endpoint import Endpoint
 from tree_sitter import Language, Parser
 from uritools import urisplit
 
@@ -97,6 +97,6 @@ def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> No
         "diagnostics": diagnostics,
     }
 
-    endpoint.notify('textDocument/publishDiagnostics',publish_diagnostics_dict)
+    endpoint.notify("textDocument/publishDiagnostics", publish_diagnostics_dict)
 
     return

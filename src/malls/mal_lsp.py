@@ -11,7 +11,7 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.utils import path_to_uri, recursive_parsing, uri_to_path
+from .lsp.utils import path_to_uri, recursive_parsing, send_diagnostics, uri_to_path
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
     find_symbol_definition,
@@ -268,6 +268,9 @@ class MALLSPServer(MethodDispatcher):
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
         if doc_uri in self.__files:
+            # the document was already parsed but had errors
+            if doc_uri in self.__diagnostics:
+                send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
             return
 
         # otherwise, parse it
@@ -286,6 +289,9 @@ class MALLSPServer(MethodDispatcher):
 
         # find all possible errors
         query_for_error_nodes(tree, source_encoded, doc_uri, self.__diagnostics)
+        if doc_uri in self.__diagnostics:
+            # the document was properly opened but had errors
+            send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
 
         # obtain the included files
         root_node = tree.root_node
