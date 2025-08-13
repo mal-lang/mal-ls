@@ -313,7 +313,9 @@ class MALLSPServer(MethodDispatcher):
 
     def m_text_document__definition(self, **params: dict | None) -> None:
         # validate parameters
-        definition = models.DefinitionParams(**params)
+        definition = models.DefinitionParams(**params) if params else None
+        if definition is None:
+            return
 
         # obtain document uri and position
         document_uri = uri_to_path(definition.text_document.uri)
