@@ -1,7 +1,7 @@
 import logging
 
 import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Node, Point, Query, QueryCursor, TreeCursor
+from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCursor
 
 from ..lsp.models import Position
 
@@ -242,6 +242,28 @@ def lsp_to_tree_sitter_position(text: str, pos: Position, new_text: str = None) 
     byte_offset = len(string_slice.encode("utf-8"))
 
     return Point(lsp_line, byte_offset)
+
+
+def tree_sitter_to_lsp_position(text: str, pos: Point, new_text: str = None) -> Position:
+    """
+    Converts a Tree-sitter position (UTF-8 byte offset) to an LSP position (UTF-16 character index).
+    """
+    ts_line, ts_byte_offset = pos.row, pos.column
+
+    lines = text.splitlines(keepends=True)
+
+    line_text = lines[ts_line]
+
+    # Decode the line text from UTF-8 to a string
+    line_string = line_text.decode("utf-8")
+
+    # Get the slice of the string up to the byte offset
+    string_slice = line_string.encode("utf-8")[:ts_byte_offset].decode("utf-8")
+
+    # The length of this slice in UTF-16 code units is the LSP character position
+    lsp_char = len(string_slice.encode("utf-16-le")) // 2
+
+    return Position(line=ts_line, character=lsp_char)
 
 
 def find_symbols_category_declaration(owner: Node) -> (dict, dict):
@@ -588,7 +610,7 @@ def find_symbol_definition_category_declaration(node: Node, symbol: str) -> Poin
     the current node.
     """
 
-    return node.start_point
+    return node
 
 
 def bfs_search(doc: str, query: Query, key: str, symbol: str, storage: dict):
@@ -657,9 +679,9 @@ def find_symbol_definition_asset_declaration(
         result_node, result_file = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
         )
-        return result_node.start_point if result_node else None
+        return result_node, result_file.uri
     # we are sure it must be the asset name
-    return node.start_point
+    return node, document_uri
 
 
 def find_symbol_definition_variable_declaration(node: Node, symbol: str):
@@ -669,7 +691,7 @@ def find_symbol_definition_variable_declaration(node: Node, symbol: str):
     node's position
     """
 
-    return node.start_point
+    return node
 
 
 def find_symbol_definition_attack_step_declaration(node: Node, symbol: str):
@@ -679,7 +701,7 @@ def find_symbol_definition_attack_step_declaration(node: Node, symbol: str):
     node's position
     """
 
-    return node.start_point
+    return node
 
 
 def find_symbol_definition_variable_substitution(
@@ -701,7 +723,7 @@ def find_symbol_definition_variable_substitution(
     # if the query returns something, we found the variable in
     # the current file
     if captures:
-        return captures["variable_declaration"][0]
+        return (captures["variable_declaration"][0], document_uri)
 
     # otherwise, we have to up the hierarchy (extended assets)
     # to try and find one where the variable is defined
@@ -710,7 +732,7 @@ def find_symbol_definition_variable_substitution(
 
         # if no included node, stop
         if not captures:
-            return None
+            return (None, document_uri)
 
         # otherwise, try to find the extended asset
         extended_asset_name = captures["identifier_node"][0].text
@@ -720,14 +742,14 @@ def find_symbol_definition_variable_substitution(
 
         # extended asset not found
         if not results:
-            return None
+            return (None, document_uri)
 
         # update node and file
         node, file = results
         document_uri = file.uri
 
         if captures := run_query(node, find_variable_query(symbol)):
-            return captures["variable_declaration"][0]
+            return (captures["variable_declaration"][0], document_uri)
 
 
 def visit_expr(cursor, found, document_uri: str = None, storage: dict = None):
@@ -746,7 +768,7 @@ def visit_expr(cursor, found, document_uri: str = None, storage: dict = None):
         cursor.goto_next_sibling()
     elif cursor.node.type == "asset_variable_substitution":
         # get where the variable is referenced
-        var_node = find_symbol_definition_variable_substitution(
+        var_node, _ = find_symbol_definition_variable_substitution(
             cursor.node, cursor.node.children_by_field_name("id")[0].text, document_uri, storage
         )
         # visit the variable definition
@@ -813,14 +835,14 @@ def find_asset_from_association(
     )
 
     # find association
-    result_node, _ = bfs_search(document_uri, query, "association", None, storage)
+    result_node, result_file = bfs_search(document_uri, query, "association", None, storage)
 
     # if the association is not found, it possibly was defined in an extended asset,
     # so we have to try and find it higher up in the hierarchy
     if not result_node:
         captures = run_query(node, FIND_EXTENDED_ASSET)
         if not captures:
-            return None
+            return (None, document_uri)
         extended_asset_name = captures["identifier_node"][0].text
         result, _ = bfs_search(
             document_uri, FIND_ASSET_DECLARATION, "asset_declaration", extended_asset_name, storage
@@ -831,23 +853,23 @@ def find_asset_from_association(
 
     # return node
     if result_node.children_by_field_name("left_id")[0].text == asset_name:
-        result, _ = bfs_search(
+        result_point, result_file = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("right_id")[0].text,
             storage,
         )
-        return result
+        return result_point, result_file.uri
     else:
-        result, _ = bfs_search(
+        result_point, result_file = bfs_search(
             document_uri,
             FIND_ASSET_DECLARATION,
             "asset_declaration",
             result_node.children_by_field_name("left_id")[0].text,
             storage,
         )
-        return result
+        return result_point, result_file.uri
 
 
 def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: dict, assets: list):
@@ -885,12 +907,12 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
         el = assets.pop(0)
         # if we have a tuple, then we have to find the asset directly, not from the association
         if type(el) is tuple:
-            node, _ = bfs_search(
+            node, file = bfs_search(
                 document_uri, FIND_ASSET_DECLARATION, "asset_declaration", el[0], storage
             )
         else:
             # retrieve name of asset
-            node = find_asset_from_association(node, asset_name, el, document_uri, storage)
+            node, file = find_asset_from_association(node, asset_name, el, document_uri, storage)
         if not node:
             break
         asset_name = node.children_by_field_name("id")[0].text
@@ -898,11 +920,11 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
             if type(el) is tuple:
                 result = node
             else:
-                result, _ = bfs_search(
+                result, file = bfs_search(
                     document_uri, FIND_ASSET_DECLARATION, "asset_declaration", asset_name, storage
                 )
-            return result
-    return None
+            return (result, file.uri)
+    return (None, document_uri)
 
 
 def find_symbol_reaching(
@@ -919,7 +941,7 @@ def find_symbol_reaching(
         # talking about fields and only need to find the association
         # where they are defined
         result = find_asset_from_expr(node, symbol, document_uri, storage, [])
-        return result.start_point
+        return result
 
     # otherwise, it's either a field or an attack step
     # query the node to see if there is a `.` following the start_point
@@ -932,7 +954,7 @@ def find_symbol_reaching(
     if captures:
         # find a field
         result = find_asset_from_expr(node, symbol, document_uri, storage, [])
-        return result.start_point
+        return result
     else:
         # otherwise, it's an attack step
         assets = []
@@ -940,9 +962,12 @@ def find_symbol_reaching(
         assets.pop(-1)  # remove last element (which is the attack step)
         # get the asset where the attack step is defined (last element)
         if assets:  # go down the chain
-            asset = find_asset_from_expr(node, assets[-1], document_uri, storage, assets)
+            asset, result_file = find_asset_from_expr(
+                node, assets[-1], document_uri, storage, assets
+            )
         else:
             asset = node.parent.parent.parent  # go to asset
+            result_file = document_uri
         # and finally find the attack step declaration
         query = Query(
             MAL_LANGUAGE,
@@ -953,11 +978,10 @@ def find_symbol_reaching(
             ) @attack_step
             """,
         )
-        log.info(asset.text)
         if captures := run_query(asset, query):
-            point = captures["attack_step"][0].start_point
-            return point
-        return None
+            node = captures["attack_step"][0]
+            return (node, result_file)
+        return (None, document_uri)
 
 
 def find_symbol_definition_association(
@@ -974,15 +998,17 @@ def find_symbol_definition_association(
     ):
         key = "asset_declaration"
         # in this case, we have to find this asset
-        result_node, _ = bfs_search(document_uri, FIND_ASSET_DECLARATION, key, symbol, storage)
-        return result_node.start_point if result_node else None
+        result_node, result_file = bfs_search(
+            document_uri, FIND_ASSET_DECLARATION, key, symbol, storage
+        )
+        return (result_node, result_file.uri) if result_node else (None, document_uri)
     else:
-        return node.start_point
+        return (node, document_uri)
 
 
 def find_symbol_definition(
     node: Node, symbol: str, document_uri: str = None, storage: list = None
-) -> Point:
+) -> (Node, str):
     """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
@@ -997,17 +1023,17 @@ def find_symbol_definition(
     while True:
         match node.type:
             case "category_declaration":
-                return find_symbol_definition_category_declaration(node, symbol)
+                return (find_symbol_definition_category_declaration(node, symbol), document_uri)
             case "asset_declaration":
                 return find_symbol_definition_asset_declaration(node, symbol, document_uri, storage)
             case "asset_variable":
-                return find_symbol_definition_variable_declaration(node, symbol)
+                return (find_symbol_definition_variable_declaration(node, symbol), document_uri)
             case "attack_step":
-                return find_symbol_definition_attack_step_declaration(node, symbol)
+                return (find_symbol_definition_attack_step_declaration(node, symbol), document_uri)
             case "asset_variable_substitution":
                 return find_symbol_definition_variable_substitution(
                     node, symbol, document_uri, storage
-                ).start_point
+                )
             case "asset_expr":
                 return find_symbol_reaching(node, symbol, original_position, document_uri, storage)
             case "association":
@@ -1016,4 +1042,18 @@ def find_symbol_definition(
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
         if node is None:
-            return None
+            return (None, document_uri)
+
+
+def position_to_node(tree: Tree, text: str, position: Position):
+    """
+    Given a tree and an LSP position, this function will obtain the innermost
+    node in that position
+    """
+
+    # convert position
+    point = lsp_to_tree_sitter_position(text, position)
+    cursor = tree.walk()
+    while cursor.goto_first_child_for_point(point) is not None:
+        continue
+    return (cursor.node, point, cursor.node.text)

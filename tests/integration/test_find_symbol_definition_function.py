@@ -47,7 +47,7 @@ def test_symbol_definition_withouth_building_storage(request, file_name, point, 
     response = find_symbol_definition(cursor.node, cursor.node.text)
 
     # ensure position is start of category declaration
-    assert response == expected_result
+    assert response[0].start_point == expected_result
 
 
 mal_symbol_def_extended_asset_main_points = [
@@ -155,4 +155,4 @@ def test_symbol_definition_with_storage(
     # we use sets to ensure order does not matter
     response = find_symbol_definition(cursor.node, cursor.node.text, doc_uri, storage)
 
-    assert response == expected_result
+    assert response[0].start_point == expected_result

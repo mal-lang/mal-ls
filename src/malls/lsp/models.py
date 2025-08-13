@@ -18,7 +18,7 @@ def is_uri(value):
 
 Integer = Annotated[
     int,
-    Field(ge=-2 ^ 31, le=2 ^ 31 - 1),
+    Field(ge=-(2**31), le=2**31 - 1),
     """Defines an integer number in the range of -2^31 to 2^31 - 1.""",
 ]
 UInteger = Annotated[
@@ -2647,5 +2647,13 @@ class DidChangeTextDocumentParams(BaseModel):
     text_document: VersionedTextDocumentIdentifier
 
     content_changes: list[TextDocumentContentChangeEvent]
+
+    model_config = base_config
+
+
+class DefinitionParams(TextDocumentPositionParams, WorkDoneProgressParams, PartialResultParams):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionParams
+    """
 
     model_config = base_config

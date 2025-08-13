@@ -67,3 +67,14 @@ def recursive_parsing(uri_prec: str, captures: list, storage: dict, cur_file: st
             recursive_parsing(uri_prec, new_captures["file_name"], storage, included_file_uri)
 
     return storage
+
+
+def path_to_uri(filepath: str) -> str:
+    """
+    Converts a native filesystem path to a file:// URI.
+    """
+    path_obj = Path(filepath)
+
+    absolute_path_obj = path_obj.resolve()
+
+    return absolute_path_obj.as_uri()

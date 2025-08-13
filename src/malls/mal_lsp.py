@@ -11,8 +11,14 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.utils import recursive_parsing, uri_to_path
-from .ts.utils import INCLUDED_FILES_QUERY, run_query
+from .lsp.utils import path_to_uri, recursive_parsing, uri_to_path
+from .ts.utils import (
+    INCLUDED_FILES_QUERY,
+    find_symbol_definition,
+    position_to_node,
+    run_query,
+    tree_sitter_to_lsp_position,
+)
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -304,3 +310,56 @@ class MALLSPServer(MethodDispatcher):
             else:
                 text = change.text.text.encode()  # whole file change
                 document.change_whole_file(text)
+
+    def m_text_document__definition(self, **params: dict | None) -> None:
+        # validate parameters
+        definition = models.DefinitionParams(**params) if params else None
+        if definition is None:
+            return None
+
+        # obtain document uri and position
+        document_uri = uri_to_path(definition.text_document.uri)
+        position_lsp = definition.position
+
+        # obtain node and position in TS from the LSP position
+        # (we assume that the document is in the open/parsed files)
+        document = self.__files[document_uri]
+        node, point, symbol = position_to_node(document.tree, document.text, position_lsp)
+
+        if node.type != "identifier":
+            return None  # we only care about identifiers
+
+        # call the method that will find the definition
+        result_node, result_doc = find_symbol_definition(node, symbol, document_uri, self.__files)
+
+        # if no node was found
+        if result_node is None:
+            return None
+
+        # otherwise, we have to convert back to LSP positions and return the
+        # results to the user
+        result_doc = self.__files[result_doc]
+        result_lsp_position_start = tree_sitter_to_lsp_position(
+            result_doc.text, result_node.start_point
+        )
+        result_lsp_position_end = tree_sitter_to_lsp_position(
+            result_doc.text, result_node.end_point
+        )
+
+        # build response
+        result_range = models.Range(start=result_lsp_position_start, end=result_lsp_position_end)
+        result_uri = path_to_uri(result_doc.uri)
+
+        return {
+            "uri": result_uri,
+            "range": {
+                "start": {
+                    "line": result_range.start.line,
+                    "character": result_range.start.character,
+                },
+                "end": {
+                    "line": result_range.end.line,
+                    "character": result_range.end.character,
+                },
+            },
+        }

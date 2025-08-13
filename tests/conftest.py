@@ -13,6 +13,7 @@ from .util import (
     CHANGE_FILE_3,
     CHANGE_FILE_4,
     CHANGE_FILE_5,
+    GOTO_DEFINITION_PAYLOADS,
     OPEN_FILE_WITH_FAKE_INCLUDE,
     OPEN_FILE_WITH_INCLUDED_FILE,
     build_payload,
@@ -76,7 +77,7 @@ for directory, _, files in os.walk("tests/fixtures"):
                 ([BASE_OPEN_FILE, CHANGE_FILE_3], "change_end_of_file"),
                 ([BASE_OPEN_FILE, CHANGE_FILE_4], "change_middle_of_file_twice"),
                 ([BASE_OPEN_FILE, CHANGE_FILE_5], "change_whole_file"),
-            ]
+            ] + GOTO_DEFINITION_PAYLOADS
             for payload, new_name in payloads:
                 fixture = pytest.fixture(
                     open_fixture_for_writing(file_path, build_payload(payload)),

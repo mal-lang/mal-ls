@@ -1,5 +1,5 @@
 from malls.lsp.models import Position
-from malls.ts.utils import lsp_to_tree_sitter_position
+from malls.ts.utils import lsp_to_tree_sitter_position, tree_sitter_to_lsp_position
 
 
 def test_ascii_chars_only():
@@ -11,7 +11,9 @@ def test_ascii_chars_only():
 
     position = Position(line=0, character=6)
 
-    assert lsp_to_tree_sitter_position(text, position) == (0, 6)
+    result_position = lsp_to_tree_sitter_position(text, position)
+    assert result_position == (0, 6)
+    assert tree_sitter_to_lsp_position(text, result_position) == position
 
 
 def test_with_emoji():
@@ -25,7 +27,9 @@ def test_with_emoji():
 
     # In bytes should be 5, 1 for 'a', 4 for emoji
 
-    assert lsp_to_tree_sitter_position(text, position) == (0, 5)
+    result_position = lsp_to_tree_sitter_position(text, position)
+    assert result_position == (0, 5)
+    assert tree_sitter_to_lsp_position(text, result_position) == position
 
 
 def test_ascii_and_multibyte_chars():
@@ -39,7 +43,9 @@ def test_ascii_and_multibyte_chars():
 
     # In bytes ß, ç take 2 bytes and emoji 4 -> position 2+2 = 4
 
-    assert lsp_to_tree_sitter_position(text, position) == (0, 4)
+    result_position = lsp_to_tree_sitter_position(text, position)
+    assert result_position == (0, 4)
+    assert tree_sitter_to_lsp_position(text, result_position) == position
 
 
 def test_empty_string():
@@ -47,4 +53,6 @@ def test_empty_string():
 
     position = Position(line=0, character=0)
 
-    assert lsp_to_tree_sitter_position(text, position) == (0, 0)
+    result_position = lsp_to_tree_sitter_position(text, position)
+    assert result_position == (0, 0)
+    assert tree_sitter_to_lsp_position(text, result_position) == position
