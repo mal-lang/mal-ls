@@ -1091,7 +1091,7 @@ def build_diagnostic(node: Node, text: str, error: bool) -> dict:
     }
 
 
-def query_for_error_nodes(tree: Tree, text: str, notification_storage: list):
+def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_storage: dict):
     """
     This function will find all error/missing nodes and save the diagnostic
     in case any problem is found
@@ -1102,9 +1102,13 @@ def query_for_error_nodes(tree: Tree, text: str, notification_storage: list):
 
     if "error-node" in captures:
         for error_node in captures["error-node"]:
-            notification_storage.append(build_diagnostic(error_node, text, True))
+            diagnostic = build_diagnostic(error_node, text, True)
+            if doc_uri in notification_storage : notification_storage[doc_uri].append(diagnostic)
+            else: notification_storage[doc_uri] = [diagnostic]
     if "missing-node" in captures:
         for missing_node in captures["missing-node"]:
-            notification_storage.append(build_diagnostic(missing_node, text, False))
+            diagnostic = build_diagnostic(missing_node, text, False)
+            if doc_uri in notification_storage : notification_storage[doc_uri].append(diagnostic)
+            else: notification_storage[doc_uri] = [diagnostic]
 
     return

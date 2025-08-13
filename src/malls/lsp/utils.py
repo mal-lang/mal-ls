@@ -58,7 +58,7 @@ def recursive_parsing(
         storage[file_name] = Document(tree, source, file_name)
 
         # find all possible errors
-        query_for_error_nodes(tree, source, diagnostics_storage)
+        query_for_error_nodes(tree, source, file_name, diagnostics_storage)
 
         # save as included file
         storage[cur_file].included_files.append(storage[file_name])

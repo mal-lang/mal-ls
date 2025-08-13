@@ -62,7 +62,7 @@ class MALLSPServer(MethodDispatcher):
         self.__trace_value = TraceValue.Off
 
         self.__files = {}
-        self.__diagnostics = []
+        self.__diagnostics = {}
 
     def start(self) -> None:
         """Starts the language server."""
@@ -125,6 +125,10 @@ class MALLSPServer(MethodDispatcher):
     @property
     def files(self) -> dict:
         return self.__files
+
+    @property
+    def diagnostics(self) -> dict:
+        return self.__diagnostics
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
@@ -281,7 +285,7 @@ class MALLSPServer(MethodDispatcher):
         self.__files[doc_uri] = Document(tree, source_encoded, doc_uri)
 
         # find all possible errors
-        query_for_error_nodes(tree, source_encoded, self.__diagnostics)
+        query_for_error_nodes(tree, source_encoded, doc_uri, self.__diagnostics)
 
         # obtain the included files
         root_node = tree.root_node
@@ -319,7 +323,7 @@ class MALLSPServer(MethodDispatcher):
                 document.change_whole_file(text)
 
         # after changing and reparsing the file, find all possible errors
-        query_for_error_nodes(document.tree, document.text, self.__diagnostics)
+        query_for_error_nodes(document.tree, document.text, doc_uri, self.__diagnostics)
 
     def m_text_document__definition(self, **params: dict | None) -> None:
         # validate parameters
