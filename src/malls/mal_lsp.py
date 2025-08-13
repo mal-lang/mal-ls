@@ -16,9 +16,9 @@ from .ts.utils import (
     INCLUDED_FILES_QUERY,
     find_symbol_definition,
     position_to_node,
+    query_for_error_nodes,
     run_query,
     tree_sitter_to_lsp_position,
-    query_for_error_nodes,
 )
 
 log = logging.getLogger(__name__)
@@ -315,7 +315,7 @@ class MALLSPServer(MethodDispatcher):
             else:
                 text = change.text.text.encode()  # whole file change
                 document.change_whole_file(text)
-        
+
         # after changing and reparsing the file, find all possible errors
         query_for_error_nodes(document.tree, document.text, self.__diagnostics)
 

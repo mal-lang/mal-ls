@@ -3,8 +3,8 @@ import logging
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCursor
 
-from ..lsp.models import Position
 from ..lsp.enums import DiagnosticSeverity
+from ..lsp.models import Position
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -100,8 +100,9 @@ ERRORS_QUERY = Query(
         ((ERROR) @error-node)
         ((MISSING) @missing-node)
     ]
-    """
+    """,
 )
+
 
 def find_variable_query(variable_name: str):
     query = Query(
@@ -1071,10 +1072,10 @@ def position_to_node(tree: Tree, text: str, position: Position):
 
 
 def build_diagnostic(node: Node, text: str, error: bool) -> dict:
-    '''
+    """
     Helper function to build a dictionary corresponding to a diagonstic,
     so it can be sent to the Client as is
-    '''
+    """
     # start by converting the position
     start_position = tree_sitter_to_lsp_position(text, node.start_point)
     end_position = tree_sitter_to_lsp_position(text, node.end_point)
@@ -1082,17 +1083,11 @@ def build_diagnostic(node: Node, text: str, error: bool) -> dict:
     # TODO find better messages and information about error/missing nodes
     return {
         "range": {
-            "start": {
-                "line": start_position.line,
-                "character": start_position.character
-            },
-            "end": {
-                "line": end_position.line,
-                "character": end_position.character
-            },
+            "start": {"line": start_position.line, "character": start_position.character},
+            "end": {"line": end_position.line, "character": end_position.character},
         },
         "severity": DiagnosticSeverity.Error if error else DiagnosticSeverity.Warning,
-        "message": "Node not recongized" if error else  "Node missing",
+        "message": "Node not recongized" if error else "Node missing",
     }
 
 
@@ -1105,11 +1100,11 @@ def query_for_error_nodes(tree: Tree, text: str, notification_storage: list):
     # Find all error/missing nodes
     captures = run_query(tree.root_node, ERRORS_QUERY)
 
-    if 'error-node' in captures:
-        for error_node in captures['error-node']:
+    if "error-node" in captures:
+        for error_node in captures["error-node"]:
             notification_storage.append(build_diagnostic(error_node, text, True))
-    if 'missing-node' in captures:
-        for missing_node in captures['missing-node']:
+    if "missing-node" in captures:
+        for missing_node in captures["missing-node"]:
             notification_storage.append(build_diagnostic(missing_node, text, False))
-    
+
     return
