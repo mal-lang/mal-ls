@@ -20,6 +20,7 @@ from .util import (
     OPEN_FILE_WITH_INCLUDE_WITH_ERROR,
     OPEN_FILE_WITH_INCLUDED_FILE,
     OPEN_INCLUDED_FILE_WITH_ERROR,
+    COMPLETION_PAYLOADS,
     build_payload,
 )
 
@@ -88,7 +89,7 @@ for directory, _, files in os.walk("tests/fixtures"):
                     [OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR],
                     "open_file_with_include_error_and_open_file",
                 ),
-            ] + GOTO_DEFINITION_PAYLOADS
+            ] + GOTO_DEFINITION_PAYLOADS + COMPLETION_PAYLOADS
             for payload, new_name in payloads:
                 fixture = pytest.fixture(
                     open_fixture_for_writing(file_path, build_payload(payload)),
