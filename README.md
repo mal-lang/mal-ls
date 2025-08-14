@@ -23,3 +23,22 @@ To configure what files are used to read from/write to, run `uv run malls --stdi
 
 Other start-up arguments, namely related to logging, can be found using `uv run malls -h`
 
+## Installation
+### NeoVim
+1. Install the server via pip, for example locally:
+    ```sh
+    pip install /folder/path/of/pyproject
+    ```
+    > [!NOTE]
+    > Use `-e` to install it in editable/development mode, which updates the installation live.
+2. Configure your NeoVim LSP client, for example :
+    `init.lua`
+    ```lua
+    vim.lsp.config['malls'] = {
+        cmd = { "malls", "--stdio" },
+        filetypes = { 'mal' },
+    }
+    vim.lsp.enable('malls')
+    ```
+    > [!NOTE]
+    > Tested for NeoVim v0.11.1
