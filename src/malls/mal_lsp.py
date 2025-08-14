@@ -96,6 +96,7 @@ class MALLSPServer(MethodDispatcher):
 
         capabilities = {
             "positionEncoding": self.__encoding,
+            "definitionProvider": True
         }
 
         log.debug("Server capabilities: %s", capabilities)
