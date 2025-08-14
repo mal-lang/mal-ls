@@ -116,6 +116,9 @@ class MALLSPServer(MethodDispatcher):
                 "change": 1,
             },
             "definitionProvider": True,
+            "completionProvider": {
+                "resolveProvider": True,
+            }
         }
 
         log.warn("Server capabilities: %s", capabilities)
@@ -420,7 +423,7 @@ class MALLSPServer(MethodDispatcher):
             return None  # parameters are wrong
 
         # obtain relevant parameters
-        doc_uri = completion.text_document.uri
+        doc_uri = uri_to_path(completion.text_document.uri)
         position = completion.position
 
         # get completion list
@@ -430,4 +433,6 @@ class MALLSPServer(MethodDispatcher):
         # From the documentation:
         # `If a CompletionItem[] is provided it is interpreted to
         # be complete. So it is the same as { isIncomplete: false, items }`
+        log.warn("returning")
+        log.warn(completion_list)
         return completion_list

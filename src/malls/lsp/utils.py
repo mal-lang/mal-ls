@@ -118,7 +118,7 @@ def get_completion_list(doc: Document, pos: Position) -> list:
 
     # TODO include more relevant information
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
-    completion_list = [{"label": symbol} for symbol in user_symbols.items()]
-    +[{"label": keyword} for keyword in keywords.items()]
+    completion_list = [symbol for symbol in user_symbols.keys()] + [keyword for keyword in keywords.keys()]
+    [log.warn(symbol) for symbol in completion_list]
 
     return completion_list
