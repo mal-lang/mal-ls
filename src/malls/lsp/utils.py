@@ -7,8 +7,15 @@ from pylsp_jsonrpc.endpoint import Endpoint
 from tree_sitter import Language, Parser
 from uritools import urisplit
 
-from ..ts.utils import INCLUDED_FILES_QUERY, query_for_error_nodes, run_query
+from ..ts.utils import (
+    INCLUDED_FILES_QUERY,
+    find_symbols_in_context_hierarchy,
+    lsp_to_tree_sitter_position,
+    query_for_error_nodes,
+    run_query,
+)
 from .classes import Document
+from .models import Position
 
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
@@ -100,3 +107,18 @@ def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> No
     endpoint.notify("textDocument/publishDiagnostics", publish_diagnostics_dict)
 
     return
+
+
+def get_completion_list(doc: Document, pos: Position) -> list:
+    # convert LSP position to TS point
+    point = lsp_to_tree_sitter_position(doc.text, pos)
+
+    # get completion items
+    user_symbols, keywords = find_symbols_in_context_hierarchy(doc.tree.walk(), point)
+
+    # TODO include more relevant information
+    # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
+    completion_list = [{"label": symbol} for symbol in user_symbols.items()]
+    +[{"label": keyword} for keyword in keywords.items()]
+
+    return completion_list
