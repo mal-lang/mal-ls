@@ -5,6 +5,7 @@ from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCur
 
 from ..lsp.enums import DiagnosticSeverity
 from ..lsp.models import Position
+import copy
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -662,13 +663,14 @@ def bfs_search(doc: str, query: Query, key: str, symbol: str, storage: dict):
 
     # otherwise, we have to check for the included files
     # for that, we will use a BFS (breadth-first search)
-    included_files = storage[doc].included_files
+    included_files = copy.copy(storage[doc].included_files)
+    log.warn(included_files)
 
     while included_files:
         file = included_files.pop(0)
         if (result := search_match(file, query, key, symbol)) is not None:
             return (result, file)
-        included_files.extend(storage[file.uri].included_files)
+        included_files.extend(copy.copy(storage[file.uri].included_files))
 
     return (None, file)
 
@@ -686,6 +688,7 @@ def find_symbol_definition_asset_declaration(
     captures = run_query(node, FIND_EXTENDED_ASSET)
 
     if captures and captures["identifier_node"][0].text == symbol:
+        log.warn("\n\nRIGHT HERE\n\n")
         key = "asset_declaration"
         # in this case, we have to find this asset
         result_node, result_file = bfs_search(
@@ -1100,6 +1103,9 @@ def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_stor
     # Find all error/missing nodes
     captures = run_query(tree.root_node, ERRORS_QUERY)
 
+    # clear old captures
+    if doc_uri in notification_storage:
+        notification_storage[doc_uri] = []
     if "error-node" in captures:
         for error_node in captures["error-node"]:
             diagnostic = build_diagnostic(error_node, text, True)

@@ -1,4 +1,5 @@
 import logging
+import sys
 import typing
 
 import tree_sitter_mal as ts_mal
@@ -21,6 +22,14 @@ from .ts.utils import (
     tree_sitter_to_lsp_position,
 )
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('malls.log'),
+        logging.StreamHandler(sys.stdout) # Keep this if you want some output in the terminal
+    ]
+)
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
@@ -66,7 +75,7 @@ class MALLSPServer(MethodDispatcher):
 
     def start(self) -> None:
         """Starts the language server."""
-        log.info("Starting MAL LSP language server.")
+        log.warn("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
 
     def _process_encoding(self, encodings: list[PositionEncodingKind]):
@@ -96,9 +105,14 @@ class MALLSPServer(MethodDispatcher):
 
         capabilities = {
             "positionEncoding": self.__encoding,
+            "textDocumentSync": {
+                "openClose": True,
+                "change": 1,
+            },
+            "definitionProvider": True,
         }
 
-        log.debug("Server capabilities: %s", capabilities)
+        log.warn("Server capabilities: %s", capabilities)
         return capabilities
 
     def __getitem__(self, item):
@@ -267,7 +281,7 @@ class MALLSPServer(MethodDispatcher):
 
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
-        if doc_uri in self.__files:
+        if doc_uri in self.__files.keys():
             # the document was already parsed but had errors
             if doc_uri in self.__diagnostics:
                 send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
@@ -320,12 +334,12 @@ class MALLSPServer(MethodDispatcher):
 
         # There could be various changes, so we need to iterate over them
         for change in textDocument.content_changes:
-            changed_range = change.range
-            if type(change.text) is str:
+            try:
+                changed_range = change.range
                 text = change.text.encode()
                 document.execute_changes(changed_range, text)
-            else:
-                text = change.text.text.encode()  # whole file change
+            except:
+                text = change.text.encode()  # whole file change
                 document.change_whole_file(text)
 
         # after changing and reparsing the file, find all possible errors
@@ -350,13 +364,19 @@ class MALLSPServer(MethodDispatcher):
         node, point, symbol = position_to_node(document.tree, document.text, position_lsp)
 
         if node.type != "identifier":
+            log.warn("no worky")
             return None  # we only care about identifiers
 
         # call the method that will find the definition
+        log.warn(symbol)
+        log.warn(document_uri)
+        log.warn(node.text)
+        log.warn(self.files.keys())
         result_node, result_doc = find_symbol_definition(node, symbol, document_uri, self.__files)
 
         # if no node was found
         if result_node is None:
+            log.warn("womp womp")
             return None
 
         # otherwise, we have to convert back to LSP positions and return the

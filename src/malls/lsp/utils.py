@@ -93,7 +93,7 @@ def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> No
     Helper function to gather all diagnostics for the current file and notify the client
     """
     publish_diagnostics_dict = {
-        "uri": file_uri,
+        "uri": path_to_uri(file_uri),
         "diagnostics": diagnostics,
     }
 

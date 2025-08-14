@@ -2630,7 +2630,7 @@ class TextDocumentContentChangeEvent(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent
     """
 
-    range: Range
+    range: Range | None = None
 
     range_length: int | None = None
 
