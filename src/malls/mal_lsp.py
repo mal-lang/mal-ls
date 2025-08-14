@@ -12,7 +12,13 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.utils import path_to_uri, recursive_parsing, send_diagnostics, uri_to_path
+from .lsp.utils import (
+    get_completion_list,
+    path_to_uri,
+    recursive_parsing,
+    send_diagnostics,
+    uri_to_path,
+)
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
     find_symbol_definition,
@@ -406,3 +412,22 @@ class MALLSPServer(MethodDispatcher):
                 },
             },
         }
+
+    def m_text_document__completion(self, **params: dict | None) -> None:
+        # validate parameters
+        completion = models.CompletionParams(**params) if params else None
+        if completion is None:
+            return None  # parameters are wrong
+
+        # obtain relevant parameters
+        doc_uri = completion.text_document.uri
+        position = completion.position
+
+        # get completion list
+        completion_list = get_completion_list(self.__files[doc_uri], position)
+
+        # For now, the list is complete, so we can just return it.
+        # From the documentation:
+        # `If a CompletionItem[] is provided it is interpreted to
+        # be complete. So it is the same as { isIncomplete: false, items }`
+        return completion_list
