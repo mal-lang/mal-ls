@@ -1049,8 +1049,8 @@ class TextDocumentSyncClientCapabilities(BaseModel):
     model_config = base_config
 
 
-class TagSupportProperty(BaseModel):
-    value_set: list[enums.CompletionItemTag]
+class TagSupportProperty[TagType](BaseModel):
+    value_set: list[TagType]
     """The tags supported by the client."""
 
     model_config = base_config
@@ -1112,7 +1112,7 @@ class CompletionItemCapabilities(BaseModel):
     preselect_support: bool | None = None
     """Client supports the preselect property on a completion item."""
 
-    tag_support: TagSupportProperty | None = None
+    tag_support: TagSupportProperty[enums.CompletionItemTag] | None = None
     """
     Client supports the tag property on a completion item. Clients
     supporting tags have to handle unknown tags gracefully. Clients
@@ -1413,14 +1413,14 @@ class DocumentHighlightClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentHighlightClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Whether document highlight supports dynamic registration."""
 
     model_config = base_config
 
 
 class SymbolKindProperty(BaseModel):
-    value_set: list[enums.SymbolKind]
+    value_set: list[enums.SymbolKind] | None = None
     """
     The symbol kind values the client supports. When this
     property exists the client also guarantees that it will
@@ -1440,23 +1440,23 @@ class DocumentSymbolClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentSymbolClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Whether document symbol supports dynamic registration."""
 
-    symbol_kind: SymbolKindProperty
+    symbol_kind: SymbolKindProperty | None = None
     """Specific capabilities for the `SymbolKind` in the `textDocument/documentSymbol` request."""
 
-    hierarchical_document_symbol_support: bool
+    hierarchical_document_symbol_support: bool | None = None
     """The client supports hierarchical document symbols."""
 
-    tag_support: TagSupportProperty
+    tag_support: TagSupportProperty[enums.SymbolTag] | None = None
     """
     The client supports tags on `SymbolInformation`. Tags are supported on
     `DocumentSymbol` if `hierarchicalDocumentSymbolSupport` is set to true.
     Clients supporting tags have to handle unknown tags gracefully.
     """
 
-    label_support: bool
+    label_support: bool | None = None
     """
     The client supports an additional label presented in the UI when
     registering a document symbol provider.
@@ -1500,40 +1500,40 @@ class CodeActionClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeActionClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether code action supports dynamic registration.
     """
 
-    code_action_literal_support: CodeActionLiteralSupportProperty
+    code_action_literal_support: CodeActionLiteralSupportProperty | None = None
     """
     The client supports code action literals as a valid response of the
     `textDocument/codeAction` request.
     """
 
-    is_preferred_support: bool
+    is_preferred_support: bool | None = None
     """
     Whether code action supports the `isPreferred` property.
     """
 
-    disabled_support: bool
+    disabled_support: bool | None = None
     """
     Whether code action supports the `disabled` property.
     """
 
-    data_support: bool
+    data_support: bool | None = None
     """
     Whether code action supports the `data` property which is preserved
     between a `textDocument/codeAction` and a `codeAction/resolve` request.
     """
 
-    resolve_support: ResolveSupportProperty
+    resolve_support: ResolveSupportProperty | None = None
     """
     Whether the client supports resolving additional code action properties
     via a separate `codeAction/resolve` request.
     """
 
-    honors_change_annotations: bool
+    honors_change_annotations: bool | None = None
     """
     Whether the client honors the change annotations in text edits and
     resource operations returned via the `CodeAction#edit` property by for
@@ -1549,7 +1549,7 @@ class CodeLensClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether code lens supports dynamic registration.
     """
@@ -1562,12 +1562,12 @@ class DocumentLinkClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentLinkClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether document link supports dynamic registration.
     """
 
-    tooltip_support: bool
+    tooltip_support: bool | None = None
     """
     Whether the client supports the `tooltip` property on `DocumentLink`.
     """
@@ -1580,7 +1580,7 @@ class DocumentColorClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentColorClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether document color supports dynamic registration.
     """
@@ -1593,7 +1593,7 @@ class DocumentFormattingClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether formatting supports dynamic registration.
     """
@@ -1606,7 +1606,7 @@ class DocumentRangeFormattingClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentRangeFormattingClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether formatting supports dynamic registration.
     """
@@ -1619,7 +1619,7 @@ class DocumentOnTypeFormattingClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentOnTypeFormattingClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether on type formatting supports dynamic registration.
     """
@@ -1632,18 +1632,18 @@ class RenameClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#renameClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Whether rename supports dynamic registration.
     """
 
-    prepare_support: bool
+    prepare_support: bool | None = None
     """
     Client supports testing for validity of rename operations
     before execution.
     """
 
-    prepare_support_default_behavior: enums.PrepareSupportDefaultBehavior
+    prepare_support_default_behavior: enums.PrepareSupportDefaultBehavior | None = None
     """
     Client supports the default behavior result
     (`{ defaultBehavior: boolean }`).
@@ -1652,7 +1652,7 @@ class RenameClientCapabilities(BaseModel):
     client.
     """
 
-    honors_change_annotations: bool
+    honors_change_annotations: bool | None = None
     """
     Whether the client honors the change annotations in
     text edits and resource operations returned via the
@@ -1669,29 +1669,29 @@ class PublishDiagnosticsClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsClientCapabilities
     """
 
-    related_information: bool
+    related_information: bool | None = None
     """
     Whether the clients accepts diagnostics with related information.
     """
 
-    tag_support: TagSupportProperty
+    tag_support: TagSupportProperty[enums.DiagnosticTag] | None = None
     """
     Client supports the tag property to provide meta data about a diagnostic.
     Clients supporting tags have to handle unknown tags gracefully.
     """
 
-    version_support: bool
+    version_support: bool | None = None
     """
     Whether the client interprets the version property of the
     `textDocument/publishDiagnostics` notification's parameter.
     """
 
-    code_description_support: bool
+    code_description_support: bool | None = None
     """
     Client supports a codeDescription property
     """
 
-    data_support: bool
+    data_support: bool | None = None
     """
     Whether code action supports the `data` property which is
     preserved between a `textDocument/publishDiagnostics` and
@@ -2113,7 +2113,7 @@ class DidChangeConfigurationClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeConfigurationClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Did change configuration notification supports dynamic registration."""
 
     model_config = base_config
@@ -2126,13 +2126,13 @@ class DidChangeWatchedFilesClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#didChangeWatchedFilesClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """
     Did change watched files notification supports dynamic registration. Please note that the
     current protocol doesn't support static configuration for file changes from the server side.
     """
 
-    relative_pattern_support: bool
+    relative_pattern_support: bool | None = None
     """Whether the client has support for relative patterns or not."""
 
     model_config = base_config
@@ -2145,19 +2145,19 @@ class WorkspaceSymbolClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_symbol
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Symbol request supports dynamic registration."""
 
-    symbol_kind: SymbolKindProperty
+    symbol_kind: SymbolKindProperty | None = None
     """Specific capabilities for the `SymbolKind` in the `workspace/symbol` request."""
 
-    tag_support: TagSupportProperty
+    tag_support: TagSupportProperty[enums.SymbolTag] | None = None
     """
     The client supports tags on `SymbolInformation` and `WorkspaceSymbol`. Clients supporting tags
     have to handle unknown tags gracefully.
     """
 
-    resolve_support: ResolveSupportProperty
+    resolve_support: ResolveSupportProperty | None = None
     """
     The client support partial workspace symbols. The client will send the request
     `workspaceSymbol/resolve` to the server to resolve additional properties.
@@ -2173,7 +2173,7 @@ class ExecuteCommandClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#executeCommandClientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Execute command supports dynamic registration."""
 
     model_config = base_config
@@ -2186,7 +2186,7 @@ class SemanticTokensWorkspaceClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#semanticTokensWorkspaceClientCapabilities
     """
 
-    refresh_support: bool
+    refresh_support: bool | None = None
     """
     Whether the client implementation supports a refresh request sent from
     the server to the client.
@@ -2207,7 +2207,7 @@ class CodeLensWorkspaceClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensWorkspaceClientCapabilities
     """
 
-    refresh_support: bool
+    refresh_support: bool | None = None
     """
     Whether the client implementation supports a refresh request sent from the
     server to the client.
@@ -2226,25 +2226,25 @@ class FileOperations(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
 
-    dynamic_registration: bool
+    dynamic_registration: bool | None = None
     """Whether the client supports dynamic registration for file requests/notifications."""
 
-    did_create: bool
+    did_create: bool | None = None
     """The client has support for sending didCreateFiles notifications."""
 
-    will_create: bool
+    will_create: bool | None = None
     """The client has support for sending willCreateFiles requests."""
 
-    did_rename: bool
+    did_rename: bool | None = None
     """The client has support for sending didRenameFiles notifications."""
 
-    will_rename: bool
+    will_rename: bool | None = None
     """The client has support for sending willRenameFiles requests."""
 
-    did_delete: bool
+    did_delete: bool | None = None
     """The client has support for sending didDeleteFiles notifications."""
 
-    will_delete: bool
+    will_delete: bool | None = None
     """The client has support for sending willDeleteFiles requests."""
 
     model_config = base_config
@@ -2257,7 +2257,7 @@ class InlineValueWorkspaceClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlineValueWorkspaceClientCapabilities
     """
 
-    refresh_support: bool
+    refresh_support: bool | None = None
     """
     Whether the client implementation supports a refresh request sent from
     the server to the client.
@@ -2278,7 +2278,7 @@ class InlayHintWorkspaceClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintWorkspaceClientCapabilities
     """
 
-    refresh_support: bool
+    refresh_support: bool | None = None
     """
     Whether the client implementation supports a refresh request sent from
     the server to the client.
@@ -2299,7 +2299,7 @@ class DiagnosticWorkspaceClientCapabilities(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticWorkspaceClientCapabilities
     """
 
-    refresh_support: bool
+    refresh_support: bool | None = None
     """
     Whether the client implementation supports a refresh request sent from
     the server to the client.
@@ -2318,46 +2318,46 @@ class WorkspaceProperty(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
 
-    apply_edit: bool
+    apply_edit: bool | None = None
     """The client supports applying batch edits to the workspace."""
 
-    workspace_edit: WorkspaceEditClientCapabilities
+    workspace_edit: WorkspaceEditClientCapabilities | None = None
     """Capabilities specific to `WorkspaceEdit`s"""
 
-    did_change_configuration: DidChangeConfigurationClientCapabilities
+    did_change_configuration: DidChangeConfigurationClientCapabilities | None = None
     """Capabilities specific to the `workspace/didChangeConfiguration` notification."""
 
-    did_change_watched_files: DidChangeWatchedFilesClientCapabilities
+    did_change_watched_files: DidChangeWatchedFilesClientCapabilities | None = None
     """Capabilities specific to the `workspace/didChangeWatchedFiles` notification."""
 
-    symbol: WorkspaceSymbolClientCapabilities
+    symbol: WorkspaceSymbolClientCapabilities | None = None
     """Capabilities specific to the `workspace/symbol` request."""
 
-    execute_command: ExecuteCommandClientCapabilities
+    execute_command: ExecuteCommandClientCapabilities | None = None
     """Capabilities specific to the `workspace/executeCommand` request."""
 
-    workspace_folders: bool
+    workspace_folders: bool | None = None
     """The client has support for workspace folders."""
 
-    configuration: bool
+    configuration: bool | None = None
     """The client supports `workspace/configuration` requests."""
 
-    semantic_tokens: SemanticTokensWorkspaceClientCapabilities
+    semantic_tokens: SemanticTokensWorkspaceClientCapabilities | None = None
     """Capabilities specific to the semantic token requests scoped to the workspace."""
 
-    code_lens: CodeLensWorkspaceClientCapabilities
+    code_lens: CodeLensWorkspaceClientCapabilities | None = None
     """Capabilities specific to the code lens requests scoped to the workspace."""
 
-    file_operations: FileOperations
+    file_operations: FileOperations | None = None
     """The client has support for file requests/notifications."""
 
-    inline_value: InlineValueWorkspaceClientCapabilities
+    inline_value: InlineValueWorkspaceClientCapabilities | None = None
     """Client workspace capabilities specific to inline values."""
 
-    inlay_hint: InlayHintWorkspaceClientCapabilities
+    inlay_hint: InlayHintWorkspaceClientCapabilities | None = None
     """Client workspace capabilities specific to inlay hints."""
 
-    diagnostics: DiagnosticWorkspaceClientCapabilities
+    diagnostics: DiagnosticWorkspaceClientCapabilities | None = None
     """Client workspace capabilities specific to diagnostics."""
 
     model_config = base_config
@@ -2482,16 +2482,16 @@ class GeneralProperty(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#clientCapabilities
     """
 
-    stale_request_support: StaleRequestSupportProperty
+    stale_request_support: StaleRequestSupportProperty | None = None
     """Client capability that signals how the client handles stale requests."""
 
-    regular_expressions: RegularExpressionsClientCapabilities
+    regular_expressions: RegularExpressionsClientCapabilities | None = None
     """Client capabilities specific to regular expressions."""
 
-    markdown: MarkdownClientCapabilities
+    markdown: MarkdownClientCapabilities | None = None
     """Client capabilities specific to the client's markdown parser."""
 
-    position_encodings: list[enums.PositionEncodingKind]
+    position_encodings: list[enums.PositionEncodingKind] | None = None
     """The position encodings supported by the client."""
 
     model_config = base_config
