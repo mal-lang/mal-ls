@@ -290,7 +290,7 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     captures = run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)
 
     if not captures:  # if nothing was found, then there are no symbols
-        return ({}, {})
+        return ({}, {"asset": {}, "extends": {}, "abstract": {}, "info": {}})
 
     user_symbols, keywords = (
         {},
@@ -306,14 +306,20 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
         keywords["extends"] = captures["extends"][0]  # we want to store where we found the keyword
         for extends_node in captures["extends"]:
             user_symbols[extends_node.text.decode()] = extends_node
+    else:
+        keywords["extends"] = {}
 
     # include abstract if it exists
     if "abstract" in captures:
         keywords["abstract"] = captures["abstract"][0]
+    else:
+        keywords["abstract"] = {}
 
     # include meta if it exists
     if "meta" in captures:
         keywords["info"] = captures["info"][0]
+    else:
+        keywords["info"] = {}
 
     return (user_symbols, keywords)
 
@@ -374,6 +380,8 @@ def find_symbols_asset_declaration(owner: Node) -> (dict, dict):
                 continue
             for symbol_node in captures[key]:
                 user_symbols[symbol_node.text.decode()] = symbol_node
+    else:
+        return ({}, {"info": {}, "let": {}})
 
     return (user_symbols, keywords)
 
@@ -391,10 +399,16 @@ def find_symbols_root_node(owner: Node) -> (list[str], list[str]):
     keywords = {}
     if "category" in captures:
         keywords["category"] = captures["category"][0]
+    else:
+        keywords["category"] = {}
     if "meta" in captures:
         keywords["info"] = captures["meta"][0]
+    else:
+        keywords["info"] = {}
     if "associations" in captures:
         keywords["associations"] = captures["associations"][0]
+    else:
+        keywords["associations"] = {}
 
     return ({}, keywords)
 
@@ -428,7 +442,6 @@ def find_symbols_in_category_hierarchy(owner: Node) -> (dict, dict):
     Given a category declaration, we want to find the symbols in the current scope,
     the children's scope, which are assets, and the parent node (root)
     """
-
     # symbols and keywords
     symbols = {}
     keywords = {}
@@ -664,7 +677,6 @@ def bfs_search(doc: str, query: Query, key: str, symbol: str, storage: dict):
     # otherwise, we have to check for the included files
     # for that, we will use a BFS (breadth-first search)
     included_files = copy.copy(storage[doc].included_files)
-    log.warn(included_files)
 
     while included_files:
         file = included_files.pop(0)
@@ -688,7 +700,6 @@ def find_symbol_definition_asset_declaration(
     captures = run_query(node, FIND_EXTENDED_ASSET)
 
     if captures and captures["identifier_node"][0].text == symbol:
-        log.warn("\n\nRIGHT HERE\n\n")
         key = "asset_declaration"
         # in this case, we have to find this asset
         result_node, result_file = bfs_search(

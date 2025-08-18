@@ -117,11 +117,10 @@ class MALLSPServer(MethodDispatcher):
             },
             "definitionProvider": True,
             "completionProvider": {
-                "resolveProvider": True,
             }
         }
 
-        log.warn("Server capabilities: %s", capabilities)
+        log.info("Server capabilities: %s", capabilities)
         return capabilities
 
     def __getitem__(self, item):
@@ -373,19 +372,13 @@ class MALLSPServer(MethodDispatcher):
         node, point, symbol = position_to_node(document.tree, document.text, position_lsp)
 
         if node.type != "identifier":
-            log.warn("no worky")
             return None  # we only care about identifiers
 
         # call the method that will find the definition
-        log.warn(symbol)
-        log.warn(document_uri)
-        log.warn(node.text)
-        log.warn(self.files.keys())
         result_node, result_doc = find_symbol_definition(node, symbol, document_uri, self.__files)
 
         # if no node was found
         if result_node is None:
-            log.warn("womp womp")
             return None
 
         # otherwise, we have to convert back to LSP positions and return the
@@ -433,6 +426,4 @@ class MALLSPServer(MethodDispatcher):
         # From the documentation:
         # `If a CompletionItem[] is provided it is interpreted to
         # be complete. So it is the same as { isIncomplete: false, items }`
-        log.warn("returning")
-        log.warn(completion_list)
         return completion_list

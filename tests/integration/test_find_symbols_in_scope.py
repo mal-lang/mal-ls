@@ -23,6 +23,7 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
         "extends",
         "abstract",
         "asset",
+        "info"
     ]
 
     # we use sets to ensure order does not matter
@@ -114,6 +115,7 @@ def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
     keywords = [
         "category",
         "associations",
+        "info",
     ]
 
     # we use sets to ensure order does not matter
