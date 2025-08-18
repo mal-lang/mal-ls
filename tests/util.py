@@ -466,6 +466,7 @@ CHANGE_FILE_WITH_ERROR = {
     },
 }
 
+
 def build_completion_payload(line, character, name):
     open = {
         "jsonrpc": "2.0",
@@ -475,13 +476,12 @@ def build_completion_payload(line, character, name):
                 "uri": find_symbols_in_scope_path,
                 "languageId": "mal",
                 "version": 0,
-                "text":
-    '''#id: "org.mal-lang.testAnalyzer"
+                "text": """#id: "org.mal-lang.testAnalyzer"
 #version:"0.0.0"
 
     category Example {
 
-        abstract asset Asset1 
+        abstract asset Asset1
         {
         let var = c
             | compromise
@@ -492,12 +492,12 @@ def build_completion_payload(line, character, name):
             | destroy
         }
     }
-    associations 
+    associations
     {
         Asset1 [a] * <-- L --> * [c] Asset2 developer info: some info
         Asset2 [d] 1 <-- M --> 1 [e] Asset2
     }
-    '''
+    """,
             }
         },
     }
@@ -512,18 +512,14 @@ def build_completion_payload(line, character, name):
             "position": {
                 "line": line,
                 "character": character,
-            }
+            },
         },
     }
 
     return ([open, completion_list], name)
 
-completion_items = [
-    (4, 0, "completion_category")
+
+completion_items = [(4, 0, "completion_category")]
+COMPLETION_PAYLOADS = [
+    build_completion_payload(line, char, name) for line, char, name in completion_items
 ]
-COMPLETION_PAYLOADS = (
-    [
-        build_completion_payload(line, char, name)
-        for line, char, name in completion_items
-    ]
-)

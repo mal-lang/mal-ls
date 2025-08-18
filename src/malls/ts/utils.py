@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import tree_sitter_mal as ts_mal
@@ -5,7 +6,6 @@ from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCur
 
 from ..lsp.enums import DiagnosticSeverity
 from ..lsp.models import Position
-import copy
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)

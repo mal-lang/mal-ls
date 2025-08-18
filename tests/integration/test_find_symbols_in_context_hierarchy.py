@@ -107,7 +107,7 @@ def test_find_symbols_in_asset1_hierarchy(mal_find_symbols_in_scope):
         ("asset", 1),
         ("category", 2),
         ("associations", 2),
-        ("info", 2)
+        ("info", 2),
     ]
 
     # we use sets to ensure order does not matter

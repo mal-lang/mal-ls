@@ -14,13 +14,13 @@ from .util import (
     CHANGE_FILE_4,
     CHANGE_FILE_5,
     CHANGE_FILE_WITH_ERROR,
+    COMPLETION_PAYLOADS,
     GOTO_DEFINITION_PAYLOADS,
     OPEN_FILE_WITH_ERROR,
     OPEN_FILE_WITH_FAKE_INCLUDE,
     OPEN_FILE_WITH_INCLUDE_WITH_ERROR,
     OPEN_FILE_WITH_INCLUDED_FILE,
     OPEN_INCLUDED_FILE_WITH_ERROR,
-    COMPLETION_PAYLOADS,
     build_payload,
 )
 
@@ -73,23 +73,27 @@ for directory, _, files in os.walk("tests/fixtures"):
         # Define the fixture from `open_file` on `file_path` as `fixture_name`
         if directory == "tests/fixtures/writeable_fixtures":
             # create different fixtures from the sabe base file
-            payloads = [
-                ([BASE_OPEN_FILE], fixture_name + "_base_open_file"),
-                ([OPEN_FILE_WITH_INCLUDED_FILE], fixture_name + "_with_included_file"),
-                ([OPEN_FILE_WITH_FAKE_INCLUDE], fixture_name + "_with_fake_include"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_1], "change_middle_of_file_single_line"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_2], "change_middle_of_file_multiple_lines"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_3], "change_end_of_file"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_4], "change_middle_of_file_twice"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_5], "change_whole_file"),
-                ([OPEN_FILE_WITH_ERROR], "open_file_with_error"),
-                ([OPEN_FILE_WITH_INCLUDE_WITH_ERROR], "open_file_with_include_error"),
-                ([BASE_OPEN_FILE, CHANGE_FILE_WITH_ERROR], "change_file_with_error"),
-                (
-                    [OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR],
-                    "open_file_with_include_error_and_open_file",
-                ),
-            ] + GOTO_DEFINITION_PAYLOADS + COMPLETION_PAYLOADS
+            payloads = (
+                [
+                    ([BASE_OPEN_FILE], fixture_name + "_base_open_file"),
+                    ([OPEN_FILE_WITH_INCLUDED_FILE], fixture_name + "_with_included_file"),
+                    ([OPEN_FILE_WITH_FAKE_INCLUDE], fixture_name + "_with_fake_include"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_1], "change_middle_of_file_single_line"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_2], "change_middle_of_file_multiple_lines"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_3], "change_end_of_file"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_4], "change_middle_of_file_twice"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_5], "change_whole_file"),
+                    ([OPEN_FILE_WITH_ERROR], "open_file_with_error"),
+                    ([OPEN_FILE_WITH_INCLUDE_WITH_ERROR], "open_file_with_include_error"),
+                    ([BASE_OPEN_FILE, CHANGE_FILE_WITH_ERROR], "change_file_with_error"),
+                    (
+                        [OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR],
+                        "open_file_with_include_error_and_open_file",
+                    ),
+                ]
+                + GOTO_DEFINITION_PAYLOADS
+                + COMPLETION_PAYLOADS
+            )
             for payload, new_name in payloads:
                 fixture = pytest.fixture(
                     open_fixture_for_writing(file_path, build_payload(payload)),

@@ -19,12 +19,7 @@ def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
         "Asset2",
         "Asset3",
     ]
-    keywords = [
-        "extends",
-        "abstract",
-        "asset",
-        "info"
-    ]
+    keywords = ["extends", "abstract", "asset", "info"]
 
     # we use sets to ensure order does not matter
     returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)

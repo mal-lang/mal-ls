@@ -30,11 +30,11 @@ from .ts.utils import (
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler('malls.log'),
-        logging.StreamHandler(sys.stdout) # Keep this if you want some output in the terminal
-    ]
+        logging.FileHandler("malls.log"),
+        logging.StreamHandler(sys.stdout),  # Keep this if you want some output in the terminal
+    ],
 )
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -116,8 +116,7 @@ class MALLSPServer(MethodDispatcher):
                 "change": 1,
             },
             "definitionProvider": True,
-            "completionProvider": {
-            }
+            "completionProvider": {},
         }
 
         log.info("Server capabilities: %s", capabilities)
@@ -346,7 +345,7 @@ class MALLSPServer(MethodDispatcher):
                 changed_range = change.range
                 text = change.text.encode()
                 document.execute_changes(changed_range, text)
-            except:
+            except Exception:
                 text = change.text.encode()  # whole file change
                 document.change_whole_file(text)
 
