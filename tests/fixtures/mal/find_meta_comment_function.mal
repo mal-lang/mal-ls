@@ -10,19 +10,29 @@ modeler info: "mod cat"
     developer info: "dev asset"
     modeler info: "mod asset"
     {
-      let var = c
+      let var = c.b
         | compromise
         developer info: "dev attack_step"
         modeler info: "mod attack_step"
         -> var.destroy
     }
+
+    abstract asset Asset3
+    developer info: "dev asset3"
+    modeler info: "mod asset3"
+    {
+    
+      }
+
     asset Asset2 extends Asset3
     {
         | destroy
     }
+
 }
 associations 
 {
     Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
     Asset2 [d] 1 <-- M --> 1 [e] Asset2
+    Asset3 [b] 1 <-- N --> 1 [f] Asset2
 }
