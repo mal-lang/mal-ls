@@ -15,14 +15,12 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
 
     Users must choose EITHER file I/O OR TCP socket mode (mutually exclusive).
     """
-    description=("""
+    description = """
                  MAL Language server.
                  By default uses STDI/O.
-                 """)
+                 """
     if subparser:
-        subparser = argparse.ArgumentParser(
-                prog="mal-ls",
-                description=description)
+        subparser = argparse.ArgumentParser(prog="mal-ls", description=description)
         parser.add_subparsers().add_parser(subparser)
         parser = subparser
     else:
@@ -67,15 +65,11 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
     )
 
     mode_group.add_argument(
-            "--stdio",
-            action=argparse.BooleanOptionalAction,
-            default=True,
-            help="Use stdio")
+        "--stdio", action=argparse.BooleanOptionalAction, default=True, help="Use stdio"
+    )
     mode_group.add_argument(
-            "--tcp",
-            action=argparse.BooleanOptionalAction,
-            default=False,
-            help="Use TCP mode")
+        "--tcp", action=argparse.BooleanOptionalAction, default=False, help="Use TCP mode"
+    )
 
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")

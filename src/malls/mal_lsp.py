@@ -94,10 +94,7 @@ class MALLSPServer(MethodDispatcher):
         if client_capabilities:
             self._process_client_capabilities(client_capabilities)
 
-        capabilities = {
-            "positionEncoding": self.__encoding,
-            "definitionProvider": True
-        }
+        capabilities = {"positionEncoding": self.__encoding, "definitionProvider": True}
 
         log.debug("Server capabilities: %s", capabilities)
         return capabilities
