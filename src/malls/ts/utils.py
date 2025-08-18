@@ -1154,6 +1154,18 @@ def find_meta_comment_category_declaration(node: Node):
     return meta_info
 
 
+def find_meta_comment_asset_declaration(node: Node):
+    """
+    In an asset declaration, we will try to find if the node has
+    any meta information and, if so, return it.
+    """
+    meta_info = []
+    for children in node.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
 def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: list = None) -> list:
     """
     Given a node and a symbol, this function will find the point
@@ -1170,6 +1182,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
         match node.type:
             case "category_declaration":
                 return find_meta_comment_category_declaration(node)
+            case "asset_declaration":
+                return find_meta_comment_asset_declaration(node)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
