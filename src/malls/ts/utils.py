@@ -265,16 +265,19 @@ def tree_sitter_to_lsp_position(text: str, pos: Point, new_text: str = None) -> 
 
     lines = text.splitlines(keepends=True)
 
-    line_text = lines[ts_line]
+    if len(lines) > ts_line:
+        line_text = lines[ts_line]
 
-    # Decode the line text from UTF-8 to a string
-    line_string = line_text.decode("utf-8")
+        # Decode the line text from UTF-8 to a string
+        line_string = line_text.decode("utf-8")
 
-    # Get the slice of the string up to the byte offset
-    string_slice = line_string.encode("utf-8")[:ts_byte_offset].decode("utf-8")
+        # Get the slice of the string up to the byte offset
+        string_slice = line_string.encode("utf-8")[:ts_byte_offset].decode("utf-8")
 
-    # The length of this slice in UTF-16 code units is the LSP character position
-    lsp_char = len(string_slice.encode("utf-16-le")) // 2
+        # The length of this slice in UTF-16 code units is the LSP character position
+        lsp_char = len(string_slice.encode("utf-16-le")) // 2
+    else:
+        lsp_char = 0
 
     return Position(line=ts_line, character=lsp_char)
 
@@ -1137,3 +1140,39 @@ def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_stor
                 notification_storage[doc_uri] = [diagnostic]
 
     return
+
+
+def find_meta_comment_category_declaration(node: Node):
+    """
+    In a category declaration, we will try to find if the node has
+    any meta information and, if so, return it.
+    """
+    meta_info = []
+    for children in node.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
+def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: list = None) -> list:
+    """
+    Given a node and a symbol, this function will find the point
+    where that symbol is defined.
+
+    Since the node can be of any type, we need to go up the parent
+    tree until we find a parent from which we can extract relevant
+    information.
+    """
+
+    original_position = (node.start_point, node.end_point)
+
+    while True:
+        match node.type:
+            case "category_declaration":
+                return find_meta_comment_category_declaration(node)
+            case _:
+                node = node.parent  # go to parent if no info proved relevant
+        # terminate if there are no more parents
+        if node is None:
+            return (None, document_uri)
+
