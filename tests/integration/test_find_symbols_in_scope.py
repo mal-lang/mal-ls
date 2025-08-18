@@ -69,9 +69,7 @@ def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
         "compromise",
         "destroy",
     ]
-    keywords = [
-        "let",
-    ]
+    keywords = ["let", "info"]
 
     # we use sets to ensure order does not matter
     returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
@@ -90,7 +88,7 @@ def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
     user_symbols = [
         "destroy",
     ]
-    keywords = []
+    keywords = ["info", "let"]
 
     # we use sets to ensure order does not matter
     returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)

@@ -494,7 +494,7 @@ def build_completion_payload(line, character, name):
     }
     associations
     {
-        Asset1 [a] * <-- L --> * [c] Asset2 developer info: some info
+        Asset1 [a] * <-- L --> * [c] Asset2
         Asset2 [d] 1 <-- M --> 1 [e] Asset2
     }
     """,
@@ -503,6 +503,7 @@ def build_completion_payload(line, character, name):
     }
 
     completion_list = {
+        "id": 1,
         "jsonrpc": "2.0",
         "method": "textDocument/completion",
         "params": {
@@ -519,7 +520,13 @@ def build_completion_payload(line, character, name):
     return ([open, completion_list], name)
 
 
-completion_items = [(4, 0, "completion_category")]
+completion_items = [
+    (4, 0, "completion_category"),
+    (18, 0, "completion_associations"),
+    (7, 0, "completion_asset1"),
+    (13, 0, "completion_asset2"),
+    (0, 0, "completion_root_node"),
+]
 COMPLETION_PAYLOADS = [
     build_completion_payload(line, char, name) for line, char, name in completion_items
 ]

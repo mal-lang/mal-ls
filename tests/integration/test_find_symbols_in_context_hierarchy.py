@@ -138,6 +138,7 @@ def test_find_symbols_in_asset2_hierarchy(mal_find_symbols_in_scope):
         ("Asset3", 1),
     ]
     keywords = [
+        ("let", 0),
         ("extends", 1),
         ("abstract", 1),
         ("asset", 1),

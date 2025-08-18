@@ -119,7 +119,7 @@ def get_completion_list(doc: Document, pos: Position) -> list:
     # TODO include more relevant information
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
 
-    # Filter the items to include only those with an integer value <= 0
+    # Filter the items to include only those with an integer value = 0
     filtered_items = [item for item in keywords.items() if item[1][1] == 0]
 
     # Sort the filtered items based on the integer value (the second element of the tuple)

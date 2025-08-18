@@ -383,6 +383,10 @@ def find_symbols_asset_declaration(owner: Node) -> (dict, dict):
     else:
         return ({}, {"info": {}, "let": {}})
 
+    if "let" not in keywords:
+        keywords["let"] = {}
+    if "info" not in keywords:
+        keywords["info"] = {}
     return (user_symbols, keywords)
 
 
