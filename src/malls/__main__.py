@@ -15,15 +15,21 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
 
     Users must choose EITHER file I/O OR TCP socket mode (mutually exclusive).
     """
+    description=("""
+                 MAL Language server.
+                 By default uses STDI/O.
+                 """)
     if subparser:
-        subparser = argparse.ArgumentParser("mal-ls", "MAL Language Server")
+        subparser = argparse.ArgumentParser(
+                prog="mal-ls",
+                description=description)
         parser.add_subparsers().add_parser(subparser)
         parser = subparser
     else:
-        parser.description = "MAL Language Server"
+        parser.description = description
 
     # ---- Mutually Exclusive Group: File I/O vs. TCP Socket ----
-    mode_group = parser.add_mutually_exclusive_group(required=True)
+    mode_group = parser.add_mutually_exclusive_group()
 
     # File I/O
     file_group = mode_group.add_argument_group("File I/O", "Use file-based communication")
@@ -60,8 +66,16 @@ def configure_argument_parser(parser: argparse.ArgumentParser, subparser: bool =
         help="Port to bind the TCP server to (default: 8080).",
     )
 
-    mode_group.add_argument("--stdio", action="store_true", help="Use stdio")
-    mode_group.add_argument("--tcp", action="store_true", help="Use TCP mode")
+    mode_group.add_argument(
+            "--stdio",
+            action=argparse.BooleanOptionalAction,
+            default=True,
+            help="Use stdio")
+    mode_group.add_argument(
+            "--tcp",
+            action=argparse.BooleanOptionalAction,
+            default=False,
+            help="Use TCP mode")
 
     # Loggin
     logging = parser.add_argument_group("Logging", "Configure logging options")
@@ -92,7 +106,7 @@ def fileio(args: argparse.Namespace):
 
 
 def uses_tcpsocket(args: argparse.Namespace) -> bool:
-    return bool(args.tcp or args.host or args.port)
+    return args.tcp
 
 
 def tcpsocket(args: argparse.Namespace):
@@ -150,11 +164,13 @@ def main(args: argparse.Namespace | None = None):
 
     configure_logging(args)
 
-    if uses_fileio(args):
-        i, o = fileio(args)
-        start_fileio_server(i, o)
-    elif uses_tcpsocket(args):
+    # Default to STDI/O
+    if uses_tcpsocket(args):
         i, o = tcpsocket(args)
+        start_fileio_server(i, o)
+    else:
+        # In case a check is needed, use `uses_fileio(args)`
+        i, o = fileio(args)
         start_fileio_server(i, o)
 
 
