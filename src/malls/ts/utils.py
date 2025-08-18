@@ -1142,7 +1142,7 @@ def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_stor
     return
 
 
-def find_meta_comment_category_declaration(node: Node):
+def find_meta_comment_category_declaration(node: Node) -> list:
     """
     In a category declaration, we will try to find if the node has
     any meta information and, if so, return it.
@@ -1154,9 +1154,21 @@ def find_meta_comment_category_declaration(node: Node):
     return meta_info
 
 
-def find_meta_comment_asset_declaration(node: Node):
+def find_meta_comment_asset_declaration(node: Node) -> list:
     """
     In an asset declaration, we will try to find if the node has
+    any meta information and, if so, return it.
+    """
+    meta_info = []
+    for children in node.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
+def find_meta_comment_attack_step(node: Node) -> list:
+    """
+    In an attack step, we will try to find if the node has
     any meta information and, if so, return it.
     """
     meta_info = []
@@ -1184,6 +1196,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_category_declaration(node)
             case "asset_declaration":
                 return find_meta_comment_asset_declaration(node)
+            case "attack_step":
+                return find_meta_comment_attack_step(node)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
