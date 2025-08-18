@@ -3,6 +3,11 @@ name: Language Server Tests
 on:
   pull_request:
     branches: [ "master" ]
+    paths:
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
   
 jobs:
   language-server-tests:
