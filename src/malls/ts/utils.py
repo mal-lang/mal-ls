@@ -1178,7 +1178,26 @@ def find_meta_comment_attack_step(node: Node) -> list:
     return meta_info
 
 
-def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: list = None) -> list:
+def find_meta_comment_asset_variable(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
+    """
+    In an asset variable, we will follow the expression
+    chain and get the asset where the symbol is defined.
+    Once we have it, we just have to obtain the meta
+    comments it contains
+    """
+    asset, _ = find_asset_from_expr(node.child_by_field_name("value"), symbol, document_uri, storage, [])
+
+    if not asset:
+        return []
+
+    meta_info = []
+    for children in asset.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
+def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: dict= None) -> list:
     """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
@@ -1198,6 +1217,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_asset_declaration(node)
             case "attack_step":
                 return find_meta_comment_attack_step(node)
+            case 'asset_variable':
+                return find_meta_comment_asset_variable(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
