@@ -8,7 +8,8 @@ MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 
 parameters = [
-    ((3, 12), [b"dev cat", b"mod cat"])
+    ((3, 12), [b"dev cat", b"mod cat"]),
+    ((8, 22), [b"dev asset", b"mod asset"]),
 ]
 
 @pytest.mark.parametrize(

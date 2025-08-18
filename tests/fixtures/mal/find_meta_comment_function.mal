@@ -7,6 +7,8 @@ modeler info: "mod cat"
 {
 
     abstract asset Asset1 
+    developer info: "dev asset"
+    modeler info: "mod asset"
     {
       let var = c
         | compromise
