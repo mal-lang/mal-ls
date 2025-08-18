@@ -1,0 +1,24 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Example 
+developer info: "dev cat"
+modeler info: "mod cat"
+{
+
+    abstract asset Asset1 
+    {
+      let var = c
+        | compromise
+        -> var.destroy
+    }
+    asset Asset2 extends Asset3
+    {
+        | destroy
+    }
+}
+associations 
+{
+    Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
+    Asset2 [d] 1 <-- M --> 1 [e] Asset2
+}
