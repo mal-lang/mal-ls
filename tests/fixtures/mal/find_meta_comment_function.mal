@@ -12,6 +12,8 @@ modeler info: "mod cat"
     {
       let var = c
         | compromise
+        developer info: "dev attack_step"
+        modeler info: "mod attack_step"
         -> var.destroy
     }
     asset Asset2 extends Asset3

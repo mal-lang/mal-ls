@@ -10,6 +10,7 @@ PARSER = Parser(MAL_LANGUAGE)
 parameters = [
     ((3, 12), [b"dev cat", b"mod cat"]),
     ((8, 22), [b"dev asset", b"mod asset"]),
+    ((13, 13), [b"dev attack_step", b"mod attack_step"]),
 ]
 
 @pytest.mark.parametrize(
