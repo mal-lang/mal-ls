@@ -15,6 +15,9 @@ modeler info: "mod cat"
         developer info: "dev attack_step"
         modeler info: "mod attack_step"
         -> var().destroy
+
+        | attack
+        -> c.b.h.attack4
     }
 
     abstract asset Asset3
@@ -29,10 +32,18 @@ modeler info: "mod cat"
         | destroy
     }
 
+    asset Asset4
+    developer info: "dev asset4"
+    modeler info: "mod asset4"
+    {
+        & attack4
+      }
+
 }
 associations 
 {
     Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
     Asset2 [d] 1 <-- M --> 1 [e] Asset2
     Asset3 [b] 1 <-- N --> 1 [f] Asset2
+    Asset3 [g] 1 <-- O --> 1 [h] Asset4
 }
