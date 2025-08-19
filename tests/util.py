@@ -4,11 +4,13 @@ import json
 import typing
 from pathlib import Path
 
+import pytest
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
 from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
+
 
 def fixture_name_from_file(
         file_name: str | Path,
@@ -60,6 +62,41 @@ def fixture_name_from_file(
         fixture_name += "_" + extension
 
     return fixture_name
+
+
+def load_fixture_file_into_module(
+        path: str | Path,
+        module,
+        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+        root_folder: str | None = None) -> None:
+    """
+    Load the raw contents of a file as a fixture into the provided module.
+
+    Shares options with `fixture_name_from_file`.
+    """
+
+    # Generate a function that handles openening/closing of the file for fixture purposes.
+    def open_fixture_file(file: str):
+        def template() -> typing.BinaryIO:
+            """Opens a fixture in (r)ead (b)inary mode. See `open` for more details."""
+
+            with open(file, "rb") as file_descriptor:
+                yield file_descriptor
+
+            return template
+
+    open_fixture_file.__doc__ = open.__doc__
+
+    fixture_name = fixture_name_from_file(path,
+                                          extension_renaming=extension_renaming,
+                                          root_folder=root_folder)
+
+    fixture = pytest.fixture(
+        open_fixture_file(path),
+        name=fixture_name,
+    )
+    # Bind `fixture` as `fixture_name` inside this module so it gets exported
+    setattr(module, fixture_name, fixture)
 
 def build_payload(to_include: list):
     result = b""
