@@ -28,6 +28,7 @@ def test_find_symbols_in_category_hierarchy(mal_find_symbols_in_scope):
         ("extends", 0),
         ("abstract", 0),
         ("asset", 0),
+        ("info", 1),
         ("category", 1),
         ("associations", 1),
     ]
@@ -64,7 +65,7 @@ def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
         ("Asset2", 0),
     ]
     keywords = [
-        ("info", 0),
+        ("info", 1),
         ("category", 1),
         ("associations", 1),
     ]
@@ -106,6 +107,7 @@ def test_find_symbols_in_asset1_hierarchy(mal_find_symbols_in_scope):
         ("asset", 1),
         ("category", 2),
         ("associations", 2),
+        ("info", 2),
     ]
 
     # we use sets to ensure order does not matter
@@ -136,11 +138,13 @@ def test_find_symbols_in_asset2_hierarchy(mal_find_symbols_in_scope):
         ("Asset3", 1),
     ]
     keywords = [
+        ("let", 0),
         ("extends", 1),
         ("abstract", 1),
         ("asset", 1),
         ("category", 2),
         ("associations", 2),
+        ("info", 2),
     ]
 
     # we use sets to ensure order does not matter

@@ -60,7 +60,7 @@ def server_output(
 def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_out: typing.BinaryIO):
     output, *_ = server_output(init_exit_in)
 
-    assert output.getvalue() == init_exit_out.read()
+    assert output.getvalue() == init_exit_out.read().strip()
     output.close()
 
 

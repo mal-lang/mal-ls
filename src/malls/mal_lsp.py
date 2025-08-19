@@ -11,7 +11,13 @@ from .lsp import enums, models
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
-from .lsp.utils import path_to_uri, recursive_parsing, send_diagnostics, uri_to_path
+from .lsp.utils import (
+    get_completion_list,
+    path_to_uri,
+    recursive_parsing,
+    send_diagnostics,
+    uri_to_path,
+)
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
     find_symbol_definition,
@@ -96,7 +102,12 @@ class MALLSPServer(MethodDispatcher):
 
         capabilities = {
             "positionEncoding": self.__encoding,
-            "definitionProvider": True
+            "textDocumentSync": {
+                "openClose": True,
+                "change": 1,
+            },
+            "definitionProvider": True,
+            "completionProvider": {},
         }
 
         log.debug("Server capabilities: %s", capabilities)
@@ -268,7 +279,7 @@ class MALLSPServer(MethodDispatcher):
 
         # if the file has been parsed (e.g. was included by another file)
         # we do not need to parse it again
-        if doc_uri in self.__files:
+        if doc_uri in self.__files.keys():
             # the document was already parsed but had errors
             if doc_uri in self.__diagnostics:
                 send_diagnostics(self.__diagnostics[doc_uri], doc_uri, self.__endpoint)
@@ -321,12 +332,12 @@ class MALLSPServer(MethodDispatcher):
 
         # There could be various changes, so we need to iterate over them
         for change in textDocument.content_changes:
-            changed_range = change.range
-            if type(change.text) is str:
+            try:
+                changed_range = change.range
                 text = change.text.encode()
                 document.execute_changes(changed_range, text)
-            else:
-                text = change.text.text.encode()  # whole file change
+            except Exception:
+                text = change.text.encode()  # whole file change
                 document.change_whole_file(text)
 
         # after changing and reparsing the file, find all possible errors
@@ -387,3 +398,22 @@ class MALLSPServer(MethodDispatcher):
                 },
             },
         }
+
+    def m_text_document__completion(self, **params: dict | None) -> None:
+        # validate parameters
+        completion = models.CompletionParams(**params) if params else None
+        if completion is None:
+            return None  # parameters are wrong
+
+        # obtain relevant parameters
+        doc_uri = uri_to_path(completion.text_document.uri)
+        position = completion.position
+
+        # get completion list
+        completion_list = get_completion_list(self.__files[doc_uri], position)
+
+        # For now, the list is complete, so we can just return it.
+        # From the documentation:
+        # `If a CompletionItem[] is provided it is interpreted to
+        # be complete. So it is the same as { isIncomplete: false, items }`
+        return completion_list
