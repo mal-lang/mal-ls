@@ -1240,10 +1240,8 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
 
 def find_meta_comment_asset_expr(node: Node, symbol: str, document_uri: str, storage: dict, pos: tuple) -> list:
     """
-    In an asset variable substition, we will have to first find
-    where the variable is defined. Afterwards, follow the expression
-    chain and get the asset referenced by the variable. Once we have
-    it, we just have to obtain the meta comments it contains.
+    In an asset expr, we can simply find where the asset mentioned by the symbol is defined
+    (via the expression chain) and find the needed meta comments.
     """
 
     # find asset from expression
@@ -1256,6 +1254,28 @@ def find_meta_comment_asset_expr(node: Node, symbol: str, document_uri: str, sto
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
+def find_meta_comment_association(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
+    """
+    In an association, we can call the auxiliary `find_symbol_definition_association`
+    which will find the asset referenced by the symbol or the current node otherwise,
+    from which we can find the corresponding meta.
+    """
+
+    # find the node where the meta is defined (either the current node or an asset node)
+    result_node, _ = find_symbol_definition_association(node, symbol, document_uri, storage)
+
+    if not result_node:
+        # in case the asset is not found
+        return []
+
+    # otherwise get the meta corresponding to that asset
+    meta_info = []
+    for children in result_node.children_by_field_name("meta"):
         meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
 
     return meta_info
@@ -1287,6 +1307,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_asset_variable_subsitution(node, symbol, document_uri, storage)
             case 'asset_expr':
                 return find_meta_comment_asset_expr(node, symbol, document_uri, storage, original_position)
+            case 'association':
+                return find_meta_comment_association(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
