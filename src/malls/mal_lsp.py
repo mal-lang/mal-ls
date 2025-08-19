@@ -1,5 +1,4 @@
 import logging
-import sys
 import typing
 
 import tree_sitter_mal as ts_mal
@@ -28,14 +27,6 @@ from .ts.utils import (
     tree_sitter_to_lsp_position,
 )
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("malls.log"),
-        logging.StreamHandler(sys.stdout),  # Keep this if you want some output in the terminal
-    ],
-)
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
@@ -81,7 +72,7 @@ class MALLSPServer(MethodDispatcher):
 
     def start(self) -> None:
         """Starts the language server."""
-        log.warn("Starting MAL LSP language server.")
+        log.info("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
 
     def _process_encoding(self, encodings: list[PositionEncodingKind]):
@@ -119,7 +110,7 @@ class MALLSPServer(MethodDispatcher):
             "completionProvider": {},
         }
 
-        log.info("Server capabilities: %s", capabilities)
+        log.debug("Server capabilities: %s", capabilities)
         return capabilities
 
     def __getitem__(self, item):

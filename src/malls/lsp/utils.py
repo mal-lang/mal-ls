@@ -9,7 +9,7 @@ from uritools import urisplit
 
 from ..ts.utils import (
     INCLUDED_FILES_QUERY,
-    find_symbols_in_context_hierarchy,
+    find_symbols_in_current_scope,
     lsp_to_tree_sitter_position,
     query_for_error_nodes,
     run_query,
@@ -114,22 +114,13 @@ def get_completion_list(doc: Document, pos: Position) -> list:
     point = lsp_to_tree_sitter_position(doc.text, pos)
 
     # get completion items
-    user_symbols, keywords = find_symbols_in_context_hierarchy(doc.tree.walk(), point)
+    user_symbols, keywords = find_symbols_in_current_scope(doc.tree.walk(), point)
 
     # TODO include more relevant information
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
 
-    # Filter the items to include only those with an integer value = 0
-    filtered_items = [item for item in keywords.items() if item[1][1] == 0]
-
-    # Sort the filtered items based on the integer value (the second element of the tuple)
-    sorted_items = sorted(filtered_items, key=lambda item: item[1][1])
-
-    # Extract just the keys from the sorted items
-    sorted_keywords = [item[0] for item in sorted_items]
-
     completion_list = [{"label": symbol} for symbol in user_symbols.keys()] + [
-        {"label": keyword} for keyword in sorted_keywords
+        {"label": keyword} for keyword in keywords
     ]
 
     return completion_list
