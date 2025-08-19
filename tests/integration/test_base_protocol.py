@@ -30,9 +30,6 @@ class SteppedBytesIO(io.BytesIO):
             self.steps -= 1
 
 
-# TODO: create fake endpoint class (or similar) so the input can be stepped
-
-
 # https://github.com/python-lsp/python-lsp-server/blob/develop/pylsp/python_lsp.py#L58
 def server_output(
     input: typing.BinaryIO, timeout: float | None = MAX_TIMEOUT
