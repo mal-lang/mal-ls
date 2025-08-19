@@ -938,10 +938,12 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
     # of associations
     while assets:
         el = assets.pop(0)
+        el_name = el
         # if we have a tuple, then we have to find the asset directly, not from the association
         if type(el) is tuple:
+            el_name = el[0]
             node, file = bfs_search(
-                document_uri, FIND_ASSET_DECLARATION, "asset_declaration", el[0], storage
+                document_uri, FIND_ASSET_DECLARATION, "asset_declaration", el_name, storage
             )
         else:
             # retrieve name of asset
@@ -949,7 +951,7 @@ def find_asset_from_expr(node: Node, symbol: str, document_uri: str, storage: di
         if not node:
             break
         asset_name = node.children_by_field_name("id")[0].text
-        if el == symbol:
+        if el_name == symbol:
             if type(el) is tuple:
                 result = node
             else:
