@@ -17,7 +17,8 @@ modeler info: "mod cat"
         -> var().destroy
 
         | attack
-        -> c.b.h.attack4
+        -> c.b.h.attack4,
+           c.b.h[Asset5].attack5
     }
 
     abstract asset Asset3
@@ -37,6 +38,13 @@ modeler info: "mod cat"
     modeler info: "mod asset4"
     {
         & attack4
+      }
+
+    asset Asset5 extends Asset4
+    developer info: "dev asset5"
+    modeler info: "mod asset5"
+    {
+        & attack5
       }
 
 }
