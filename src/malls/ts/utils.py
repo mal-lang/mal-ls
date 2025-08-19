@@ -1234,6 +1234,29 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
     return meta_info
 
 
+def find_meta_comment_asset_expr(node: Node, symbol: str, document_uri: str, storage: dict, pos: tuple) -> list:
+    """
+    In an asset variable substition, we will have to first find
+    where the variable is defined. Afterwards, follow the expression
+    chain and get the asset referenced by the variable. Once we have
+    it, we just have to obtain the meta comments it contains.
+    """
+
+    # find asset from expression
+    asset, _ = find_symbol_reaching(node, symbol, pos, document_uri, storage)
+
+    if not asset:
+        # in case the asset is not found
+        return []
+
+    # otherwise get the meta corresponding to that asset
+    meta_info = []
+    for children in asset.children_by_field_name("meta"):
+        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+
+    return meta_info
+
+
 def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: dict= None) -> list:
     """
     Given a node and a symbol, this function will find the point
@@ -1258,6 +1281,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_asset_variable(node, symbol, document_uri, storage)
             case 'asset_variable_substitution':
                 return find_meta_comment_asset_variable_subsitution(node, symbol, document_uri, storage)
+            case 'asset_expr':
+                return find_meta_comment_asset_expr(node, symbol, document_uri, storage, original_position)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
