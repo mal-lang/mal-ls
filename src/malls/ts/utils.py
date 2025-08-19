@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import tree_sitter_mal as ts_mal
@@ -289,7 +290,7 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     captures = run_query(owner, FIND_SYMBOLS_CATEGORY_DECLARATION_QUERY)
 
     if not captures:  # if nothing was found, then there are no symbols
-        return ({}, {})
+        return ({}, {"asset": {}, "extends": {}, "abstract": {}, "info": {}})
 
     user_symbols, keywords = (
         {},
@@ -305,14 +306,20 @@ def find_symbols_category_declaration(owner: Node) -> (dict, dict):
         keywords["extends"] = captures["extends"][0]  # we want to store where we found the keyword
         for extends_node in captures["extends"]:
             user_symbols[extends_node.text.decode()] = extends_node
+    else:
+        keywords["extends"] = {}
 
     # include abstract if it exists
     if "abstract" in captures:
         keywords["abstract"] = captures["abstract"][0]
+    else:
+        keywords["abstract"] = {}
 
     # include meta if it exists
     if "meta" in captures:
         keywords["info"] = captures["info"][0]
+    else:
+        keywords["info"] = {}
 
     return (user_symbols, keywords)
 
@@ -373,7 +380,13 @@ def find_symbols_asset_declaration(owner: Node) -> (dict, dict):
                 continue
             for symbol_node in captures[key]:
                 user_symbols[symbol_node.text.decode()] = symbol_node
+    else:
+        return ({}, {"info": {}, "let": {}})
 
+    if "let" not in keywords:
+        keywords["let"] = {}
+    if "info" not in keywords:
+        keywords["info"] = {}
     return (user_symbols, keywords)
 
 
@@ -390,10 +403,16 @@ def find_symbols_root_node(owner: Node) -> (list[str], list[str]):
     keywords = {}
     if "category" in captures:
         keywords["category"] = captures["category"][0]
+    else:
+        keywords["category"] = {}
     if "meta" in captures:
         keywords["info"] = captures["meta"][0]
+    else:
+        keywords["info"] = {}
     if "associations" in captures:
         keywords["associations"] = captures["associations"][0]
+    else:
+        keywords["associations"] = {}
 
     return ({}, keywords)
 
@@ -427,7 +446,6 @@ def find_symbols_in_category_hierarchy(owner: Node) -> (dict, dict):
     Given a category declaration, we want to find the symbols in the current scope,
     the children's scope, which are assets, and the parent node (root)
     """
-
     # symbols and keywords
     symbols = {}
     keywords = {}
@@ -662,13 +680,13 @@ def bfs_search(doc: str, query: Query, key: str, symbol: str, storage: dict):
 
     # otherwise, we have to check for the included files
     # for that, we will use a BFS (breadth-first search)
-    included_files = storage[doc].included_files
+    included_files = copy.copy(storage[doc].included_files)
 
     while included_files:
         file = included_files.pop(0)
         if (result := search_match(file, query, key, symbol)) is not None:
             return (result, file)
-        included_files.extend(storage[file.uri].included_files)
+        included_files.extend(copy.copy(storage[file.uri].included_files))
 
     return (None, file)
 
@@ -1100,6 +1118,9 @@ def query_for_error_nodes(tree: Tree, text: str, doc_uri: str, notification_stor
     # Find all error/missing nodes
     captures = run_query(tree.root_node, ERRORS_QUERY)
 
+    # clear old captures
+    if doc_uri in notification_storage:
+        notification_storage[doc_uri] = []
     if "error-node" in captures:
         for error_node in captures["error-node"]:
             diagnostic = build_diagnostic(error_node, text, True)

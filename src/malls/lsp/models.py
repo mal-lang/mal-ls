@@ -2630,7 +2630,7 @@ class TextDocumentContentChangeEvent(BaseModel):
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent
     """
 
-    range: Range
+    range: Range | None = None
 
     range_length: int | None = None
 
@@ -2655,5 +2655,25 @@ class DefinitionParams(TextDocumentPositionParams, WorkDoneProgressParams, Parti
     """
     https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionParams
     """
+
+    model_config = base_config
+
+
+class CompletionParams(TextDocumentPositionParams, WorkDoneProgressParams, PartialResultParams):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionParams
+    """
+
+    model_config = base_config
+
+
+class CompletionContext:
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionContext
+    """
+
+    trigger_kind: enums.CompletionTriggerKind
+
+    trigger_character: str | None = None
 
     model_config = base_config
