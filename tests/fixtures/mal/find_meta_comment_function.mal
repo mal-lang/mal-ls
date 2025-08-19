@@ -45,6 +45,8 @@ modeler info: "mod cat"
     modeler info: "mod asset5"
     {
         & attack5
+        developer info: "dev attack_step_5"
+        modeler info: "mod attack_step_5"
       }
 
 }
