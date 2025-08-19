@@ -997,8 +997,10 @@ def find_symbol_reaching(
         assets.pop(-1)  # remove last element (which is the attack step)
         # get the asset where the attack step is defined (last element)
         if assets:  # go down the chain
+            asset_name = assets[-1]
+            if type(assets[-1]) is tuple: asset_name = asset_name[0]
             asset, result_file = find_asset_from_expr(
-                node, assets[-1], document_uri, storage, assets
+                node, asset_name, document_uri, storage, assets
             )
         else:
             asset = node.parent.parent.parent  # go to asset
