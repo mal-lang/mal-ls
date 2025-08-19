@@ -10,6 +10,56 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
 
+def fixture_name_from_file(
+        file_name: str | Path,
+        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+        root_folder: str | None = None) -> str:
+    """
+    Compute the name of a fixture based on its file path.
+
+    Params:
+        - `file_name`: A Path or str of the fixture.
+        - `extension_renaming`: A function that takes in a string and outputs a string or
+                                a dictionary mapping strings to strings, input will always
+                                be the extension of the file. Default is to map to nothing.
+        - `root_folder`: A root folder pattern. If supplied, anything up to and including
+                         this value will be ignored when outputting the name. A following
+                         slash will also be ignored.
+    """
+    # Default extension naming is none
+    if extension_renaming is None:
+        def extension_renaming(x: str):
+            return ""
+    # If a dictionary was provided, alias it as a function call to make it consistent with function
+    # usage. If key/extension not present, default to no extension naming.
+    if extension_renaming is dict:
+        def extension_renaming(x: str):
+            return extension_renaming.get(x, "")
+
+    # Default to handling of strings
+    if file_name is Path:
+        file_name = str(file_name)
+
+    # If a ignore prefix was given, find it and only care for anything after it
+    # (on top of subsequent slash)
+    if root_folder:
+        post_prefix_index = file_name.find(root_folder)
+        file_name = file_name[post_prefix_index + len(root_folder) + 1:]
+
+    extension_dot_index = file_name.rindex(".")
+    extension = file_name[extension_dot_index + 1:]
+    # Remove extension, e.g: .http/.lsp/.mal
+    fixture_name = file_name[: extension_dot_index]
+    # Replace dots with underscore, e.g: empty.out -> empty_out
+    fixture_name = fixture_name.replace(".", "_")
+    # Add subdirectory path as prefix if there was one
+    # Replace directory delimiters with underscores
+    fixture_name = fixture_name.replace("/", "_").replace("\\", "_")
+    # Add possible extension name
+    if (extension := extension_renaming(extension)):
+        fixture_name += "_" + extension
+
+    return fixture_name
 
 def build_payload(to_include: list):
     result = b""
@@ -137,7 +187,7 @@ BASE_OPEN_FILE = {
     "method": "textDocument/didOpen",
     "params": {
         "textDocument": {
-            "uri": main_file_path,
+            "uri":  main_file_path,
             "languageId": "mal",
             "version": 0,
             "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
