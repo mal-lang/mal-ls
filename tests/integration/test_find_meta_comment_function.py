@@ -16,6 +16,7 @@ parameters = [
     ((8, 22), [b"dev asset", b"mod asset"]),
     ((13, 13), [b"dev attack_step", b"mod attack_step"]),
     ((12, 18), [b"dev asset3", b"mod asset3"]),
+    ((16, 12), [b"dev asset3", b"mod asset3"]),
 ]
 
 @pytest.mark.parametrize(

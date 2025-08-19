@@ -14,7 +14,7 @@ modeler info: "mod cat"
         | compromise
         developer info: "dev attack_step"
         modeler info: "mod attack_step"
-        -> var.destroy
+        -> var().destroy
     }
 
     abstract asset Asset3
