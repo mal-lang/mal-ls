@@ -15,16 +15,13 @@ FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
 simplified_file_path = FILE_PATH + "main.mal"
 
 symbols_in_category_hierarchy = [
-    "var",
-    "c",
-    "compromise",
-    "destroy",
     "Asset1",
     "Asset2",
     "Asset3",
     "extends",
     "abstract",
     "asset",
+    "info",
 ]
 symbols_in_associations_hierarchy = [
     "a",
@@ -41,31 +38,15 @@ symbols_in_asset1_hierarchy = [
     "c",
     "compromise",
     "destroy",
-    "Asset1",
-    "Asset2",
-    "Asset3",
     "let",
+    "info",
 ]
 symbols_in_asset2_hierarchy = [
     "destroy",
-    "Asset1",
-    "Asset2",
-    "Asset3",
     "let",
+    "info",
 ]
 symbols_in_root_node_hierarchy = [
-    "var",
-    "compromise",
-    "destroy",
-    "Asset1",
-    "Asset2",
-    "Asset3",
-    "a",
-    "d",
-    "e",
-    "L",
-    "M",
-    "c",
     "info",
     "category",
     "associations",

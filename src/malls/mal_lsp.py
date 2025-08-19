@@ -1,5 +1,4 @@
 import logging
-import sys
 import typing
 
 import tree_sitter_mal as ts_mal
