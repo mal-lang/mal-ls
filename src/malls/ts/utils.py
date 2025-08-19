@@ -998,7 +998,8 @@ def find_symbol_reaching(
         # get the asset where the attack step is defined (last element)
         if assets:  # go down the chain
             asset_name = assets[-1]
-            if type(assets[-1]) is tuple: asset_name = asset_name[0]
+            if type(assets[-1]) is tuple:
+                asset_name = asset_name[0]
             asset, result_file = find_asset_from_expr(
                 node, asset_name, document_uri, storage, assets
             )
@@ -1153,7 +1154,7 @@ def find_meta_comment_category_declaration(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
@@ -1165,7 +1166,7 @@ def find_meta_comment_asset_declaration(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
@@ -1177,31 +1178,37 @@ def find_meta_comment_attack_step(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
 
-def find_meta_comment_asset_variable(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
+def find_meta_comment_asset_variable(
+    node: Node, symbol: str, document_uri: str, storage: dict
+) -> list:
     """
     In an asset variable, we will follow the expression
     chain and get the asset where the symbol is defined.
     Once we have it, we just have to obtain the meta
     comments it contains
     """
-    asset, _ = find_asset_from_expr(node.child_by_field_name("value"), symbol, document_uri, storage, [])
+    asset, _ = find_asset_from_expr(
+        node.child_by_field_name("value"), symbol, document_uri, storage, []
+    )
 
     if not asset:
         return []
 
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
 
-def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
+def find_meta_comment_asset_variable_subsitution(
+    node: Node, symbol: str, document_uri: str, storage: dict
+) -> list:
     """
     In an asset variable substition, we will have to first find
     where the variable is defined. Afterwards, follow the expression
@@ -1210,7 +1217,9 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
     """
 
     # find where the variable is defined
-    variable_node, _ = find_symbol_definition_variable_substitution(node, symbol, document_uri, storage)
+    variable_node, _ = find_symbol_definition_variable_substitution(
+        node, symbol, document_uri, storage
+    )
 
     if variable_node is None:
         # in case the variable is not defined anywhere
@@ -1224,7 +1233,9 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
     asset_symbol = assets[-1]
 
     # find the asset the variable refers to
-    asset, _ = find_asset_from_expr(variable_node.child_by_field_name("value"), asset_symbol, document_uri, storage, assets)
+    asset, _ = find_asset_from_expr(
+        variable_node.child_by_field_name("value"), asset_symbol, document_uri, storage, assets
+    )
 
     if not asset:
         # in case the asset is not found
@@ -1233,12 +1244,14 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
 
-def find_meta_comment_asset_expr(node: Node, symbol: str, document_uri: str, storage: dict, pos: tuple) -> list:
+def find_meta_comment_asset_expr(
+    node: Node, symbol: str, document_uri: str, storage: dict, pos: tuple
+) -> list:
     """
     In an asset expr, we can simply find where the asset mentioned by the symbol is defined
     (via the expression chain) and find the needed meta comments.
@@ -1254,12 +1267,14 @@ def find_meta_comment_asset_expr(node: Node, symbol: str, document_uri: str, sto
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
 
-def find_meta_comment_association(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
+def find_meta_comment_association(
+    node: Node, symbol: str, document_uri: str, storage: dict
+) -> list:
     """
     In an association, we can call the auxiliary `find_symbol_definition_association`
     which will find the asset referenced by the symbol or the current node otherwise,
@@ -1276,12 +1291,14 @@ def find_meta_comment_association(node: Node, symbol: str, document_uri: str, st
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in result_node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
+        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
 
     return meta_info
 
 
-def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None, storage: dict= None) -> list:
+def find_meta_comment_function(
+    node: Node, symbol: str, document_uri: str = None, storage: dict = None
+) -> list:
     """
     Given a node and a symbol, this function will find the point
     where that symbol is defined.
@@ -1301,17 +1318,20 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_asset_declaration(node)
             case "attack_step":
                 return find_meta_comment_attack_step(node)
-            case 'asset_variable':
+            case "asset_variable":
                 return find_meta_comment_asset_variable(node, symbol, document_uri, storage)
-            case 'asset_variable_substitution':
-                return find_meta_comment_asset_variable_subsitution(node, symbol, document_uri, storage)
-            case 'asset_expr':
-                return find_meta_comment_asset_expr(node, symbol, document_uri, storage, original_position)
-            case 'association':
+            case "asset_variable_substitution":
+                return find_meta_comment_asset_variable_subsitution(
+                    node, symbol, document_uri, storage
+                )
+            case "asset_expr":
+                return find_meta_comment_asset_expr(
+                    node, symbol, document_uri, storage, original_position
+                )
+            case "association":
                 return find_meta_comment_association(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
         if node is None:
             return []
-

@@ -1,7 +1,8 @@
-import tree_sitter_mal as ts_mal
-import pytest
-from tree_sitter import Language, Parser
 from pathlib import Path
+
+import pytest
+import tree_sitter_mal as ts_mal
+from tree_sitter import Language, Parser
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
@@ -24,6 +25,7 @@ parameters = [
     ((54, 21), [b"some info"]),
     ((57, 37), [b"dev asset4", b"mod asset4"]),
 ]
+
 
 @pytest.mark.parametrize(
     "point,comments",
