@@ -1199,16 +1199,34 @@ def find_meta_comment_asset_variable(node: Node, symbol: str, document_uri: str,
 
 def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, document_uri: str, storage: dict) -> list:
     """
-    In an asset variable, we will follow the expression
-    chain and get the asset where the symbol is defined.
-    Once we have it, we just have to obtain the meta
-    comments it contains
+    In an asset variable substition, we will have to first find
+    where the variable is defined. Afterwards, follow the expression
+    chain and get the asset referenced by the variable. Once we have
+    it, we just have to obtain the meta comments it contains.
     """
-    asset, _ = find_asset_from_expr(node.child_by_field_name("value"), symbol, document_uri, storage, [])
 
-    if not asset:
+    # find where the variable is defined
+    variable_node, _ = find_symbol_definition_variable_substitution(node, symbol, document_uri, storage)
+
+    if variable_node is None:
+        # in case the variable is not defined anywhere
         return []
 
+    # divide the expression
+    assets = []
+    visit_expr(node.children[0].walk(), assets, document_uri, storage)
+
+    # obtain the last expression component (so we find the asset referenced by the variable)
+    asset_symbol = assets[-1]
+
+    # find the asset the variable refers to
+    asset, _ = find_asset_from_expr(node.child_by_field_name("value"), asset_symbol, document_uri, storage, assets)
+
+    if not asset:
+        # in case the asset is not found
+        return []
+
+    # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
         meta_info.append(children.child_by_field_name("info").text.strip(b"\""))
@@ -1242,5 +1260,5 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
         if node is None:
-            return (None, document_uri)
+            return []
 
