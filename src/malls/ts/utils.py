@@ -1214,13 +1214,13 @@ def find_meta_comment_asset_variable_subsitution(node: Node, symbol: str, docume
 
     # divide the expression
     assets = []
-    visit_expr(node.children[0].walk(), assets, document_uri, storage)
+    visit_expr(variable_node.children[-1].children[0].walk(), assets, document_uri, storage)
 
     # obtain the last expression component (so we find the asset referenced by the variable)
     asset_symbol = assets[-1]
 
     # find the asset the variable refers to
-    asset, _ = find_asset_from_expr(node.child_by_field_name("value"), asset_symbol, document_uri, storage, assets)
+    asset, _ = find_asset_from_expr(variable_node.child_by_field_name("value"), asset_symbol, document_uri, storage, assets)
 
     if not asset:
         # in case the asset is not found
@@ -1256,6 +1256,8 @@ def find_meta_comment_function(node: Node, symbol: str, document_uri: str = None
                 return find_meta_comment_attack_step(node)
             case 'asset_variable':
                 return find_meta_comment_asset_variable(node, symbol, document_uri, storage)
+            case 'asset_variable_substitution':
+                return find_meta_comment_asset_variable_subsitution(node, symbol, document_uri, storage)
             case _:
                 node = node.parent  # go to parent if no info proved relevant
         # terminate if there are no more parents
