@@ -1,0 +1,59 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Example 
+developer info: "dev cat"
+modeler info: "mod cat"
+{
+
+    abstract asset Asset1 
+    developer info: "dev asset"
+    modeler info: "mod asset"
+    {
+      let var = c.b
+        | compromise
+        developer info: "dev attack_step"
+        modeler info: "mod attack_step"
+        -> var().destroy
+
+        | attack
+        -> c.b.h.attack4,
+           c.b.h[Asset5].attack5
+    }
+
+    abstract asset Asset3
+    developer info: "dev asset3"
+    modeler info: "mod asset3"
+    {
+    
+      }
+
+    asset Asset2 extends Asset3
+    {
+        | destroy
+    }
+
+    asset Asset4
+    developer info: "dev asset4"
+    modeler info: "mod asset4"
+    {
+        & attack4
+      }
+
+    asset Asset5 extends Asset4
+    developer info: "dev asset5"
+    modeler info: "mod asset5"
+    {
+        & attack5
+        developer info: "dev attack_step_5"
+        modeler info: "mod attack_step_5"
+      }
+
+}
+associations 
+{
+    Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
+    Asset2 [d] 1 <-- M --> 1 [e] Asset2
+    Asset3 [b] 1 <-- N --> 1 [f] Asset2
+    Asset3 [g] 1 <-- O --> 1 [h] Asset4
+}
