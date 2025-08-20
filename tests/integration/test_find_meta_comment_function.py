@@ -29,7 +29,7 @@ parameters = [
 
 @pytest.mark.parametrize(
     "point,comments",
-    [(point, comment) for point, comment in parameters],
+    parameters,
 )
 def test_find_meta_comment_function(mal_find_meta_comment_function, point, comments):
     # build the storage (mimicks the file parsing in the server)
