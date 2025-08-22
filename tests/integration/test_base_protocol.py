@@ -5,80 +5,42 @@ import typing
 
 from malls.lsp.enums import ErrorCodes
 from malls.lsp.fsm import LifecycleState
-from malls.mal_lsp import MALLSPServer
 
-from ..util import get_lsp_json
+from ..util import get_lsp_json, server_output
 
 log = logging.getLogger(__name__)
 
-# wait for most 5s (arbitrary)
-MAX_TIMEOUT = 2
+pytest_plugins = ["tests.fixtures.lsp.base_protocol"]
 
 
-class SteppedBytesIO(io.BytesIO):
-    """
-    SteppedBytesIO provide a way to stop the closing of the IO N-1 times, closing on the Nth time.
-    """
+def test_correct_base_lifecycle(
+        init_exit_client_messages: typing.BinaryIO,
+        init_exit_server_messages: typing.BinaryIO):
+    output, *_ = server_output(init_exit_client_messages)
 
-    def __init__(self, initial_bytes: bytes = b"", steps: int = 1):
-        self.steps = steps
-
-    def close(self):
-        if self.steps <= 0:
-            super(io.BytesIO, self).close()
-        else:
-            self.steps -= 1
-
-
-# https://github.com/python-lsp/python-lsp-server/blob/develop/pylsp/python_lsp.py#L58
-def server_output(
-    input: typing.BinaryIO, timeout: float | None = MAX_TIMEOUT
-) -> typing.Tuple[typing.BinaryIO, MALLSPServer, TimeoutError | None]:
-    intermediary = SteppedBytesIO()
-    ls = MALLSPServer(input, intermediary)
-    time_out_err = None
-
-    async def run_server():
-        ls.start()
-
-    try:
-        server_future = run_server()
-        asyncio.run(asyncio.wait_for(server_future, 1))
-    except TimeoutError as e:
-        ls.m_exit()
-        time_out_err = e
-    except Exception as e:
-        intermediary.close()
-        raise e
-
-    return intermediary, ls, time_out_err
-
-
-def test_correct_base_lifecycle(init_exit_in: typing.BinaryIO, init_exit_out: typing.BinaryIO):
-    output, *_ = server_output(init_exit_in)
-
-    assert output.getvalue() == init_exit_out.read().strip()
+    assert output.getvalue() == init_exit_server_messages.read()
     output.close()
 
 
-def test_pre_initialized_exit_does_not_change_state(pre_initialized_exit_in: typing.BinaryIO):
-    output, ls, *_ = server_output(pre_initialized_exit_in)
+def test_pre_initialized_exit_does_not_change_state(
+        init_exit_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(init_exit_client_messages)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
 
 
 def test_pre_initialized_shutdown_does_not_change_state(
-    pre_initialized_shutdown_in: typing.BinaryIO,
-):
-    output, ls, *_ = server_output(pre_initialized_shutdown_in)
+        init_shutdown_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(init_shutdown_client_messages)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
 
 
-def test_pre_initialized_shutdown_errs(pre_initialized_shutdown_in: typing.BinaryIO):
-    output, ls, *_ = server_output(pre_initialized_shutdown_in)
+def test_pre_initialized_shutdown_errs(
+        init_shutdown_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(init_shutdown_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
