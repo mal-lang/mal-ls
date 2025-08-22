@@ -1,5 +1,3 @@
-import asyncio
-import io
 import logging
 import typing
 
@@ -14,16 +12,15 @@ pytest_plugins = ["tests.fixtures.lsp.base_protocol"]
 
 
 def test_correct_base_lifecycle(
-        init_exit_client_messages: typing.BinaryIO,
-        init_exit_server_messages: typing.BinaryIO):
+    init_exit_client_messages: typing.BinaryIO, init_exit_server_messages: typing.BinaryIO
+):
     output, *_ = server_output(init_exit_client_messages)
 
     assert output.getvalue() == init_exit_server_messages.read()
     output.close()
 
 
-def test_pre_initialized_exit_does_not_change_state(
-        init_exit_client_messages: typing.BinaryIO):
+def test_pre_initialized_exit_does_not_change_state(init_exit_client_messages: typing.BinaryIO):
     output, ls, *_ = server_output(init_exit_client_messages)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
@@ -31,15 +28,15 @@ def test_pre_initialized_exit_does_not_change_state(
 
 
 def test_pre_initialized_shutdown_does_not_change_state(
-        init_shutdown_client_messages: typing.BinaryIO):
+    init_shutdown_client_messages: typing.BinaryIO,
+):
     output, ls, *_ = server_output(init_shutdown_client_messages)
 
     assert ls.state.current_state == LifecycleState.INITIALIZE
     output.close()
 
 
-def test_pre_initialized_shutdown_errs(
-        init_shutdown_client_messages: typing.BinaryIO):
+def test_pre_initialized_shutdown_errs(init_shutdown_client_messages: typing.BinaryIO):
     output, ls, *_ = server_output(init_shutdown_client_messages)
 
     # the test and server share the same buffer,

@@ -7,6 +7,7 @@ from ..util import get_lsp_json, server_output
 # Import fixtures since they're lying in nested sibling directory
 pytest_plugins = ["tests.fixtures.lsp.encoding_capability_check"]
 
+
 def test_encoding_capability_simple(encoding_capability_client_messages: typing.BinaryIO):
     output, ls, *_ = server_output(encoding_capability_client_messages)
 

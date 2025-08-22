@@ -11,9 +11,8 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
 
-def find_last_request(requests: list[dict],
-                      condition: typing.Callable[[dict], bool],
-                      default = None):
+
+def find_last_request(requests: list[dict], condition: typing.Callable[[dict], bool], default=None):
     """
     Searches through the list of requests in reverse order and returns first (logically last)
     element fulfilling the condition.
@@ -22,10 +21,12 @@ def find_last_request(requests: list[dict],
     """
     return next(filter(condition, reversed(requests)), default)
 
+
 def fixture_name_from_file(
-        file_name: str | Path,
-        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
-        root_folder: str | None = None) -> str:
+    file_name: str | Path,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> str:
     """
     Compute the name of a fixture based on its file path.
 
@@ -40,11 +41,14 @@ def fixture_name_from_file(
     """
     # Default extension naming is none
     if extension_renaming is None:
+
         def extension_renaming(x: str):
             return ""
+
     # If a dictionary was provided, alias it as a function call to make it consistent with function
     # usage. If key/extension not present, default to no extension naming.
     if extension_renaming is dict:
+
         def extension_renaming(x: str):
             return extension_renaming.get(x, "")
 
@@ -56,29 +60,30 @@ def fixture_name_from_file(
     # (on top of subsequent slash)
     if root_folder:
         post_prefix_index = file_name.find(root_folder)
-        file_name = file_name[post_prefix_index + len(root_folder) + 1:]
+        file_name = file_name[post_prefix_index + len(root_folder) + 1 :]
 
     extension_dot_index = file_name.rindex(".")
-    extension = file_name[extension_dot_index + 1:]
+    extension = file_name[extension_dot_index + 1 :]
     # Remove extension, e.g: .http/.lsp/.mal
-    fixture_name = file_name[: extension_dot_index]
+    fixture_name = file_name[:extension_dot_index]
     # Replace dots with underscore, e.g: empty.out -> empty_out
     fixture_name = fixture_name.replace(".", "_")
     # Add subdirectory path as prefix if there was one
     # Replace directory delimiters with underscores
     fixture_name = fixture_name.replace("/", "_").replace("\\", "_")
     # Add possible extension name
-    if (extension := extension_renaming(extension)):
+    if extension := extension_renaming(extension):
         fixture_name += "_" + extension
 
     return fixture_name
 
 
 def load_fixture_file_into_module(
-        path: str | Path,
-        module,
-        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
-        root_folder: str | None = None) -> None:
+    path: str | Path,
+    module,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> None:
     """
     Load the raw contents of a file as a fixture into the provided module.
 
@@ -97,9 +102,9 @@ def load_fixture_file_into_module(
 
     open_fixture_file.__doc__ = open.__doc__
 
-    fixture_name = fixture_name_from_file(path,
-                                          extension_renaming=extension_renaming,
-                                          root_folder=root_folder)
+    fixture_name = fixture_name_from_file(
+        path, extension_renaming=extension_renaming, root_folder=root_folder
+    )
 
     fixture = pytest.fixture(
         open_fixture_file(path),
@@ -108,12 +113,14 @@ def load_fixture_file_into_module(
     # Bind `fixture` as `fixture_name` inside this module so it gets exported
     setattr(module, fixture_name, fixture)
 
+
 CONTENT_TYPE_HEADER = b"Content-Type: application/vscode-jsonrpc; charset=utf8"
 
+
 def build_rpc_message_stream(
-        messages: list[dict],
-        insert_header: typing.Callable[[dict, list[dict]], bytes | str] | bytes | str | None = None
-        ) -> io.BytesIO:
+    messages: list[dict],
+    insert_header: typing.Callable[[dict, list[dict]], bytes | str] | bytes | str | None = None,
+) -> io.BytesIO:
     buffer = io.BytesIO()
     for message in messages:
         # get the length of the payload (+1 for the newline)
@@ -139,12 +146,13 @@ def build_rpc_message_stream(
                 header = insert_header.encode("utf-8")
             # Insert header
             buffer.write(header)
-        
+
         # Write header separator and payload
         buffer.write(b"\r\n\r\n")
         buffer.write(json_payload)
     buffer.seek(0)
     return buffer
+
 
 def build_payload(to_include: list):
     result = b""
@@ -272,7 +280,7 @@ BASE_OPEN_FILE = {
     "method": "textDocument/didOpen",
     "params": {
         "textDocument": {
-            "uri":  main_file_path,
+            "uri": main_file_path,
             "languageId": "mal",
             "version": 0,
             "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
