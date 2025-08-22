@@ -4,9 +4,11 @@ from malls.lsp.enums import PositionEncodingKind
 
 from ..util import get_lsp_json, server_output
 
+# Import fixtures since they're lying in nested sibling directory
+pytest_plugins = ["tests.fixtures.lsp.encoding_capability_check"]
 
-def test_encoding_capability_simple(encoding_capability_check_in: typing.BinaryIO):
-    output, ls, *_ = server_output(encoding_capability_check_in)
+def test_encoding_capability_simple(encoding_capability_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(encoding_capability_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
