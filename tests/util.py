@@ -11,6 +11,16 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
 
+def find_last_request(requests: list[dict],
+                      condition: typing.Callable[[dict], bool],
+                      default = None):
+    """
+    Searches through the list of requests in reverse order and returns first (logically last)
+    element fulfilling the condition.
+
+    If none are found an error is raised unless a default is provided, which is returned instead.
+    """
+    return next(filter(condition, reversed(requests)), default)
 
 def fixture_name_from_file(
         file_name: str | Path,
@@ -97,6 +107,44 @@ def load_fixture_file_into_module(
     )
     # Bind `fixture` as `fixture_name` inside this module so it gets exported
     setattr(module, fixture_name, fixture)
+
+CONTENT_TYPE_HEADER = b"Content-Type: application/vscode-jsonrpc; charset=utf8"
+
+def build_rpc_message_stream(
+        messages: list[dict],
+        insert_header: typing.Callable[[dict, list[dict]], bytes | str] | bytes | str | None = None
+        ) -> io.BytesIO:
+    buffer = io.BytesIO()
+    for message in messages:
+        # get the length of the payload (+1 for the newline)
+        json_string = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
+        json_payload = json_string.encode("utf-8")
+        payload_size = str(len(json_payload))
+
+        # write payload size
+        buffer.write(b"Content-Length: ")
+        buffer.write(payload_size.encode())
+
+        # Handle the setting of insert_header (fn, str, or bytes)
+        if insert_header is not None:
+            # Put header on new line
+            buffer.write(b"\r\n")
+            header = insert_header
+            # If insert_header is a callback function, evaluate it for the current
+            # message and total list of messages
+            if callable(insert_header):
+                header = insert_header(message, messages)
+            # Encode strings into bytes
+            if isinstance(insert_header, str):
+                header = insert_header.encode("utf-8")
+            # Insert header
+            buffer.write(header)
+        
+        # Write header separator and payload
+        buffer.write(b"\r\n\r\n")
+        buffer.write(json_payload)
+    buffer.seek(0)
+    return buffer
 
 def build_payload(to_include: list):
     result = b""
