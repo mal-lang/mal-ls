@@ -18,9 +18,6 @@ def set_trace_notification(client_notifications: list[dict], client_messages: li
 
 @pytest.fixture
 def encoding_capability_client_messages(
-        client_requests: list[dict],
-        client_notifications: list[dict],
-        client_messages: list[dict],
         initalize_request,
         initalized_notification,
         set_trace_notification,
