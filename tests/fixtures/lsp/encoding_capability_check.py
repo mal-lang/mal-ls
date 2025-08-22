@@ -20,4 +20,13 @@ def encoding_capability_client_messages(
     exit_notification,
     client_rpc_messages: io.BytesIO,
 ) -> io.BytesIO:
+    """
+    client              server
+    --------------------------
+    initialize
+    initalized
+    $/setTrace
+    shutdown
+    exit
+    """
     return client_rpc_messages
