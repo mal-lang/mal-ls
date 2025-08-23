@@ -78,14 +78,13 @@ def fixture_name_from_file(
     return fixture_name
 
 
-def load_fixture_file_into_module(
+def load_file_as_fixture(
     path: str | Path,
-    module,
     extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
     root_folder: str | None = None,
-) -> None:
+) -> (typing.Callable, str):
     """
-    Load the raw contents of a file as a fixture into the provided module.
+    Load the raw contents of a file as a fixture and returns it alongside its name.
 
     Shares options with `fixture_name_from_file`.
     """
@@ -110,7 +109,24 @@ def load_fixture_file_into_module(
         open_fixture_file(path),
         name=fixture_name,
     )
-    # Bind `fixture` as `fixture_name` inside this module so it gets exported
+
+    return fixture, fixture_name
+
+
+def load_fixture_file_into_module(
+    path: str | Path,
+    module,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> None:
+    """
+    Load the raw contents of a file as a fixture into the provided module.
+
+    Shares options with `fixture_name_from_file`.
+    """
+    fixture, fixture_name = load_file_as_fixture(path,
+                                                 extension_renaming=extension_renaming,
+                                                 root_folder=root_folder)
     setattr(module, fixture_name, fixture)
 
 
