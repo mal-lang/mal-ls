@@ -9,7 +9,7 @@ from tree_sitter import Language, Parser
 
 from .lsp import enums, models
 from .lsp.classes import Document
-from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
+from .lsp.enums import ErrorCodes, MarkupKind, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
 from .lsp.utils import (
     get_completion_list,
@@ -417,3 +417,21 @@ class MALLSPServer(MethodDispatcher):
         # `If a CompletionItem[] is provided it is interpreted to
         # be complete. So it is the same as { isIncomplete: false, items }`
         return completion_list
+
+    def m_text_document__hover(self, **params: dict | None) -> None | dict:
+        # validate parameters
+        hover = models.HoverParams(**params) if params else None
+        if hover is None:
+            return None  # parameters are wrong
+
+        # obtain relevant parameters
+        doc_uri = uri_to_path(hover.text_document.uri)
+        position = hover.position
+
+        # get completion list
+        hover_content = get_completion_list(self.__files[doc_uri], position)
+
+        return {
+            "kind": MarkupKind.Markdown,
+            "value": hover_content,
+        }
