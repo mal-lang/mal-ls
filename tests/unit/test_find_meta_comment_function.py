@@ -59,6 +59,8 @@ def test_find_meta_comment_function(mal_find_meta_comment_function, point, comme
     assert cursor.node.type == "identifier"
 
     # we use sets to ensure order does not matter
-    returned_comments = find_meta_comment_function(cursor.node, cursor.node.text, doc_uri, storage)
-
+    returned_comments = [
+        x.child_by_field_name("info").text.strip(b'"')
+        for x in find_meta_comment_function(cursor.node, cursor.node.text, doc_uri, storage)
+    ]
     assert set(returned_comments) == set(comments)
