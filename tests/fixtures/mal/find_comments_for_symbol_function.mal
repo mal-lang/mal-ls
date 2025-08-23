@@ -1,0 +1,37 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+category Example {
+
+    // asset comment 1
+    // asset comment 2
+    asset Asset1 
+    {
+        | compromise
+        -> b.compromise
+    }
+
+    /* 
+     * MULTI-LINE COMMENT
+     */ 
+    // followed by single comment
+    asset Asset2 
+    {
+        | compromise
+        // attack_step comment
+        & attack
+    }
+
+    // asset3 comment
+    asset
+    Asset3 { }
+
+    asset
+    // asset4 comment
+    Asset4 { }
+}
+associations 
+{
+    // association comment
+    Asset1 [a] * <-- L --> * [c] Asset2
+}
