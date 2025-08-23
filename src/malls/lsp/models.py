@@ -2677,3 +2677,11 @@ class CompletionContext:
     trigger_character: str | None = None
 
     model_config = base_config
+
+
+class HoverParams(TextDocumentPositionParams, WorkDoneProgressParams):
+    """
+    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hoverParams
+    """
+
+    model_config = base_config
