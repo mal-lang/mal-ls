@@ -1,8 +1,12 @@
 import asyncio
+import glob
 import io
 import json
+import os
 import typing
+from os import path
 from pathlib import Path
+import uritools
 
 import pytest
 from pylsp_jsonrpc.endpoint import Endpoint
@@ -82,9 +86,10 @@ def load_file_as_fixture(
     path: str | Path,
     extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
     root_folder: str | None = None,
-) -> (typing.Callable, str):
+) -> (typing.Callable, str, typing.Callable, str):
     """
-    Load the raw contents of a file as a fixture and returns it alongside its name.
+    Load the raw contents of a file as a fixture and its name, accompanied by uri as fixture and
+    its name.
 
     Shares options with `fixture_name_from_file`.
     """
@@ -99,6 +104,11 @@ def load_file_as_fixture(
 
             return template
 
+    def fixture_uri(file_path: str | Path):
+         uri = uritools.uricompose(scheme="file", path=file_path)
+         def template() -> str:
+             return uri
+
     open_fixture_file.__doc__ = open.__doc__
 
     fixture_name = fixture_name_from_file(
@@ -110,7 +120,14 @@ def load_file_as_fixture(
         name=fixture_name,
     )
 
-    return fixture, fixture_name
+    uri_fixture_name = fixture_name + "_uri"
+
+    uri_fixture = pytest.fixture(
+        fixture_uri(Path(path).absolute()),
+        name=uri_fixture_name
+    )
+
+    return fixture, fixture_name, uri_fixture, uri_fixture_name
 
 
 def load_fixture_file_into_module(
@@ -124,10 +141,44 @@ def load_fixture_file_into_module(
 
     Shares options with `fixture_name_from_file`.
     """
-    fixture, fixture_name = load_file_as_fixture(path,
-                                                 extension_renaming=extension_renaming,
-                                                 root_folder=root_folder)
+    fixture, fixture_name, *_ = load_file_as_fixture(path,
+                                                     extension_renaming=extension_renaming,
+                                                     root_folder=root_folder)
     setattr(module, fixture_name, fixture)
+
+# NOTE: On noqa C417
+# Ruff wants to use list generators instead, but that will end up creating many useless
+# intermediary lists which is hurtful for performance.
+def load_directory_files_as_fixtures(
+        dir_path: str | Path,
+        extension: str | None = None,
+        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None) \
+        -> [(typing.Callable, str, typing.Callable, str)]:
+    """
+    Loads all file contents in a given directory, aside from .py, and their URI's as fixtures,
+    using `load_file_as_fixture`.
+
+    Shares option `extension_renaming` with `fixture_name_from_file`.
+    """
+    # Find all files in the directory with the extension, or if none is provided
+    # all non-python files
+    if extension:
+        # Glob find all files matching the extension in the given directory
+        files = glob.iglob(path.join(dir_path, f"*.{extension}"))
+    else:
+        # Filter all entries in the directory to non-python files
+        def non_python_file(entry: os.DirEntry) -> bool:
+            return entry.is_file() and not entry.path.endswith(".py")
+        file_entries = os.scandir(dir_path)
+        non_python_file_entries = filter(non_python_file, file_entries)
+        files = map(lambda entry: entry.path, non_python_file_entries) # noqa C417
+
+    # Concat the file names with the directory to get relative to root path
+    # then load the file as a fixture, getting the name and absolute path in the process
+    file_paths = map(lambda file: path.join(dir_path, file), files) # noqa C417
+    fixture_name_paths = map(lambda path: load_file_as_fixture(path, root_folder=dir_path), # noqa C417
+                             file_paths)
+    return list(fixture_name_paths)
 
 
 CONTENT_TYPE_HEADER = b"Content-Type: application/vscode-jsonrpc; charset=utf8"
