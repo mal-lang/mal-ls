@@ -105,6 +105,14 @@ ERRORS_QUERY = Query(
 )
 
 
+COMMENTS_QUERY = Query(
+    MAL_LANGUAGE,
+    """
+    ((comment) @comment_node)*
+    """,
+)
+
+
 def find_variable_query(variable_name: str):
     query = Query(
         MAL_LANGUAGE,
@@ -1335,3 +1343,60 @@ def find_meta_comment_function(
         # terminate if there are no more parents
         if node is None:
             return []
+
+
+def find_comments_function(
+    node: Node, symbol: str, document_uri: str = "", storage: dict = {}
+) -> list:
+    """
+    Given a node and a symbol, this function will find the comments
+    associated to that symbol. Comments are considered to be associated
+    with a symbol if they appear in consecutive lines above the symbol.
+
+    E.g.:
+        // but not this
+
+        // this as well
+        // this comment is connected
+        let myVar = ...
+        // technically this *could* be connected to above but its a potentially complex scenario
+        // so only count it towards the node below, if there is one
+
+
+    The easiest way to do this is to find all comments in the file and only keep those
+    which appear in consecutive lines above the symbol.
+    """
+
+    start_row = node.start_point.row
+
+    # find comments
+    captures = run_query(storage[document_uri].tree.root_node, COMMENTS_QUERY)
+    if not captures:
+        return []  # there are no comments
+
+    # sort captures by row
+    sorted_comments = sorted(captures["comment_node"], key=lambda item: item.start_point.row)
+
+    comments = [sorted_comments[0].text]
+    previous_row = sorted_comments[0].end_point.row
+
+    for comment_node in sorted_comments[1:]:
+        current_row = comment_node.start_point.row
+
+        # if we have exceeded the row the symbol is in,
+        # we return what we have (as long as they are in
+        # consecutive rows)
+        if current_row > start_row:
+            break
+
+        # if the comment is in a consecutive row,
+        # we keep it
+        if current_row == previous_row + 1:
+            comments.append(comment_node.text)
+            previous_row = current_row  # update row
+        else:
+            # otherwise, restart the count
+            comments = [comment_node.text]
+            previous_row = comment_node.end_point.row
+
+    return comments if previous_row == start_row - 1 else []
