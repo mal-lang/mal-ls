@@ -129,24 +129,22 @@ def get_completion_list(doc: Document, pos: Position) -> list:
 
 
 def build_markdown_meta_comments(meta_comments: list[Node]):
-    markdown = "## Meta comments\n"
+    markdown = "## **Meta comments**\n"
     for meta_comment in meta_comments:
-        meta_id = meta_comment.child_by_field_name("id")
-        meta_info = meta_comment.child_by_field_name("info")
+        meta_id = meta_comment.child_by_field_name("id").text.decode()
+        meta_info = meta_comment.child_by_field_name("info").text.decode()
         markdown += f"- **{meta_id}**: {meta_info}\n"
     return markdown
 
 
-def build_markdown_comments(meta_comments: list[Node]):
-    markdown = "## Comments\n"
-    for meta_comment in meta_comments:
-        meta_id = meta_comment.child_by_field_name("id")
-        meta_info = meta_comment.child_by_field_name("info")
-        markdown += f"- **{meta_id}**: {meta_info}\n"
+def build_markdown_comments(comments: list[Node]):
+    markdown = "## **Comments**\n"
+    for comment in comments:
+        markdown += f"- {comment.text.decode()}\n"
     return markdown
 
 
-def get_hover_info_list(doc: Document, pos: Position, storage: dict) -> list:
+def get_hover_info(doc: Document, pos: Position, storage: dict) -> str:
     # convert LSP position to TS point
     point = lsp_to_tree_sitter_position(doc.text, pos)
 
@@ -157,14 +155,16 @@ def get_hover_info_list(doc: Document, pos: Position, storage: dict) -> list:
 
     node = cursor.node
     if node.type != "identifier":
-        return []  # we can only find comments for identifiers
+        return "" # we can only find comments for identifiers
 
     # TODO write better hover info
-    markdown = "# Symbol Info"
+    markdown = "\n# Symbol Info\n"
 
     # get meta comments
     meta_comments = find_meta_comment_function(node, node.text, doc.uri, storage)
-    markdown = build_markdown_meta_comments(meta_comments)
+    markdown += build_markdown_meta_comments(meta_comments)
+
+    markdown += "---\n"
 
     # get regular comments
     comments = find_comments_function(node, node.text, doc.uri, storage)
