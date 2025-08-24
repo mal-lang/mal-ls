@@ -137,10 +137,21 @@ def build_markdown_meta_comments(meta_comments: list[Node]):
     return markdown
 
 
+def sanitize_comment(comment: str):
+    sanitized_comment = ""
+    for line in comment:
+        line = line.lstrip("/*")
+        line = line.lstrip("*")
+        line = line.lstrip("//")
+        line = line.rstrip("*/")
+        sanitized_comment += line if line != "\n" else ""
+    return sanitized_comment
+
+
 def build_markdown_comments(comments: list[Node]):
     markdown = "## **Comments**\n"
     for comment in comments:
-        markdown += f"- {comment.text.decode()}\n"
+        markdown += f"- {sanitize_comment(comment.text.decode())}\n"
     return markdown
 
 
