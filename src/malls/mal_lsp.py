@@ -13,6 +13,7 @@ from .lsp.enums import ErrorCodes, MarkupKind, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
 from .lsp.utils import (
     get_completion_list,
+    get_hover_info,
     path_to_uri,
     recursive_parsing,
     send_diagnostics,
@@ -108,6 +109,7 @@ class MALLSPServer(MethodDispatcher):
             },
             "definitionProvider": True,
             "completionProvider": {},
+            "hoverProvider": True,
         }
 
         log.debug("Server capabilities: %s", capabilities)
@@ -429,9 +431,11 @@ class MALLSPServer(MethodDispatcher):
         position = hover.position
 
         # get completion list
-        hover_content = get_completion_list(self.__files[doc_uri], position)
+        hover_content = get_hover_info(self.__files[doc_uri], position, self.__files)
 
         return {
-            "kind": MarkupKind.Markdown,
-            "value": hover_content,
+            "contents": {
+                "kind": MarkupKind.Markdown,
+                "value": hover_content,
+            }
         }
