@@ -1375,9 +1375,10 @@ def find_comments_function(
         return []  # there are no comments
 
     # sort captures by row
-    sorted_comments = sorted([
-        item for item in captures["comment_node"] if item.start_point.row < start_row
-    ], key=lambda item: item.start_point.row)
+    sorted_comments = sorted(
+        [item for item in captures["comment_node"] if item.start_point.row < start_row],
+        key=lambda item: item.start_point.row,
+    )
 
     comments = [sorted_comments[0].text]
     previous_row = sorted_comments[0].end_point.row
