@@ -1375,19 +1375,15 @@ def find_comments_function(
         return []  # there are no comments
 
     # sort captures by row
-    sorted_comments = sorted(captures["comment_node"], key=lambda item: item.start_point.row)
+    sorted_comments = sorted([
+        item for item in captures["comment_node"] if item.start_point.row < start_row
+    ], key=lambda item: item.start_point.row)
 
     comments = [sorted_comments[0].text]
     previous_row = sorted_comments[0].end_point.row
 
     for comment_node in sorted_comments[1:]:
         current_row = comment_node.start_point.row
-
-        # if we have exceeded the row the symbol is in,
-        # we return what we have (as long as they are in
-        # consecutive rows)
-        if current_row > start_row:
-            break
 
         # if the comment is in a consecutive row,
         # we keep it
