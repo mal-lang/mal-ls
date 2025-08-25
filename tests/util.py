@@ -16,13 +16,21 @@ from pylsp_jsonrpc.streams import JsonRpcStreamReader
 from malls.mal_lsp import MALLSPServer
 
 
-def find_last_request(requests: list[dict], condition: typing.Callable[[dict], bool], default=None):
+def find_last_request(
+        requests: list[dict],
+        condition: typing.Callable[[dict], bool] | str,
+        default=None) -> dict:
     """
     Searches through the list of requests in reverse order and returns first (logically last)
-    element fulfilling the condition.
+    element fulfilling the condition. If condition is a string, then it finds the last request
+    with the method matching the string.
 
     If none are found an error is raised unless a default is provided, which is returned instead.
     """
+    if isinstance(condition, str):
+        method_name = condition
+        def condition(request: dict) -> bool:
+            request.get("method") == method_name
     return next(filter(condition, reversed(requests)), default)
 
 
