@@ -13,12 +13,13 @@ PARSER = Parser(MAL_LANGUAGE)
 FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
 
 parameters = [
-    ((7, 12), [b"// asset comment 1", b"// asset comment 2"]),
-    ((17, 12), [b"/* \n     * MULTI-LINE COMMENT\n     */", b"// followed by single comment"]),
-    ((21, 12), [b"// attack_step comment"]),
-    ((26, 8), []),
-    ((30, 6), [b"// asset4 comment"]),
-    ((35, 21), [b"// association comment"]),
+    ((9, 13), [b"// category comment"]),
+    ((15, 12), [b"// asset comment 1", b"// asset comment 2"]),
+    ((29, 12), [b"/* \n     * MULTI-LINE COMMENT\n     */", b"// followed by single comment"]),
+    ((33, 12), [b"// attack_step comment"]),
+    ((43, 8), []),
+    ((47, 6), [b"// asset4 comment"]),
+    ((55, 21), [b"// association comment"]),
 ]
 
 
