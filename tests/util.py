@@ -6,9 +6,9 @@ import os
 import typing
 from os import path
 from pathlib import Path
-import uritools
 
 import pytest
+import uritools
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
 from pylsp_jsonrpc.streams import JsonRpcStreamReader
@@ -65,7 +65,7 @@ def fixture_name_from_file(
             return extension_renaming.get(x, "")
 
     # Default to handling of strings
-    if file_name is Path:
+    if isinstance(file_name, Path):
         file_name = str(file_name)
 
     # If a ignore prefix was given, find it and only care for anything after it
@@ -113,11 +113,9 @@ def load_file_as_fixture(
             return template
 
     def fixture_uri(file_path: str | Path):
-         uri = uritools.uricompose(scheme="file", path=file_path)
+         uri = uritools.uricompose(scheme="file", path=str(file_path))
          def template() -> str:
              return uri
-
-    open_fixture_file.__doc__ = open.__doc__
 
     fixture_name = fixture_name_from_file(
         path, extension_renaming=extension_renaming, root_folder=root_folder
@@ -168,6 +166,8 @@ def load_directory_files_as_fixtures(
 
     Shares option `extension_renaming` with `fixture_name_from_file`.
     """
+    if isinstance(dir_path, Path):
+        dir_path = str(dir_path.absolute())
     # Find all files in the directory with the extension, or if none is provided
     # all non-python files
     if extension:
