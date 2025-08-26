@@ -9,6 +9,8 @@ from tree_sitter import Language, Parser
 
 from ..util import build_rpc_message_stream, get_lsp_json, server_output
 
+pytest_plugins = ["tests.fixtures.lsp.conftest"]
+
 log = logging.getLogger(__name__)
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)

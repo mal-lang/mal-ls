@@ -2,6 +2,8 @@ import io
 
 import pytest
 
+# So that importers are aware of the conftest fixtures
+pytest_plugins = ["tests.fixtures.lsp.conftest"]
 
 @pytest.fixture
 def set_trace_notification(client_notifications: list[dict], client_messages: list[dict]) -> dict:
