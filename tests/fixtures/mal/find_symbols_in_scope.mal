@@ -16,6 +16,6 @@ category Example {
 }
 associations 
 {
-    Asset1 [a] * <-- L --> * [c] Asset2 developer info: some info
+    Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
     Asset2 [d] 1 <-- M --> 1 [e] Asset2
 }
