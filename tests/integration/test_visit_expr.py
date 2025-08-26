@@ -1,64 +1,32 @@
-import logging
+import typing
 
+import pytest
 import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
+from tree_sitter import Language, Parser, Tree, TreeCursor
 
 from malls.ts.utils import visit_expr
 
-log = logging.getLogger(__name__)
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 
+@pytest.fixture
+def tree(mal_visit_expr: typing.BinaryIO) -> Tree:
+    return PARSER.parse(mal_visit_expr.read())
 
-def test_visit_expr_only_collects(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
+@pytest.fixture
+def cursor(tree: Tree) -> TreeCursor:
+    return tree.walk()
 
-    point = (9, 11)
-
+def goto_asset_expression(cursor: TreeCursor, point: (int, int)):
     while cursor.node.type != "asset_expr":
         cursor.goto_first_child_for_point(point)
 
-    # we use sets to ensure order does not matter
     cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
 
-    assert found == [b"a", b"b", b"c"]
-
-
-def test_visit_expr_simple_paranthesized(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (10, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [b"a", b"z", b"b", b"c"]
-
-
-def test_visit_expr_various_paranthesized(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (11, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [
+point_found_parameters = [
+    ((9, 11), [b"a", b"b", b"c"]),
+    ((10, 11), [b"a", b"z", b"b", b"c"]),
+    ((11, 11), [
         b"a",
         b"z",
         b"b",
@@ -73,106 +41,31 @@ def test_visit_expr_various_paranthesized(mal_visit_expr):
         b"x",
         b"u",
         b"t",
-    ]
+    ]),
+    ((12, 11), [b"a", b"b", b"c"]),
+    ((13, 11), [b"a", b"b", b"c"]),
+    ((14, 11), [b"a", b"b", b"d", b"e", b"f", b"h", b"i"]),
+    ((15, 11), [(b"d", "asset")]),
+    ((16, 11), [(b"g", "asset"), b"h", b"i"]),
+    ((17, 11), [b"w", b"x", b"y", b"z", b"a"])
+]
 
+parameter_names = ["only_collects",
+                   "simple_paranthesized",
+                   "various_paranthesized",
+                   "unop",
+                   "single_binop",
+                   "various_binop",
+                   "single_type",
+                   "various_type",
+                   "variable"]
 
-def test_visit_expr_unop(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (12, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
+@pytest.mark.parametrize("point,expected", point_found_parameters, ids=parameter_names)
+def test_visir_expr(
+        point: (int, int),
+        expected: list[bytes],
+        cursor: TreeCursor):
+    goto_asset_expression(cursor, point)
     found = []
     visit_expr(cursor, found)
-
-    assert found == [b"a", b"b", b"c"]
-
-
-def test_visit_expr_single_binop(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (13, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [b"a", b"b", b"c"]
-
-
-def test_visit_expr_various_binop(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (14, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [b"a", b"b", b"d", b"e", b"f", b"h", b"i"]
-
-
-def test_visit_expr_single_type(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (15, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [(b"d", "asset")]
-
-
-def test_visit_expr_various_type(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (16, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [(b"g", "asset"), b"h", b"i"]
-
-
-def test_visit_expr_variable(mal_visit_expr):
-    tree = PARSER.parse(mal_visit_expr.read())
-    cursor = tree.walk()
-
-    point = (17, 11)
-
-    while cursor.node.type != "asset_expr":
-        cursor.goto_first_child_for_point(point)
-
-    # we use sets to ensure order does not matter
-    cursor.goto_first_child()
-    found = []
-    visit_expr(cursor, found)
-
-    assert found == [b"w", b"x", b"y", b"z", b"a"]
+    assert found == expected
