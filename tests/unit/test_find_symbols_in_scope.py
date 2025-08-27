@@ -1,118 +1,72 @@
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
+import typing
+import pytest
+import tree_sitter
 
 from malls.ts.utils import find_symbols_in_current_scope
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
+@pytest.fixture
+def find_symbols_in_scope_tree(
+        utf8_mal_parser: tree_sitter.Parser,
+        mal_find_symbols_in_scope: typing.BinaryIO) -> tree_sitter.Tree:
+    return utf8_mal_parser.parse(mal_find_symbols_in_scope.read())
 
-def test_find_symbols_in_category_scope(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+@pytest.fixture
+def find_symbols_in_scope_cursor(
+        find_symbols_in_scope_tree: tree_sitter.Tree) -> tree_sitter.TreeCursor:
+    return find_symbols_in_scope_tree.walk()
 
-    # space between category and asset (category scope)
-    point = (4, 0)
+# (syntax tree/ts point, expected user symbols, expected keywords)
+parameters = [((4, 0),
+               {"Asset1",
+                "Asset2",
+                "Asset3"},
+               {"extends",
+                "abstract",
+                "asset",
+                "info"}),
+              ((17, 0),
+               {"a",
+                "c",
+                "d",
+                "e",
+                "L",
+                "M",
+                "Asset1",
+                "Asset2",
+                },
+               {"info"}),
+              ((7, 10),
+               {"var",
+                "c",
+                "compromise",
+                "destroy"},
+               {"let", "info"}),
+              ((13, 10),
+               {"destroy"},
+               {"info", "let"}),
+              ((1, 0),
+               set(),
+               {"category", "associations", "info"})]
 
-    # symbols (identifiers + keywords)
-    user_symbols = [
-        "Asset1",
-        "Asset2",
-        "Asset3",
-    ]
-    keywords = ["extends", "abstract", "asset", "info"]
+parameter_ids = ["category_scope",
+                 "association_scope",
+                 "asset1_scope",
+                 "asset2_scope",
+                 "root_node_scope"]
 
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
+@pytest.mark.parametrize(
+        "point,expected_user_symbols,expected_keywords",
+        parameters,
+        ids=parameter_ids)
+def test_find_symbols(
+        point: (int, int),
+        expected_user_symbols: set[str],
+        expected_keywords: set[str],
+        find_symbols_in_scope_cursor: tree_sitter.TreeCursor):
 
-    assert set(returned_user_symbols) == set(user_symbols)
-    assert set(returned_keywords) == set(keywords)
-
-
-def test_find_symbols_in_association_scope(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    # position in association scope
-    point = (17, 0)
-
-    # symbols (identifiers + keywords)
-    user_symbols = [
-        "a",
-        "c",
-        "d",
-        "e",
-        "L",
-        "M",
-        "Asset1",
-        "Asset2",
-    ]
-    keywords = [
-        "info",
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
-
-    assert set(returned_user_symbols) == set(user_symbols)
-    assert set(returned_keywords) == set(keywords)
-
-
-def test_find_symbols_in_asset1_scope(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    # position in Asset1 scope
-    point = (7, 10)
-
-    # symbols (identifiers + keywords)
-    user_symbols = [
-        "var",
-        "c",
-        "compromise",
-        "destroy",
-    ]
-    keywords = ["let", "info"]
+    user_symbols, keywords = find_symbols_in_current_scope(find_symbols_in_scope_cursor, point)
 
     # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
-
-    assert set(returned_user_symbols) == set(user_symbols)
-    assert set(returned_keywords) == set(keywords)
-
-
-def test_find_symbols_in_asset2_scope(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    # position in Asset2 scope
-    point = (13, 10)
-
-    # symbols (identifiers + keywords)
-    user_symbols = [
-        "destroy",
-    ]
-    keywords = ["info", "let"]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
-
-    assert set(returned_user_symbols) == set(user_symbols)
-    assert set(returned_keywords) == set(keywords)
-
-
-def test_find_symbols_in_root_node_scope(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    # position in Asset2 scope
-    point = (1, 0)
-
-    # symbols (identifiers + keywords)
-    user_symbols = []
-    keywords = [
-        "category",
-        "associations",
-        "info",
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_current_scope(tree.walk(), point)
-
-    assert set(returned_user_symbols) == set(user_symbols)
-    assert set(returned_keywords) == set(keywords)
+    assert set(user_symbols) == expected_user_symbols
+    assert set(keywords) == expected_keywords

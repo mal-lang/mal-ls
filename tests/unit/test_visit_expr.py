@@ -1,17 +1,15 @@
 import typing
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser, Tree, TreeCursor
+from tree_sitter import Parser, Tree, TreeCursor
 
 from malls.ts.utils import visit_expr
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
 @pytest.fixture
-def tree(mal_visit_expr: typing.BinaryIO) -> Tree:
-    return PARSER.parse(mal_visit_expr.read())
+def tree(utf8_mal_parser: Parser,
+        mal_visit_expr: typing.BinaryIO) -> Tree:
+    return utf8_mal_parser.parse(mal_visit_expr.read())
 
 @pytest.fixture
 def cursor(tree: Tree) -> TreeCursor:
