@@ -52,7 +52,7 @@ for directory, _, files in os.walk("tests/fixtures"):
         def fixture_uri(file: str):
             path = Path(file)
             file_path = path.resolve()
-            uri = file_path.as_uri()
+            uri = str(file_path.as_uri())
             def template() -> str:
                 return uri
 

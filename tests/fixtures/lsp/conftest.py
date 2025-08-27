@@ -270,15 +270,18 @@ def did_change_notification(
     return message
 
 @pytest.fixture
-def did_open_base_open_notification(
-        client_notifications: list[dict],
-        client_messages: list[dict],
-        did_open_notification,
-        mal_base_open: typing.BinaryIO,
-        mal_base_open_uri: str):
-    # since did_open_notification is a dependency here
-    # we know the notification is the latest one
-    open_notification = client_notifications[-1]
-    text_doc_params = open_notification["params"]["textDocument"]
-    text_doc_params["uri"] = mal_base_open_uri
-    text_doc_params["text"] = mal_base_open.read().decode("utf8")
+def client_initalize_procedures(initalize_request,
+                                initalized_notification):
+    """
+    Adds the relevant messages from client to server so that both client and server are initalized.
+    """
+    pass
+
+@pytest.fixture
+def client_shutdown_procedures(shutdown_request,
+                               exit_notification):
+    """
+    Adds the relevant messages from client to server to shut down the server. Assumes at
+    non-erreneous and post-initalized server state.
+    """
+    pass

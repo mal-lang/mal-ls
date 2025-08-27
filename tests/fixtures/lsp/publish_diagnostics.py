@@ -3,7 +3,8 @@ import typing
 import pytest
 
 # So that importers are aware of the conftest fixtures
-pytest_plugins = ["tests.fixtures.lsp.conftest"]
+pytest_plugins = ["tests.fixtures.lsp.conftest",
+                  "tests.fixtures.lsp.did_open_text_document_notification"]
 
 
 @pytest.fixture
