@@ -2,7 +2,6 @@ import typing
 
 import pytest
 
-
 # So that importers are aware of the conftest fixtures
 pytest_plugins = ["tests.fixtures.lsp.conftest"]
 

@@ -2625,18 +2625,19 @@ class WholeFileChange(BaseModel):
     text: str
 
 
-class TextDocumentContentChangeEvent(BaseModel):
-    """
-    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent
-    """
+class RangeFileChange(BaseModel):
+    range: Range
 
-    range: Range | None = None
+    range_length: UInteger | None = None
 
-    range_length: int | None = None
-
-    text: str | WholeFileChange
+    text: str
 
     model_config = base_config
+
+type TextDocumentContentChangeEvent = WholeFileChange | RangeFileChange
+"""
+https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent
+"""
 
 
 class DidChangeTextDocumentParams(BaseModel):
