@@ -1,11 +1,7 @@
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser, TreeCursor
+from tree_sitter import TreeCursor
 
 from malls.ts.utils import find_symbols_in_context_hierarchy
-
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
 # (syntax tree/ts point, expected user symbols + level, expected keywords + level)
 parameters = [((4, 0),
