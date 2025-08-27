@@ -123,14 +123,14 @@ def initalize_response(
         "jsonrpc": "2.0",
         "id": find_last_request(client_requests, "initalize", {}).get("id", 0),
         "result": {
-            # TODO: Replace with values from an actual server instance (e.g. via instance.capabilities())
+            # TODO: Replace with values from an actual server instance (e.g. via instance.capabilities())  # noqa: E501
             "capabilities": {
                 "positionEncoding": "utf-16",
                 "textDocumentSync": {"openClose": True, "change": 1},
                 "definitionProvider": True,
                 "completionProvider": {},
             },
-            # TODO: Replace with values from an actual server instance (e.g. via instance.server_info())
+            # TODO: Replace with values from an actual server instance (e.g. via instance.server_info())  # noqa: E501
             "serverInfo": {"name": "mal-ls"},
         },
     }
