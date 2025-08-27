@@ -4,9 +4,11 @@ from malls.lsp.enums import ErrorCodes, TraceValue
 
 from ..util import get_lsp_json, server_output
 
+pytest_plugins = ["tests.fixtures.lsp.trace"]
 
-def test_wrong_trace_value_in_initialization(wrong_trace_value_in: typing.BinaryIO):
-    output, ls, *_ = server_output(wrong_trace_value_in)
+
+def test_wrong_trace_value_in_initialization(wrong_trace_value_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(wrong_trace_value_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
@@ -23,8 +25,8 @@ def test_wrong_trace_value_in_initialization(wrong_trace_value_in: typing.Binary
     output.close()
 
 
-def test_set_trace_correctly(set_trace_value_in: typing.BinaryIO):
-    output, ls, *_ = server_output(set_trace_value_in)
+def test_set_trace_correctly(set_trace_verbose_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_verbose_client_messages)
 
     # ensure ls has trace value correctly set
     assert ls.trace_value == TraceValue.Verbose
@@ -32,8 +34,8 @@ def test_set_trace_correctly(set_trace_value_in: typing.BinaryIO):
     output.close()
 
 
-def test_set_trace_incorrectly(set_wrong_trace_value_in: typing.BinaryIO):
-    output, ls, *_ = server_output(set_wrong_trace_value_in)
+def test_set_trace_incorrectly(set_trace_wrong_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_wrong_client_messages)
 
     # ensure ls has trace value correctly set
     assert ls.trace_value == TraceValue.Off
@@ -41,8 +43,8 @@ def test_set_trace_incorrectly(set_wrong_trace_value_in: typing.BinaryIO):
     output.close()
 
 
-def test_log_trace_messages(log_trace_messages_in: typing.BinaryIO):
-    output, ls, *_ = server_output(log_trace_messages_in)
+def test_log_trace_messages(set_trace_messages_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_messages_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
@@ -62,8 +64,8 @@ def test_log_trace_messages(log_trace_messages_in: typing.BinaryIO):
     output.close()
 
 
-def test_log_trace_verbose(log_trace_verbose_in: typing.BinaryIO):
-    output, ls, *_ = server_output(log_trace_verbose_in)
+def test_log_trace_verbose(set_trace_verbose_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_verbose_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
@@ -83,8 +85,8 @@ def test_log_trace_verbose(log_trace_verbose_in: typing.BinaryIO):
     output.close()
 
 
-def test_log_trace_off(log_trace_off_in: typing.BinaryIO):
-    output, ls, *_ = server_output(log_trace_off_in)
+def test_log_trace_off(set_trace_off_client_messages: typing.BinaryIO):
+    output, ls, *_ = server_output(set_trace_off_client_messages)
 
     # the test and server share the same buffer,
     # so we must reset the cursor
