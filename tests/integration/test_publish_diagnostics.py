@@ -74,9 +74,6 @@ def test_diagnostics_when_opening_file_with_include_error_and_opening_bad_file(
 
     output.close()
 
-# FIXME:
-@pytest.mark.skip(("Server is not sending diagnostics for unknown reasons. "
-                   "Only sending initalize response."))
 def test_diagnostics_when_changing_file_with_error(
     change_file_with_error_client_messages: typing.BinaryIO):
     # send to server
