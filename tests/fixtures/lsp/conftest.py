@@ -96,7 +96,19 @@ def initalize_request(client_requests: list[dict], client_messages: list[dict]) 
         "jsonrpc": "2.0",
         "id": len(client_requests),
         "method": "initialize",
-        "params": {"trace": "off", "capabilities": {}},
+        "params": {
+                   "capabilities": {
+                       "textDocument": {
+                           "definition": {
+                               "dynamicRegistration": False
+                               },
+                           "synchronization": {
+                               "dynamicRegistration": False
+                               }
+                           }
+                       },
+                   "trace": "off"
+                   },
     }
     client_requests.append(message)
     client_messages.append(message)
@@ -212,7 +224,7 @@ def did_open_notification(
         client_notifications: list[dict],
         client_messages: list[dict]) -> dict:
     """
-    Defines an `textDocument/didOPen` LSP notification from client to server. Fields
+    Defines an `textDocument/didOpen` LSP notification from client to server. Fields
     `uri` and `text` in `params.textDocument` must be edited.
     """
     message = {
@@ -228,3 +240,45 @@ def did_open_notification(
     client_notifications.append(message)
     client_messages.append(message)
     return message
+
+@pytest.fixture
+def did_change_notification(
+        client_notifications: list[dict],
+        client_messages: list[dict]) -> dict:
+    """
+    Defines an `textDocument/didChange` LSP notification from client to server. Fields
+    `uri`, `version` in `params.textDocument` and `range`, `text` in `params.contentChanges`
+    must be edited.
+    """
+    message = {
+        "jsonrpc": "2.0",
+        "method": "textDocument/didChange",
+        "params": {
+            "textDocument": {},
+            "contentChanges": [
+                {
+                    "range": {
+                        "start": {},
+                        "end": {},
+                    },
+                }
+            ],
+        },
+    }
+    client_notifications.append(message)
+    client_messages.append(message)
+    return message
+
+@pytest.fixture
+def did_open_base_open_notification(
+        client_notifications: list[dict],
+        client_messages: list[dict],
+        did_open_notification,
+        mal_base_open: typing.BinaryIO,
+        mal_base_open_uri: str):
+    # since did_open_notification is a dependency here
+    # we know the notification is the latest one
+    open_notification = client_notifications[-1]
+    text_doc_params = open_notification["params"]["textDocument"]
+    text_doc_params["uri"] = mal_base_open_uri
+    text_doc_params["text"] = mal_base_open.read().decode("utf8")
