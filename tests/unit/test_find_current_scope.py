@@ -1,95 +1,47 @@
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
+import typing
+
+import pytest
+from tree_sitter import Parser, Tree, TreeCursor
 
 from malls.ts.utils import find_current_scope
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
+@pytest.fixture
+def find_current_scope_function_tree(utf8_mal_parser: Parser,
+                                     mal_find_current_scope_function: typing.BinaryIO) -> Tree:
+    return utf8_mal_parser.parse(mal_find_current_scope_function.read())
 
-def test_find_current_scope_on_space_between_category_and_asset(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
+@pytest.fixture
+def find_current_scope_function_cursor(find_current_scope_function_tree: Tree) -> TreeCursor:
+    return find_current_scope_function_tree.walk()
 
-    # space between category and asset
-    point = (4, 0)
-    assert find_current_scope(tree.walk(), point).type == "category_declaration"
+parameters = [((4, 0), "category_declaration"),
+              ((7, 13), "asset_declaration"),
+              ((17, 19), "associations_declaration"),
+              ((1, 10), "source_file"),
+              ((10, 10), "category_declaration"),
+              ((11, 4), "asset_declaration"),
+              ((13, 4), "asset_declaration"),
+              ((3, 10), "source_file"),
+              ((3, 17), "category_declaration"),
+              ((15, 4), "source_file"),
+              ((18, 0), "associations_declaration")]
 
+parameter_ids = ["on_space_between_category_and_asset",
+                 "inside_asset_declaration",
+                 "inside_association_declaration",
+                 "outside_all_components",
+                 "on_name_of_asset",
+                 "on_bracket_of_asset",
+                 "on_closing_bracket_of_asset",
+                 "on_name_of_category",
+                 "on_bracket_of_category",
+                 "on_term_association",
+                 "on_bracket_of_association"]
 
-def test_find_current_scope_inside_the_asset_declaration(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # inside the asset declaration
-    point = (7, 13)
-    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
-
-
-def test_find_current_scope_inside_the_association_declaration(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # inside the association declaration
-    point = (17, 19)
-    assert find_current_scope(tree.walk(), point).type == "associations_declaration"
-
-
-def test_find_current_scope_outside_all_components(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # outside all components
-    point = (1, 10)
-    assert find_current_scope(tree.walk(), point).type == "source_file"
-
-
-def test_find_current_scope_on_name_of_asset(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the name of the asset
-    point = (10, 10)
-    assert find_current_scope(tree.walk(), point).type == "category_declaration"
-
-
-def test_find_current_scope_on_bracket_of_asset(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the '{' of the asset
-    point = (11, 4)
-    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
-
-
-def test_find_current_scope_on_closing_bracket_of_asset(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the '}' of the asset
-    point = (13, 4)
-    assert find_current_scope(tree.walk(), point).type == "asset_declaration"
-
-
-def test_find_current_scope_on_name_of_category(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the name of the category
-    point = (3, 10)
-    assert find_current_scope(tree.walk(), point).type == "source_file"
-
-
-def test_find_current_scope_on_bracket_of_category(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the '{' of the category
-    point = (3, 17)
-    assert find_current_scope(tree.walk(), point).type == "category_declaration"
-
-
-def test_find_current_scope_on_term_association(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the term 'associations'
-    point = (15, 4)
-    assert find_current_scope(tree.walk(), point).type == "source_file"
-
-
-def test_find_current_scope_on_bracket_of_association(mal_find_current_scope_function):
-    tree = PARSER.parse(mal_find_current_scope_function.read())
-
-    # on the '{' of the association
-    point = (18, 0)
-    assert find_current_scope(tree.walk(), point).type == "associations_declaration"
+@pytest.mark.parametrize("point,expected_node_type", parameters, ids=parameter_ids)
+def test_find_current_scope(point: (int, int),
+                            expected_node_type: str,
+                            find_current_scope_function_cursor: TreeCursor):
+    node = find_current_scope(find_current_scope_function_cursor, point)
+    assert node.type == expected_node_type
