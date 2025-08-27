@@ -1,0 +1,57 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+// should not appear
+/*
+ * SHOULD NOT APPEAR
+ */
+
+// category comment
+category Example {
+
+    // should not appear
+
+    // asset comment 1
+    // asset comment 2
+    asset Asset1 
+    {
+        | compromise
+        -> b.compromise
+    }
+
+    /*
+     * SHOULD NOT APPEAR
+     */
+
+    /* 
+     * MULTI-LINE COMMENT
+     */ 
+    // followed by single comment
+    asset Asset2 
+    {
+        | compromise
+        // attack_step comment
+        & attack
+    }
+
+    /* 
+     * SHOULD NOT APPEAR
+     */
+    // should not appear
+
+    // asset3 comment
+    asset
+    Asset3 { }
+
+    asset
+    // asset4 comment
+    Asset4 { }
+}
+associations 
+{
+    // should not appear
+    // should not appear
+
+    // association comment
+    Asset1 [a] * <-- L --> * [c] Asset2
+}
