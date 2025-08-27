@@ -97,18 +97,14 @@ def initalize_request(client_requests: list[dict], client_messages: list[dict]) 
         "id": len(client_requests),
         "method": "initialize",
         "params": {
-                   "capabilities": {
-                       "textDocument": {
-                           "definition": {
-                               "dynamicRegistration": False
-                               },
-                           "synchronization": {
-                               "dynamicRegistration": False
-                               }
-                           }
-                       },
-                   "trace": "off"
-                   },
+            "capabilities": {
+                "textDocument": {
+                    "definition": {"dynamicRegistration": False},
+                    "synchronization": {"dynamicRegistration": False},
+                }
+            },
+            "trace": "off",
+        },
     }
     client_requests.append(message)
     client_messages.append(message)
@@ -219,32 +215,30 @@ def server_rpc_messages(server_messages: list[dict]) -> typing.BinaryIO:
     """
     return build_rpc_message_stream(server_messages, insert_header=CONTENT_TYPE_HEADER)
 
+
 @pytest.fixture
-def did_open_notification(
-        client_notifications: list[dict],
-        client_messages: list[dict]) -> dict:
+def did_open_notification(client_notifications: list[dict], client_messages: list[dict]) -> dict:
     """
     Defines an `textDocument/didOpen` LSP notification from client to server. Fields
     `uri` and `text` in `params.textDocument` must be edited.
     """
     message = {
-            "jsonrpc": "2.0",
-            "method": "textDocument/didOpen",
-            "params": {
-                "textDocument": {
-                    "languageId": "mal",
-                    "version": 0,
-                    }
-                },
+        "jsonrpc": "2.0",
+        "method": "textDocument/didOpen",
+        "params": {
+            "textDocument": {
+                "languageId": "mal",
+                "version": 0,
             }
+        },
+    }
     client_notifications.append(message)
     client_messages.append(message)
     return message
 
+
 @pytest.fixture
-def did_change_notification(
-        client_notifications: list[dict],
-        client_messages: list[dict]) -> dict:
+def did_change_notification(client_notifications: list[dict], client_messages: list[dict]) -> dict:
     """
     Defines an `textDocument/didChange` LSP notification from client to server. Fields
     `uri`, `version` in `params.textDocument` and `range`, `text` in `params.contentChanges`
@@ -269,17 +263,17 @@ def did_change_notification(
     client_messages.append(message)
     return message
 
+
 @pytest.fixture
-def client_initalize_procedures(initalize_request,
-                                initalized_notification):
+def client_initalize_procedures(initalize_request, initalized_notification):
     """
     Adds the relevant messages from client to server so that both client and server are initalized.
     """
     pass
 
+
 @pytest.fixture
-def client_shutdown_procedures(shutdown_request,
-                               exit_notification):
+def client_shutdown_procedures(shutdown_request, exit_notification):
     """
     Adds the relevant messages from client to server to shut down the server. Assumes at
     non-erreneous and post-initalized server state.

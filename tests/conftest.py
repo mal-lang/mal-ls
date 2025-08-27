@@ -55,6 +55,7 @@ for directory, _, files in os.walk("tests/fixtures"):
             path = Path(file)
             file_path = path.resolve()
             uri = str(file_path.as_uri())
+
             def template() -> str:
                 return uri
 
@@ -72,21 +73,26 @@ for directory, _, files in os.walk("tests/fixtures"):
 
 TESTS_ROOT = Path(__file__).parent
 
+
 @pytest.fixture
 def tests_root() -> Path:
     return TESTS_ROOT
+
 
 @pytest.fixture
 def mal_root(tests_root: Path) -> Path:
     return tests_root.joinpath("fixtures", "mal")
 
+
 @pytest.fixture
 def mal_root_str(mal_root: Path) -> str:
     return str(mal_root)
 
+
 @pytest.fixture
 def mal_language() -> Language:
     return Language(ts_mal.language())
+
 
 @pytest.fixture
 def utf8_mal_parser(mal_language: Language) -> Parser:

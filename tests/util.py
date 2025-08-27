@@ -17,9 +17,8 @@ from malls.mal_lsp import MALLSPServer
 
 
 def find_last_request(
-        requests: list[dict],
-        condition: typing.Callable[[dict], bool] | str,
-        default=None) -> dict:
+    requests: list[dict], condition: typing.Callable[[dict], bool] | str, default=None
+) -> dict:
     """
     Searches through the list of requests in reverse order and returns first (logically last)
     element fulfilling the condition. If condition is a string, then it finds the last request
@@ -29,8 +28,10 @@ def find_last_request(
     """
     if isinstance(condition, str):
         method_name = condition
+
         def condition(request: dict) -> bool:
             request.get("method") == method_name
+
     return next(filter(condition, reversed(requests)), default)
 
 
@@ -113,9 +114,10 @@ def load_file_as_fixture(
             return template
 
     def fixture_uri(file_path: str | Path):
-         uri = uritools.uricompose(scheme="file", path=str(file_path))
-         def template() -> str:
-             return uri
+        uri = uritools.uricompose(scheme="file", path=str(file_path))
+
+        def template() -> str:
+            return uri
 
     fixture_name = fixture_name_from_file(
         path, extension_renaming=extension_renaming, root_folder=root_folder
@@ -128,10 +130,7 @@ def load_file_as_fixture(
 
     uri_fixture_name = fixture_name + "_uri"
 
-    uri_fixture = pytest.fixture(
-        fixture_uri(Path(path).absolute()),
-        name=uri_fixture_name
-    )
+    uri_fixture = pytest.fixture(fixture_uri(Path(path).absolute()), name=uri_fixture_name)
 
     return fixture, fixture_name, uri_fixture, uri_fixture_name
 
@@ -147,19 +146,20 @@ def load_fixture_file_into_module(
 
     Shares options with `fixture_name_from_file`.
     """
-    fixture, fixture_name, *_ = load_file_as_fixture(path,
-                                                     extension_renaming=extension_renaming,
-                                                     root_folder=root_folder)
+    fixture, fixture_name, *_ = load_file_as_fixture(
+        path, extension_renaming=extension_renaming, root_folder=root_folder
+    )
     setattr(module, fixture_name, fixture)
+
 
 # NOTE: On noqa C417
 # Ruff wants to use list generators instead, but that will end up creating many useless
 # intermediary lists which is hurtful for performance.
 def load_directory_files_as_fixtures(
-        dir_path: str | Path,
-        extension: str | None = None,
-        extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None) \
-        -> [(typing.Callable, str, typing.Callable, str)]:
+    dir_path: str | Path,
+    extension: str | None = None,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+) -> [(typing.Callable, str, typing.Callable, str)]:
     """
     Loads all file contents in a given directory, aside from .py, and their URI's as fixtures,
     using `load_file_as_fixture`.
@@ -177,15 +177,18 @@ def load_directory_files_as_fixtures(
         # Filter all entries in the directory to non-python files
         def non_python_file(entry: os.DirEntry) -> bool:
             return entry.is_file() and not entry.path.endswith(".py")
+
         file_entries = os.scandir(dir_path)
         non_python_file_entries = filter(non_python_file, file_entries)
-        files = map(lambda entry: entry.path, non_python_file_entries) # noqa C417
+        files = map(lambda entry: entry.path, non_python_file_entries)  # noqa C417
 
     # Concat the file names with the directory to get relative to root path
     # then load the file as a fixture, getting the name and absolute path in the process
-    file_paths = map(lambda file: path.join(dir_path, file), files) # noqa C417
-    fixture_name_paths = map(lambda path: load_file_as_fixture(path, root_folder=dir_path), # noqa C417
-                             file_paths)
+    file_paths = map(lambda file: path.join(dir_path, file), files)  # noqa C417
+    fixture_name_paths = map(
+        lambda path: load_file_as_fixture(path, root_folder=dir_path),  # noqa C417
+        file_paths,
+    )
     return list(fixture_name_paths)
 
 

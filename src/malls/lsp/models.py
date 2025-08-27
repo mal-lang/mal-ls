@@ -2634,6 +2634,7 @@ class RangeFileChange(BaseModel):
 
     model_config = base_config
 
+
 type TextDocumentContentChangeEvent = WholeFileChange | RangeFileChange
 """
 https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentContentChangeEvent

@@ -62,21 +62,23 @@ parameters = [
     ((0, 0), symbols_in_root_node_hierarchy),
 ]
 parameter_names = [
-        "symbols_in_category_hierarchy",
-        "symbols_in_associations_hierarchy",
-        "symbols_in_asset1_hierarchy",
-        "symbols_in_asset2_hierarchy",
-        "symbols_in_root_node_hierarchy",
-        ]
+    "symbols_in_category_hierarchy",
+    "symbols_in_associations_hierarchy",
+    "symbols_in_asset1_hierarchy",
+    "symbols_in_asset2_hierarchy",
+    "symbols_in_root_node_hierarchy",
+]
 
 pytest_plugins = ["tests.fixtures.mal"]
 
+
 @pytest.fixture
 def open_completion_document_notification(
-        client_notifications: list[dict],
-        client_messages: list[dict],
-        mal_completion_document: io.BytesIO,
-        mal_completion_document_uri: str) -> dict:
+    client_notifications: list[dict],
+    client_messages: list[dict],
+    mal_completion_document: io.BytesIO,
+    mal_completion_document_uri: str,
+) -> dict:
     """
     Sends a didOpen notification bound to the MAL fixture file completion_document.
     """
@@ -96,11 +98,11 @@ def open_completion_document_notification(
     client_messages.append(message)
     return message
 
+
 @pytest.fixture
 def completion_request(
-        client_requests: list[dict],
-        client_messages: list[dict],
-        mal_completion_document_uri: str) -> typing.Callable[[(int, int)], dict]:
+    client_requests: list[dict], client_messages: list[dict], mal_completion_document_uri: str
+) -> typing.Callable[[(int, int)], dict]:
     def make(position: (int, int)):
         character, line = position
         message = {
@@ -109,7 +111,7 @@ def completion_request(
             "method": "textDocument/completion",
             "params": {
                 "textDocument": {
-                    "uri": mal_completion_document_uri, # find_symbols_in_scope_path
+                    "uri": mal_completion_document_uri,  # find_symbols_in_scope_path
                 },
                 "position": {
                     "line": line,
@@ -120,29 +122,31 @@ def completion_request(
         client_requests.append(message)
         client_messages.append(message)
         return message
+
     return make
+
 
 @pytest.fixture
 def completion_client_messages(
-        client_messages: list[dict],
-        initalize_request,
-        initalized_notification,
-        open_completion_document_notification,
-        completion_request: typing.Callable[[(int, int)], dict]) -> typing.Callable[[(int, int)], io.BytesIO]:  # noqa: E501
+    client_messages: list[dict],
+    initalize_request,
+    initalized_notification,
+    open_completion_document_notification,
+    completion_request: typing.Callable[[(int, int)], dict],
+) -> typing.Callable[[(int, int)], io.BytesIO]:  # noqa: E501
     def make(position: (int, int)) -> io.BytesIO:
         completion_request(position)
         return build_rpc_message_stream(client_messages)
+
     return make
 
-@pytest.mark.parametrize(
-    "location,completion_list",
-    parameters,
-    ids=parameter_names
-)
+
+@pytest.mark.parametrize("location,completion_list", parameters, ids=parameter_names)
 def test_completion(
-        location: (int, int),
-        completion_list: list[str],
-        completion_client_messages: typing.Callable[[(int, int)], io.BytesIO]):
+    location: (int, int),
+    completion_list: list[str],
+    completion_client_messages: typing.Callable[[(int, int)], io.BytesIO],
+):
     # send to server
     fixture = completion_client_messages(location)
     output, ls, *_ = server_output(fixture)

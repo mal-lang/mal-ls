@@ -1,8 +1,6 @@
 import typing
 from pathlib import Path
 
-import pytest
-
 from malls.lsp.enums import DiagnosticSeverity
 
 from ..util import get_lsp_json, server_output
@@ -14,8 +12,8 @@ included_file_path = FILE_PATH + "file_with_error.mal"
 
 pytest_plugins = ["tests.fixtures.lsp.publish_diagnostics"]
 
-def test_diagnostics_when_opening_file_with_error(
-    erroneous_file_client_messages: typing.BinaryIO):
+
+def test_diagnostics_when_opening_file_with_error(erroneous_file_client_messages: typing.BinaryIO):
     # send to server
     output, ls, *_ = server_output(erroneous_file_client_messages)
 
@@ -37,7 +35,8 @@ def test_diagnostics_when_opening_file_with_error(
 
 
 def test_diagnostics_when_opening_file_with_include_error(
-    erroneous_include_file_client_messages: typing.BinaryIO):
+    erroneous_include_file_client_messages: typing.BinaryIO,
+):
     # send to server
     output, ls, *_ = server_output(erroneous_include_file_client_messages)
 
@@ -55,7 +54,8 @@ def test_diagnostics_when_opening_file_with_include_error(
 
 
 def test_diagnostics_when_opening_file_with_include_error_and_opening_bad_file(
-     erroenous_include_and_file_with_error_client_messages: typing.BinaryIO):
+    erroenous_include_and_file_with_error_client_messages: typing.BinaryIO,
+):
     # send to server
     output, ls, *_ = server_output(erroenous_include_and_file_with_error_client_messages)
 
@@ -74,8 +74,10 @@ def test_diagnostics_when_opening_file_with_include_error_and_opening_bad_file(
 
     output.close()
 
+
 def test_diagnostics_when_changing_file_with_error(
-    change_file_with_error_client_messages: typing.BinaryIO):
+    change_file_with_error_client_messages: typing.BinaryIO,
+):
     # send to server
     output, ls, *_ = server_output(change_file_with_error_client_messages)
 

@@ -1,5 +1,4 @@
 import typing
-from pathlib import Path
 
 import pytest
 from tree_sitter import Parser, Tree
@@ -22,31 +21,34 @@ parameters = [
     ((57, 37), {b"dev asset4", b"mod asset4"}),
 ]
 
+
 @pytest.fixture
 def find_meta_comment_data(mal_find_meta_comment_function: typing.BinaryIO) -> bytes:
     return mal_find_meta_comment_function.read()
 
+
 @pytest.fixture
-def find_meta_comment_tree(utf8_mal_parser: Parser,
-                           find_meta_comment_data: bytes) -> Tree:
+def find_meta_comment_tree(utf8_mal_parser: Parser, find_meta_comment_data: bytes) -> Tree:
     return utf8_mal_parser.parse(find_meta_comment_data)
+
 
 @pytest.mark.parametrize(
     "point,expected_comments",
     parameters,
 )
 def test_find_meta_comment_function(
-        mal_root_str: str,
-        mal_find_meta_comment_function_uri: str,
-        find_meta_comment_data: bytes,
-        find_meta_comment_tree: Tree,
-        point: (int, int),
-        expected_comments: list[bytes]):
+    mal_root_str: str,
+    mal_find_meta_comment_function_uri: str,
+    find_meta_comment_data: bytes,
+    find_meta_comment_tree: Tree,
+    point: (int, int),
+    expected_comments: list[bytes],
+):
     # build the storage (mimicks the file parsing in the server)
     storage = {}
 
     doc_uri = mal_find_meta_comment_function_uri
-    source_encoded =  find_meta_comment_data
+    source_encoded = find_meta_comment_data
     tree = find_meta_comment_tree
 
     storage[doc_uri] = Document(tree, source_encoded, doc_uri)

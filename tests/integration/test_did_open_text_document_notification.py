@@ -7,9 +7,8 @@ from ..util import server_output
 
 pytest_plugins = ["tests.fixtures.lsp.did_open_text_document_notification"]
 
-parameters = ["base_open",
-              "base_open_file_with_fake_include",
-              "base_open_with_included_file"]
+parameters = ["base_open", "base_open_file_with_fake_include", "base_open_with_included_file"]
+
 
 @pytest.mark.parametrize("file", parameters, ids=parameters)
 def test_open_file(request: pytest.FixtureRequest, file: str):
@@ -19,7 +18,7 @@ def test_open_file(request: pytest.FixtureRequest, file: str):
     # send to server
     output, ls, *_ = server_output(file_fixture)
     # since Document acts inconsistent with URIs
-    uri_fixture = uri_fixture[len("file://"):]
+    uri_fixture = uri_fixture[len("file://") :]
 
     # Ensure LSP stored everything correctly
     assert uri_fixture in ls.files
