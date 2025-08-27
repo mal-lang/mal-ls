@@ -1,207 +1,114 @@
+import pytest
 import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
+from tree_sitter import Language, Parser, TreeCursor
 
 from malls.ts.utils import find_symbols_in_context_hierarchy
 
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 
+# (syntax tree/ts point, expected user symbols + level, expected keywords + level)
+parameters = [((4, 0),
+               [("var", -1),
+                ("c", -1),
+                ("compromise", -1),
+                ("destroy", -1),
+                ("Asset1", 0),
+                ("Asset2", 0),
+                ("Asset3", 0)],
+               [("let", -1),
+                ("extends", 0),
+                ("abstract", 0),
+                ("asset", 0),
+                ("info", 1),
+                ("category", 1),
+                ("associations", 1)]),
+              ((17, 0),
+               [("a", 0),
+                ("c", 0),
+                ("d", 0),
+                ("e", 0),
+                ("L", 0),
+                ("M", 0),
+                ("Asset1", 0),
+                ("Asset2", 0)],
+               [("info", 1),
+                ("category", 1),
+                ("associations", 1)]),
+              ((6, 4),
+               [("var", 0),
+                ("c", 0),
+                ("compromise", 0),
+                ("destroy", 0),
+                ("Asset1", 1),
+                ("Asset2", 1),
+                ("Asset3", 1)],
+               [("let", 0),
+                ("extends", 1),
+                ("abstract", 1),
+                ("asset", 1),
+                ("category", 2),
+                ("associations", 2),
+                ("info", 2)]),
+              ((12, 4),
+               [("destroy", 0),
+                ("Asset1", 1),
+                ("Asset2", 1),
+                ("Asset3", 1)],
+               [("let", 0),
+                ("extends", 1),
+                ("abstract", 1),
+                ("asset", 1),
+                ("category", 2),
+                ("associations", 2),
+                ("info", 2)]),
+               ((0, 0),
+                [("var", -2),
+                 ("compromise", -2),
+                 ("destroy", -2),
+                 ("Asset1", -1),
+                 ("Asset2", -1),
+                 ("Asset3", -1),
+                 ("a", -1),
+                 ("d", -1),
+                 ("e", -1),
+                 ("L", -1),
+                 ("M", -1),
+                 ("c", -1)],
+                [("let", -2),
+                 ("extends", -1),
+                 ("abstract", -1),
+                 ("asset", -1),
+                 ("info", -1),
+                 ("category", 0),
+                 ("associations", 0)])]
 
-def test_find_symbols_in_category_hierarchy(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
+parameter_ids = ["category",
+                 "associations",
+                 "asset1",
+                 "asset2",
+                 "root_node"]
 
-    # space between category and asset (category scope)
-    point = (4, 0)
+pytest_plugins = ["tests.unit.test_find_symbols_in_scope"]
 
-    # symbols (identifiers + keywords)
-    symbols = [
-        ("var", -1),
-        ("c", -1),
-        ("compromise", -1),
-        ("destroy", -1),
-        ("Asset1", 0),
-        ("Asset2", 0),
-        ("Asset3", 0),
-    ]
-    keywords = [
-        ("let", -1),
-        ("extends", 0),
-        ("abstract", 0),
-        ("asset", 0),
-        ("info", 1),
-        ("category", 1),
-        ("associations", 1),
-    ]
+@pytest.mark.parametrize(
+        "point,expected_symbols,expected_keywords",
+        parameters,
+        ids=parameter_ids)
+def test_find_symbols_in_hierarchy(
+        point: (int, int),
+        expected_symbols: list[(str, int)],
+        expected_keywords: list[(str, int)],
+        find_symbols_in_scope_cursor: TreeCursor):
+    user_symbols, keywords = find_symbols_in_context_hierarchy(find_symbols_in_scope_cursor, point)
 
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
-
-    assert len(returned_user_symbols.keys()) == len(symbols)
-    assert len(returned_keywords.keys()) == len(keywords)
-
-    # check hierarchy levels are correct
-    for symbol, lvl in symbols:
-        assert symbol in returned_user_symbols
-        assert returned_user_symbols[symbol][1] == lvl
-    for keyword, lvl in keywords:
-        assert keyword in returned_keywords
-        assert returned_keywords[keyword][1] == lvl
-
-
-def test_find_symbols_in_associations_hierarchy(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    point = (17, 0)
-
-    # symbols (identifiers + keywords)
-    symbols = [
-        ("a", 0),
-        ("c", 0),
-        ("d", 0),
-        ("e", 0),
-        ("L", 0),
-        ("M", 0),
-        ("Asset1", 0),
-        ("Asset2", 0),
-    ]
-    keywords = [
-        ("info", 1),
-        ("category", 1),
-        ("associations", 1),
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
-
-    assert len(returned_user_symbols.keys()) == len(symbols)
-    assert len(returned_keywords.keys()) == len(keywords)
-
-    # check hierarchy levels are correct
-    for symbol, lvl in symbols:
-        assert symbol in returned_user_symbols
-        assert returned_user_symbols[symbol][1] == lvl
-    for keyword, lvl in keywords:
-        assert keyword in returned_keywords
-        assert returned_keywords[keyword][1] == lvl
-
-
-def test_find_symbols_in_asset1_hierarchy(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    point = (6, 4)
-
-    # symbols (identifiers + keywords)
-    symbols = [
-        ("var", 0),
-        ("c", 0),
-        ("compromise", 0),
-        ("destroy", 0),
-        ("Asset1", 1),
-        ("Asset2", 1),
-        ("Asset3", 1),
-    ]
-    keywords = [
-        ("let", 0),
-        ("extends", 1),
-        ("abstract", 1),
-        ("asset", 1),
-        ("category", 2),
-        ("associations", 2),
-        ("info", 2),
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
-
-    assert len(returned_user_symbols.keys()) == len(symbols)
-    assert len(returned_keywords.keys()) == len(keywords)
+    assert len(user_symbols.keys()) == len(expected_symbols)
+    assert len(keywords.keys()) == len(expected_keywords)
 
     # check hierarchy levels are correct
-    for symbol, lvl in symbols:
-        assert symbol in returned_user_symbols
-        assert returned_user_symbols[symbol][1] == lvl
-    for keyword, lvl in keywords:
-        assert keyword in returned_keywords
-        assert returned_keywords[keyword][1] == lvl
-
-
-def test_find_symbols_in_asset2_hierarchy(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    point = (12, 4)
-
-    # symbols (identifiers + keywords)
-    symbols = [
-        ("destroy", 0),
-        ("Asset1", 1),
-        ("Asset2", 1),
-        ("Asset3", 1),
-    ]
-    keywords = [
-        ("let", 0),
-        ("extends", 1),
-        ("abstract", 1),
-        ("asset", 1),
-        ("category", 2),
-        ("associations", 2),
-        ("info", 2),
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
-
-    assert len(returned_user_symbols.keys()) == len(symbols)
-    assert len(returned_keywords.keys()) == len(keywords)
-
-    # check hierarchy levels are correct
-    for symbol, lvl in symbols:
-        assert symbol in returned_user_symbols
-        assert returned_user_symbols[symbol][1] == lvl
-    for keyword, lvl in keywords:
-        assert keyword in returned_keywords
-        assert returned_keywords[keyword][1] == lvl
-
-
-def test_find_symbols_in_root_node_hierarchy(mal_find_symbols_in_scope):
-    tree = PARSER.parse(mal_find_symbols_in_scope.read())
-
-    point = (0, 0)
-
-    # symbols (identifiers + keywords)
-    symbols = [
-        ("var", -2),
-        ("compromise", -2),
-        ("destroy", -2),
-        ("Asset1", -1),
-        ("Asset2", -1),
-        ("Asset3", -1),
-        ("a", -1),
-        ("d", -1),
-        ("e", -1),
-        ("L", -1),
-        ("M", -1),
-        ("c", -1),
-    ]
-    keywords = [
-        ("let", -2),
-        ("extends", -1),
-        ("abstract", -1),
-        ("asset", -1),
-        ("info", -1),
-        ("category", 0),
-        ("associations", 0),
-    ]
-
-    # we use sets to ensure order does not matter
-    returned_user_symbols, returned_keywords = find_symbols_in_context_hierarchy(tree.walk(), point)
-
-    assert len(returned_user_symbols.keys()) == len(symbols)
-    assert len(returned_keywords.keys()) == len(keywords)
-
-    # check hierarchy levels are correct
-    for symbol, lvl in symbols:
-        assert symbol in returned_user_symbols
-        assert returned_user_symbols[symbol][1] == lvl
-    for keyword, lvl in keywords:
-        assert keyword in returned_keywords
-        assert returned_keywords[keyword][1] == lvl
+    for symbol, lvl in expected_symbols:
+        assert symbol in user_symbols
+        assert user_symbols[symbol][1] == lvl
+    for keyword, lvl in expected_keywords:
+        assert keyword in keywords
+        assert keywords[keyword][1] == lvl
