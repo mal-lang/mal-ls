@@ -1376,7 +1376,7 @@ def find_comments_function(
 
     # sort captures by row
     sorted_comments = sorted(
-        [item for item in captures["comment_node"] if item.start_point.row < start_row],
+        filter(lambda item: item.start_point.row < start_row, captures["comment_node"]),
         key=lambda item: item.start_point.row,
     )
 
