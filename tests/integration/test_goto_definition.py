@@ -3,7 +3,10 @@ import typing
 
 import pytest
 
-from ..util import build_rpc_message_stream, get_lsp_json, server_output
+from ..fixtures.lsp.goto_definition import FixtureCallback
+from ..util import get_lsp_json, server_output
+
+pytest_plugins = ["tests.fixtures.lsp.goto_definition"]
 
 # Test parameters
 mal_find_symbols_in_scope_points = zip(
@@ -103,77 +106,6 @@ goto_expected_location_and_files = [
 find_symbols_in_scope_expected_results = list(
     zip(goto_input_location_and_files, goto_expected_location_and_files)
 )
-
-# Fixtures
-type FixtureCallback[T] = typing.Callable[[str, typing.BinaryIO, (int, int)], T]
-
-
-@pytest.fixture
-def open_document_notification(
-    client_notifications: list[dict], client_messages: list[dict]
-) -> FixtureCallback[dict]:
-    def make(uri: str, file: typing.BinaryIO, _location) -> dict:
-        message = {
-            "jsonrpc": "2.0",
-            "method": "textDocument/didOpen",
-            "params": {
-                "textDocument": {
-                    "uri": uri,
-                    "languageId": "mal",
-                    "version": 0,
-                    "text": file.read().decode("utf8"),
-                }
-            },
-        }
-        client_notifications.append(message)
-        client_messages.append(message)
-        return message
-
-    return make
-
-
-@pytest.fixture
-def definition_request(
-    client_requests: list[dict], client_messages: list[dict]
-) -> FixtureCallback[dict]:
-    def make(uri: str, _file, location: (int, int)) -> dict:
-        line, char = location
-        message = {
-            "id": len(client_requests),
-            "jsonrpc": "2.0",
-            "method": "textDocument/definition",
-            "params": {
-                "textDocument": {
-                    "uri": uri,
-                },
-                "position": {
-                    "line": line,
-                    "character": char,
-                },
-            },
-        }
-        client_requests.append(message)
-        client_messages.append(message)
-        return message
-
-    return make
-
-
-@pytest.fixture
-def goto_definition_client_messages(
-    client_messages: list[dict],
-    initalize_request,
-    initalized_notification,
-    open_document_notification: FixtureCallback[dict],
-    definition_request: FixtureCallback[dict],
-) -> FixtureCallback[typing.BinaryIO]:
-    def make(uri: str, file: typing.BinaryIO, location: (int, int)) -> typing.BinaryIO:
-        args = (uri, file, location)
-        open_document_notification(*args)
-        definition_request(*args)
-        return build_rpc_message_stream(client_messages)
-
-    return make
 
 
 def parameter_id(argvalue: (((int, int), str), ((int, int), str))) -> object:

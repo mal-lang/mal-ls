@@ -1,14 +1,8 @@
 import typing
-from pathlib import Path
 
 from malls.lsp.enums import DiagnosticSeverity
 
 from ..util import get_lsp_json, server_output
-
-# calculate file path of mal files
-FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
-simplified_file_path = FILE_PATH + "main.mal"
-included_file_path = FILE_PATH + "file_with_error.mal"
 
 pytest_plugins = ["tests.fixtures.lsp.publish_diagnostics"]
 
