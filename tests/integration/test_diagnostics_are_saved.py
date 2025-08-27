@@ -1,53 +1,45 @@
-import typing
-from pathlib import Path
+import pytest
 
 from malls.lsp.enums import DiagnosticSeverity
 
 from ..util import server_output
 
-# calculate file path of mal files
-FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
-simplified_file_path = FILE_PATH + "main.mal"
-included_file_path = FILE_PATH + "file_with_error.mal"
+pytest_plugins = ["tests.fixtures.lsp.publish_diagnostics"]
 
+parameters = [("erroneous_file_client_messages",
+               "mal_erroneous_uri",
+               DiagnosticSeverity.Error),
+              ("erroenous_include_and_file_with_error_client_messages",
+               "mal_file_with_error_uri",
+               DiagnosticSeverity.Error),
+              ("change_file_with_error_client_messages",
+               "mal_base_open_uri",
+               DiagnosticSeverity.Error)]
+parameter_ids = ["erroneous_file",
+                 "erroneous_include_file",
+                 "change_file_with_error"]
 
-def test_open_file_with_error(
-    open_file_with_error: typing.BinaryIO,
-):
-    # send to server
-    output, ls, *_ = server_output(open_file_with_error)
+@pytest.mark.parametrize(
+        "messages_fixture_name,uri_fixture_name,error_level",
+        parameters,
+        ids=parameter_ids)
+def test_open_file(request: pytest.FixtureRequest,
+                   messages_fixture_name: str,
+                   uri_fixture_name: str,
+                   error_level: DiagnosticSeverity):
+    input = request.getfixturevalue(messages_fixture_name)
+    uri = request.getfixturevalue(uri_fixture_name)
 
-    # Ensure LSP stored everything correctly
-    assert len(ls.diagnostics) == 1
-    assert len(ls.diagnostics[simplified_file_path]) == 1
-    assert ls.diagnostics[simplified_file_path][0]["severity"] == DiagnosticSeverity.Error
+    # since Document acts inconsistent with URIs
+    uri = uri[len("file://"):]
 
-    output.close()
-
-
-def test_open_file_with_include_error(
-    open_file_with_include_error: typing.BinaryIO,
-):
-    # send to server
-    output, ls, *_ = server_output(open_file_with_include_error)
-
-    # Ensure LSP stored everything correctly
-    assert len(ls.diagnostics) == 1
-    assert len(ls.diagnostics[included_file_path]) == 1
-    assert ls.diagnostics[included_file_path][0]["severity"] == DiagnosticSeverity.Error
-
-    output.close()
-
-
-def test_change_file_with_error(
-    change_file_with_error: typing.BinaryIO,
-):
-    # send to server
-    output, ls, *_ = server_output(change_file_with_error)
+   # send to server
+    output, ls, *_ = server_output(input)
 
     # Ensure LSP stored everything correctly
     assert len(ls.diagnostics) == 1
-    assert len(ls.diagnostics[simplified_file_path]) == 1
-    assert ls.diagnostics[simplified_file_path][0]["severity"] == DiagnosticSeverity.Error
+    assert uri in ls.diagnostics
+    assert len(ls.diagnostics[uri]) == 1
+    assert ls.diagnostics[uri][0]["severity"] == error_level
 
     output.close()
