@@ -84,7 +84,7 @@ def did_change_with_error_notification(
         "contentChanges": [
             {
                 "range": {
-                    "start": {"line": 5, "character": 6},
+                    "start": {"line": 5, "character": 10},
                     "end": {"line": 6, "character": 0},
                 },
                 "text": "FooFoo extds Foo {}\n",

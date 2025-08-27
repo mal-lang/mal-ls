@@ -89,7 +89,7 @@ def test_diagnostics_when_changing_file_with_error(
     assert len(params["diagnostics"]) == 1
 
     start_point = params["diagnostics"][0]["range"]["start"]
-    assert (start_point["line"], start_point["character"]) == (5, 13)
+    assert (start_point["line"], start_point["character"]) == (5, 17)
     assert params["diagnostics"][0]["severity"] == DiagnosticSeverity.Error
 
     output.close()
