@@ -67,3 +67,17 @@ for directory, _, files in os.walk("tests/fixtures"):
         )
 
         setattr(module, fixture_name + "_uri", uri_fixture)
+
+TESTS_ROOT = Path(__file__).parent
+
+@pytest.fixture
+def tests_root() -> Path:
+    return TESTS_ROOT
+
+@pytest.fixture
+def mal_root(tests_root: Path) -> Path:
+    return tests_root.joinpath("fixtures", "mal")
+
+@pytest.fixture
+def mal_root_str(mal_root: Path) -> str:
+    return str(mal_root)
