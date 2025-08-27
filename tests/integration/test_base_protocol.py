@@ -1,12 +1,9 @@
-import logging
 import typing
 
 from malls.lsp.enums import ErrorCodes
 from malls.lsp.fsm import LifecycleState
 
 from ..util import get_lsp_json, server_output
-
-log = logging.getLogger(__name__)
 
 pytest_plugins = ["tests.fixtures.lsp.base_protocol"]
 

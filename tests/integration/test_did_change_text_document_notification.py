@@ -1,5 +1,4 @@
 import json
-import logging
 import typing
 from pathlib import Path
 
@@ -8,7 +7,6 @@ from tree_sitter import Language, Parser
 
 from ..util import server_output
 
-log = logging.getLogger(__name__)
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 

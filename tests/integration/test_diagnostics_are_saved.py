@@ -1,12 +1,9 @@
-import logging
 import typing
 from pathlib import Path
 
 from malls.lsp.enums import DiagnosticSeverity
 
 from ..util import server_output
-
-log = logging.getLogger(__name__)
 
 # calculate file path of mal files
 FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"

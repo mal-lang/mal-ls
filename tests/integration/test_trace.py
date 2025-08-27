@@ -1,11 +1,8 @@
-import logging
 import typing
 
 from malls.lsp.enums import ErrorCodes, TraceValue
 
 from ..util import get_lsp_json, server_output
-
-log = logging.getLogger(__name__)
 
 
 def test_wrong_trace_value_in_initialization(wrong_trace_value_in: typing.BinaryIO):

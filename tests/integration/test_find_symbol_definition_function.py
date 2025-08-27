@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 import pytest
@@ -9,7 +8,6 @@ from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
 from malls.ts.utils import INCLUDED_FILES_QUERY, find_symbol_definition, run_query
 
-log = logging.getLogger(__name__)
 MAL_LANGUAGE = Language(ts_mal.language())
 PARSER = Parser(MAL_LANGUAGE)
 FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"

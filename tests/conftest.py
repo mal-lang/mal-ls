@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
 
 module = sys.modules[__name__]
 # Generate pytest fixtures from all fixture files in 'fixtures' and its subdirectories
