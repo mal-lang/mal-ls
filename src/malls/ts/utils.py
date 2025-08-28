@@ -1162,7 +1162,7 @@ def find_meta_comment_category_declaration(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1174,7 +1174,7 @@ def find_meta_comment_asset_declaration(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1186,7 +1186,7 @@ def find_meta_comment_attack_step(node: Node) -> list:
     """
     meta_info = []
     for children in node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1209,7 +1209,7 @@ def find_meta_comment_asset_variable(
 
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1252,7 +1252,7 @@ def find_meta_comment_asset_variable_subsitution(
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1275,7 +1275,7 @@ def find_meta_comment_asset_expr(
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in asset.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1299,7 +1299,7 @@ def find_meta_comment_association(
     # otherwise get the meta corresponding to that asset
     meta_info = []
     for children in result_node.children_by_field_name("meta"):
-        meta_info.append(children.child_by_field_name("info").text.strip(b'"'))
+        meta_info.append(children)
 
     return meta_info
 
@@ -1380,7 +1380,7 @@ def find_comments_function(
         key=lambda item: item.start_point.row,
     )
 
-    comments = [sorted_comments[0].text]
+    comments = [sorted_comments[0]]
     previous_row = sorted_comments[0].end_point.row
 
     for comment_node in sorted_comments[1:]:
@@ -1389,11 +1389,11 @@ def find_comments_function(
         # if the comment is in a consecutive row,
         # we keep it
         if current_row == previous_row + 1:
-            comments.append(comment_node.text)
+            comments.append(comment_node)
             previous_row = current_row  # update row
         else:
             # otherwise, restart the count
-            comments = [comment_node.text]
+            comments = [comment_node]
             previous_row = comment_node.end_point.row
 
     return comments if previous_row == start_row - 1 else []

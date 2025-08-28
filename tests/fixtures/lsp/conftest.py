@@ -129,6 +129,7 @@ def initalize_response(
                 "textDocumentSync": {"openClose": True, "change": 1},
                 "definitionProvider": True,
                 "completionProvider": {},
+                "hoverProvider": True,
             },
             # TODO: Replace with values from an actual server instance (e.g. via instance.server_info())  # noqa: E501
             "serverInfo": {"name": "mal-ls"},

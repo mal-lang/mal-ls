@@ -55,6 +55,8 @@ def test_find_comments_for_symbol_function(mal_find_comments_for_symbol_function
     assert cursor.node.type == "identifier"
 
     # we use sets to ensure order does not matter
-    returned_comments = find_comments_function(cursor.node, cursor.node.text, doc_uri, storage)
+    returned_comments = [
+        x.text for x in find_comments_function(cursor.node, cursor.node.text, doc_uri, storage)
+    ]
 
     assert set(returned_comments) == set(comments)
