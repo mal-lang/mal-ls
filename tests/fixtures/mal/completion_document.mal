@@ -3,19 +3,20 @@
 
 category Example {
 
-    abstract asset Asset1 
+    abstract asset Asset1
     {
-      let var = c
+        let var = c
         | compromise
-        -> var.destroy
+            -> var.destroy
     }
     asset Asset2 extends Asset3
     {
         | destroy
     }
 }
-associations 
+associations
 {
-    Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
+    Asset1 [a] * <-- L --> * [c] Asset2
     Asset2 [d] 1 <-- M --> 1 [e] Asset2
 }
+

@@ -1,43 +1,55 @@
-from pathlib import Path
+import typing
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
+from tree_sitter import Parser, Tree
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
 from malls.ts.utils import INCLUDED_FILES_QUERY, find_meta_comment_function, run_query
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
-FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
-
 parameters = [
-    ((3, 12), [b"dev cat", b"mod cat"]),
-    ((8, 22), [b"dev asset", b"mod asset"]),
-    ((13, 13), [b"dev attack_step", b"mod attack_step"]),
-    ((12, 18), [b"dev asset3", b"mod asset3"]),
-    ((16, 12), [b"dev asset3", b"mod asset3"]),
-    ((19, 15), [b"dev asset4", b"mod asset4"]),
-    ((20, 20), [b"dev asset5", b"mod asset5"]),
-    ((20, 28), [b"dev attack_step_5", b"mod attack_step_5"]),
-    ((54, 12), [b"some info"]),
-    ((54, 21), [b"some info"]),
-    ((57, 37), [b"dev asset4", b"mod asset4"]),
+    ((3, 12), {b"dev cat", b"mod cat"}),
+    ((8, 22), {b"dev asset", b"mod asset"}),
+    ((13, 13), {b"dev attack_step", b"mod attack_step"}),
+    ((12, 18), {b"dev asset3", b"mod asset3"}),
+    ((16, 12), {b"dev asset3", b"mod asset3"}),
+    ((19, 15), {b"dev asset4", b"mod asset4"}),
+    ((20, 20), {b"dev asset5", b"mod asset5"}),
+    ((20, 28), {b"dev attack_step_5", b"mod attack_step_5"}),
+    ((54, 12), {b"some info"}),
+    ((54, 21), {b"some info"}),
+    ((57, 37), {b"dev asset4", b"mod asset4"}),
 ]
 
 
+@pytest.fixture
+def find_meta_comment_data(mal_find_meta_comment_function: typing.BinaryIO) -> bytes:
+    return mal_find_meta_comment_function.read()
+
+
+@pytest.fixture
+def find_meta_comment_tree(utf8_mal_parser: Parser, find_meta_comment_data: bytes) -> Tree:
+    return utf8_mal_parser.parse(find_meta_comment_data)
+
+
 @pytest.mark.parametrize(
-    "point,comments",
+    "point,expected_comments",
     parameters,
 )
-def test_find_meta_comment_function(mal_find_meta_comment_function, point, comments):
+def test_find_meta_comment_function(
+    mal_root_str: str,
+    mal_find_meta_comment_function_uri: str,
+    find_meta_comment_data: bytes,
+    find_meta_comment_tree: Tree,
+    point: (int, int),
+    expected_comments: list[bytes],
+):
     # build the storage (mimicks the file parsing in the server)
     storage = {}
 
-    doc_uri = FILE_PATH + "find_meta_comment_function.mal"
-    source_encoded = mal_find_meta_comment_function.read()
-    tree = PARSER.parse(source_encoded)
+    doc_uri = mal_find_meta_comment_function_uri
+    source_encoded = find_meta_comment_data
+    tree = find_meta_comment_tree
 
     storage[doc_uri] = Document(tree, source_encoded, doc_uri)
 
@@ -46,7 +58,7 @@ def test_find_meta_comment_function(mal_find_meta_comment_function, point, comme
 
     captures = run_query(root_node, INCLUDED_FILES_QUERY)
     if "file_name" in captures:
-        recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri, [])
+        recursive_parsing(mal_root_str, captures["file_name"], storage, doc_uri, [])
 
     ###################################
 
@@ -59,6 +71,6 @@ def test_find_meta_comment_function(mal_find_meta_comment_function, point, comme
     assert cursor.node.type == "identifier"
 
     # we use sets to ensure order does not matter
-    returned_comments = find_meta_comment_function(cursor.node, cursor.node.text, doc_uri, storage)
+    comments = find_meta_comment_function(cursor.node, cursor.node.text, doc_uri, storage)
 
-    assert set(returned_comments) == set(comments)
+    assert set(comments) == expected_comments

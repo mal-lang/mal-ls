@@ -44,7 +44,7 @@ def recursive_parsing(
 
     while captures:
         # build file path
-        file_name = uri_prec + captures.pop(0).text.decode().strip('"')
+        file_name = os.path.join(uri_prec, captures.pop(0).text.decode().strip('"'))
 
         # if the file has already been processed, ignore it
         # (this can happen if file A was opened with a didOpen notification

@@ -1,0 +1,4 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+include "file_with_error.mal"

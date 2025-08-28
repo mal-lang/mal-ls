@@ -1,14 +1,229 @@
 import asyncio
+import glob
 import io
 import json
+import os
 import typing
+from os import path
 from pathlib import Path
 
+import pytest
+import uritools
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.exceptions import JsonRpcException
 from pylsp_jsonrpc.streams import JsonRpcStreamReader
 
 from malls.mal_lsp import MALLSPServer
+
+
+def find_last_request(
+    requests: list[dict], condition: typing.Callable[[dict], bool] | str, default=None
+) -> dict:
+    """
+    Searches through the list of requests in reverse order and returns first (logically last)
+    element fulfilling the condition. If condition is a string, then it finds the last request
+    with the method matching the string.
+
+    If none are found an error is raised unless a default is provided, which is returned instead.
+    """
+    if isinstance(condition, str):
+        method_name = condition
+
+        def condition(request: dict) -> bool:
+            request.get("method") == method_name
+
+    return next(filter(condition, reversed(requests)), default)
+
+
+def fixture_name_from_file(
+    file_name: str | Path,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> str:
+    """
+    Compute the name of a fixture based on its file path.
+
+    Params:
+        - `file_name`: A Path or str of the fixture.
+        - `extension_renaming`: A function that takes in a string and outputs a string or
+                                a dictionary mapping strings to strings, input will always
+                                be the extension of the file. Default is to map to nothing.
+        - `root_folder`: A root folder pattern. If supplied, anything up to and including
+                         this value will be ignored when outputting the name. A following
+                         slash will also be ignored.
+    """
+    # Default extension naming is none
+    if extension_renaming is None:
+
+        def extension_renaming(x: str):
+            return ""
+
+    # If a dictionary was provided, alias it as a function call to make it consistent with function
+    # usage. If key/extension not present, default to no extension naming.
+    if extension_renaming is dict:
+
+        def extension_renaming(x: str):
+            return extension_renaming.get(x, "")
+
+    # Default to handling of strings
+    if isinstance(file_name, Path):
+        file_name = str(file_name)
+
+    # If a ignore prefix was given, find it and only care for anything after it
+    # (on top of subsequent slash)
+    if root_folder:
+        post_prefix_index = file_name.find(root_folder)
+        file_name = file_name[post_prefix_index + len(root_folder) + 1 :]
+
+    extension_dot_index = file_name.rindex(".")
+    extension = file_name[extension_dot_index + 1 :]
+    # Remove extension, e.g: .http/.lsp/.mal
+    fixture_name = file_name[:extension_dot_index]
+    # Replace dots with underscore, e.g: empty.out -> empty_out
+    fixture_name = fixture_name.replace(".", "_")
+    # Add subdirectory path as prefix if there was one
+    # Replace directory delimiters with underscores
+    fixture_name = fixture_name.replace("/", "_").replace("\\", "_")
+    # Add possible extension name
+    if extension := extension_renaming(extension):
+        fixture_name += "_" + extension
+
+    return fixture_name
+
+
+def load_file_as_fixture(
+    path: str | Path,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> (typing.Callable, str, typing.Callable, str):
+    """
+    Load the raw contents of a file as a fixture and its name, accompanied by uri as fixture and
+    its name.
+
+    Shares options with `fixture_name_from_file`.
+    """
+
+    # Generate a function that handles openening/closing of the file for fixture purposes.
+    def open_fixture_file(file: str):
+        def template() -> typing.BinaryIO:
+            """Opens a fixture in (r)ead (b)inary mode. See `open` for more details."""
+
+            with open(file, "rb") as file_descriptor:
+                yield file_descriptor
+
+            return template
+
+    def fixture_uri(file_path: str | Path):
+        uri = uritools.uricompose(scheme="file", path=str(file_path))
+
+        def template() -> str:
+            return uri
+
+    fixture_name = fixture_name_from_file(
+        path, extension_renaming=extension_renaming, root_folder=root_folder
+    )
+
+    fixture = pytest.fixture(
+        open_fixture_file(path),
+        name=fixture_name,
+    )
+
+    uri_fixture_name = fixture_name + "_uri"
+
+    uri_fixture = pytest.fixture(fixture_uri(Path(path).absolute()), name=uri_fixture_name)
+
+    return fixture, fixture_name, uri_fixture, uri_fixture_name
+
+
+def load_fixture_file_into_module(
+    path: str | Path,
+    module,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+    root_folder: str | None = None,
+) -> None:
+    """
+    Load the raw contents of a file as a fixture into the provided module.
+
+    Shares options with `fixture_name_from_file`.
+    """
+    fixture, fixture_name, *_ = load_file_as_fixture(
+        path, extension_renaming=extension_renaming, root_folder=root_folder
+    )
+    setattr(module, fixture_name, fixture)
+
+
+def load_directory_files_as_fixtures(
+    dir_path: str | Path,
+    extension: str | None = None,
+    extension_renaming: typing.Callable[[str], str] | dict[str, str] | None = None,
+) -> [(typing.Callable, str, typing.Callable, str)]:
+    """
+    Loads all file contents in a given directory, aside from .py, and their URI's as fixtures,
+    using `load_file_as_fixture`.
+
+    Shares option `extension_renaming` with `fixture_name_from_file`.
+    """
+    if isinstance(dir_path, Path):
+        dir_path = str(dir_path.absolute())
+    # Find all files in the directory with the extension, or if none is provided
+    # all non-python files
+    if extension:
+        # Glob find all files matching the extension in the given directory
+        files = glob.iglob(path.join(dir_path, f"*.{extension}"))
+    else:
+        # Filter all entries in the directory to non-python files
+        def non_python_file(entry: os.DirEntry) -> bool:
+            return entry.is_file() and not entry.path.endswith(".py")
+
+        file_entries = os.scandir(dir_path)
+        non_python_file_entries = filter(non_python_file, file_entries)
+        files = (entry.path for entry in non_python_file_entries)
+
+    # Concat the file names with the directory to get relative to root path
+    # then load the file as a fixture, getting the name and absolute path in the process
+    file_paths = (path.join(dir_path, file) for file in files)
+    fixture_name_paths = (load_file_as_fixture(path, root_folder=dir_path) for path in file_paths)
+    return list(fixture_name_paths)
+
+
+CONTENT_TYPE_HEADER = b"Content-Type: application/vscode-jsonrpc; charset=utf8"
+
+
+def build_rpc_message_stream(
+    messages: list[dict],
+    insert_header: typing.Callable[[dict, list[dict]], bytes | str] | bytes | str | None = None,
+) -> io.BytesIO:
+    buffer = io.BytesIO()
+    for message in messages:
+        # get the length of the payload (+1 for the newline)
+        json_string = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
+        json_payload = json_string.encode("utf-8")
+        payload_size = str(len(json_payload))
+
+        # write payload size
+        buffer.write(b"Content-Length: ")
+        buffer.write(payload_size.encode())
+
+        # Handle the setting of insert_header (fn, str, or bytes)
+        if insert_header is not None:
+            # Put header on new line
+            buffer.write(b"\r\n")
+            header = insert_header
+            # If insert_header is a callback function, evaluate it for the current
+            # message and total list of messages
+            if callable(insert_header):
+                header = insert_header(message, messages)
+            # Encode strings into bytes
+            if isinstance(insert_header, str):
+                header = insert_header.encode("utf-8")
+            # Insert header
+            buffer.write(header)
+
+        # Write header separator and payload
+        buffer.write(b"\r\n\r\n")
+        buffer.write(json_payload)
+    buffer.seek(0)
+    return buffer
 
 
 def build_payload(to_include: list):
@@ -119,414 +334,3 @@ def server_output(
         raise e
 
     return intermediary, ls, time_out_err
-
-
-######################
-# Pre-built payloads #
-######################
-
-# create fake uri for the MAL file being parsed
-# (won't be used by the server, so there is no issue if the file does not actually exist)
-FILE_PATH = str(Path(__file__).parent.resolve()) + "/fixtures/mal/"
-main_simplified_file_path = FILE_PATH + "main.mal"
-main_file_path = filepath_to_uri(main_simplified_file_path)
-find_symbols_in_scope_path = filepath_to_uri(FILE_PATH + "find_symbols_in_scope.mal")
-
-BASE_OPEN_FILE = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
-            + "System {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n",
-        }
-    },
-}
-
-OPEN_FILE_WITH_INCLUDED_FILE = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
-            \ninclude "find_current_scope_function.mal"\ncategory System\
-            {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
-        }
-    },
-}
-
-OPEN_FILE_WITH_FAKE_INCLUDE = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
-            \ninclude "random_file_that_does_not_exist.mal"\ncategory System\
-            {\nabstract asset Foo {}\nasset Bar extends Foo {}\n}\n\n',
-        }
-    },
-}
-
-CHANGE_FILE_1 = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "range": {
-                    "start": {"line": 5, "character": 6},
-                    "end": {"line": 6, "character": 0},
-                },
-                "text": "FooFoo extends Foo {}\n",
-            }
-        ],
-    },
-}
-
-CHANGE_FILE_2 = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "range": {
-                    "start": {"line": 4, "character": 15},
-                    "end": {"line": 5, "character": 24},
-                },
-                "text": "Bar {}\nasset Foo extends Bar {}",
-            }
-        ],
-    },
-}
-
-CHANGE_FILE_3 = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "range": {
-                    "start": {"line": 7, "character": 0},
-                    "end": {"line": 9, "character": 0},
-                },
-                "text": "\nassociations {\n}\n",
-            }
-        ],
-    },
-}
-
-CHANGE_FILE_4 = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "range": {
-                    "start": {"line": 4, "character": 15},
-                    "end": {"line": 5, "character": 24},
-                },
-                "text": "Bar {}\nasset Foo extends Bar {}",
-            },
-            {
-                "range": {
-                    "start": {"line": 5, "character": 6},
-                    "end": {"line": 5, "character": 9},
-                },
-                "text": "Qux",
-            },
-        ],
-    },
-}
-
-CHANGE_FILE_5 = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "text": '#id: "a.b.c"\n',
-            }
-        ],
-    },
-}
-
-
-def build_goto_definition_payload(text: str, uri: str, line: int, char: int, name: str):
-    open_message = {
-        "jsonrpc": "2.0",
-        "method": "textDocument/didOpen",
-        "params": {
-            "textDocument": {
-                "uri": main_file_path,
-                "languageId": "mal",
-                "version": 0,
-                "text": text,
-            }
-        },
-    }
-    goto_message = {
-        "id": 1,
-        "jsonrpc": "2.0",
-        "method": "textDocument/definition",
-        "params": {
-            "textDocument": {
-                "uri": uri,
-            },
-            "position": {
-                "line": line,
-                "character": char,
-            },
-        },
-    }
-    return ([open_message, goto_message], name)
-
-
-mal_find_symbols_in_scope_points = [
-    (3, 12, "goto_def_1"),  # category_declaration
-    (11, 10, "goto_def_2"),  # asset declaration, asset name
-    (7, 10, "goto_def_3"),  # asset variable
-    (8, 10, "goto_def_4"),  # attack step
-]
-mal_symbol_def_extended_asset_main_points = [
-    (6, 25, "goto_def_5"),  # asset declaration, extended asset
-    (9, 11, "goto_def_6"),  # variable call
-]
-mal_symbol_def_variable_call_extend_chain_main_points = [
-    (9, 11, "goto_def_7")  # variable call, extend chain
-]
-symbol_def_variable_declaration_main_points = [
-    (10, 20, "goto_def_8"),  # variable declaration
-    (17, 21, "goto_def_9"),  # variable declaration, extended asset
-    (21, 36, "goto_def_10"),  # variable declaration complex 1
-    (22, 36, "goto_def_11"),  # variable declaration complex 2
-    (26, 6, "goto_def_12"),  # association asset name 1
-    (27, 37, "goto_def_13"),  # association asset name 2
-    (28, 12, "goto_def_14"),  # association field name 1
-    (28, 32, "goto_def_15"),  # association field name 2
-    (30, 22, "goto_def_16"),  # link name
-]
-mal_symbol_def_preconditions_points = [
-    (11, 15, "goto_def_17"),  # preconditions
-    (19, 13, "goto_def_18"),  # preconditions extended asset
-    (24, 28, "goto_def_19"),  # preconditions complex 1
-    (26, 28, "goto_def_20"),  # preconditions complex 1
-]
-mal_symbol_def_reaches_points = [
-    (13, 22, "goto_def_21"),  # reaches
-    (14, 14, "goto_def_22"),  # reaches single attack step
-    (10, 7, "goto_def_23"),  # random non-user defined symbol
-]
-GOTO_DEFINITION_PAYLOADS = (
-    [
-        build_goto_definition_payload(
-            'include "find_symbols_in_scope.mal"', find_symbols_in_scope_path, line, char, name
-        )
-        for (line, char, name) in mal_find_symbols_in_scope_points
-    ]
-    + [
-        build_goto_definition_payload(
-            'include "symbol_def_extended_asset_main.mal"',
-            filepath_to_uri(FILE_PATH + "symbol_def_extended_asset_main.mal"),
-            line,
-            char,
-            name,
-        )
-        for (line, char, name) in mal_symbol_def_extended_asset_main_points
-    ]
-    + [
-        build_goto_definition_payload(
-            'include "symbol_def_variable_call_extend_chain_main.mal"',
-            filepath_to_uri(FILE_PATH + "symbol_def_variable_call_extend_chain_main.mal"),
-            line,
-            char,
-            name,
-        )
-        for (line, char, name) in mal_symbol_def_variable_call_extend_chain_main_points
-    ]
-    + [
-        build_goto_definition_payload(
-            'include "symbol_def_variable_declaration_main.mal"',
-            filepath_to_uri(FILE_PATH + "symbol_def_variable_declaration_main.mal"),
-            line,
-            char,
-            name,
-        )
-        for (line, char, name) in symbol_def_variable_declaration_main_points
-    ]
-    + [
-        build_goto_definition_payload(
-            'include "symbol_def_preconditions.mal"',
-            filepath_to_uri(FILE_PATH + "symbol_def_preconditions.mal"),
-            line,
-            char,
-            name,
-        )
-        for (line, char, name) in mal_symbol_def_preconditions_points
-    ]
-    + [
-        build_goto_definition_payload(
-            'include "symbol_def_reaches.mal"',
-            filepath_to_uri(FILE_PATH + "symbol_def_reaches.mal"),
-            line,
-            char,
-            name,
-        )
-        for (line, char, name) in mal_symbol_def_reaches_points
-    ]
-)
-
-OPEN_FILE_WITH_ERROR = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\n\ncategory '
-            + "System {\nabstract aet Foo {}\nasset Bar extends Foo {}\n}\n\n",
-        }
-    },
-}
-
-OPEN_FILE_WITH_INCLUDE_WITH_ERROR = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": '#id: "org.mal-lang.testAnalyzer"\n#version:"0.0.0"\
-            \ninclude "file_with_error.mal"',
-        }
-    },
-}
-
-file_with_error_path = filepath_to_uri(FILE_PATH + "file_with_error.mal")
-OPEN_INCLUDED_FILE_WITH_ERROR = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didOpen",
-    "params": {
-        "textDocument": {
-            "uri": file_with_error_path,
-            "languageId": "mal",
-            "version": 0,
-            "text": "class Category {\n    Asset1 {}\n  }\n",
-        }
-    },
-}
-
-CHANGE_FILE_WITH_ERROR = {
-    "jsonrpc": "2.0",
-    "method": "textDocument/didChange",
-    "params": {
-        "textDocument": {
-            "uri": main_file_path,
-            "version": 1,
-        },
-        "contentChanges": [
-            {
-                "range": {
-                    "start": {"line": 5, "character": 6},
-                    "end": {"line": 6, "character": 0},
-                },
-                "text": "FooFoo extds Foo {}\n",
-            }
-        ],
-    },
-}
-
-
-def build_completion_payload(line, character, name):
-    open = {
-        "jsonrpc": "2.0",
-        "method": "textDocument/didOpen",
-        "params": {
-            "textDocument": {
-                "uri": find_symbols_in_scope_path,
-                "languageId": "mal",
-                "version": 0,
-                "text": """#id: "org.mal-lang.testAnalyzer"
-#version:"0.0.0"
-
-    category Example {
-
-        abstract asset Asset1
-        {
-        let var = c
-            | compromise
-            -> var.destroy
-        }
-        asset Asset2 extends Asset3
-        {
-            | destroy
-        }
-    }
-    associations
-    {
-        Asset1 [a] * <-- L --> * [c] Asset2
-        Asset2 [d] 1 <-- M --> 1 [e] Asset2
-    }
-    """,
-            }
-        },
-    }
-
-    completion_list = {
-        "id": 1,
-        "jsonrpc": "2.0",
-        "method": "textDocument/completion",
-        "params": {
-            "textDocument": {
-                "uri": find_symbols_in_scope_path,
-            },
-            "position": {
-                "line": line,
-                "character": character,
-            },
-        },
-    }
-
-    return ([open, completion_list], name)
-
-
-completion_items = [
-    (4, 0, "completion_category"),
-    (18, 0, "completion_associations"),
-    (7, 0, "completion_asset1"),
-    (13, 0, "completion_asset2"),
-    (0, 0, "completion_root_node"),
-]
-COMPLETION_PAYLOADS = [
-    build_completion_payload(line, char, name) for line, char, name in completion_items
-]
