@@ -151,7 +151,7 @@ def sanitize_comment(comment: str):
 def build_markdown_comments(comments: list[Node]):
     markdown = ""
     for comment in comments:
-        markdown += f"- {sanitize_comment(comment.text.decode())}\n"
+        markdown += f"{sanitize_comment(comment.text.decode())}\n"
     return markdown
 
 
