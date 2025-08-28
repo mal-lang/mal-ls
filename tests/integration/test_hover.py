@@ -5,65 +5,18 @@ import pytest
 
 from ..util import build_rpc_message_stream, get_lsp_json, server_output
 
-pytest_plugins = ["tests.fixtures.lsp.conftest"]
-
-comments_in_category = {
-    "comments": ["// category comment"],
-    "meta": {
-        "developer": '"dev cat"',
-        "modeler": '"mod cat"',
-    },
-}
-comments_in_asset_1 = {
-    "comments": ["// asset1 comment"],
-    "meta": {"developer": '"dev asset"', "modeler": '"mod asset"'},
-}
-comments_in_attack_step1 = {
-    "comments": ["// attack_step comment"],
-    "meta": {"developer": '"dev attack_step"', "modeler": '"mod attack_step"'},
-}
-comments_in_attack_step2 = {"comments": ["// attack_step comment2"], "meta": {}}
-comments_in_asset_3 = {
-    "comments": ["// asset3 comment"],
-    "meta": {"developer": '"dev asset3"', "modeler": '"mod asset3"'},
-}
-comments_in_asset_2 = {"comments": ["// asset2 comment"], "meta": {}}
-comments_in_asset_4 = {
-    "comments": [],
-    "meta": {"developer": '"dev asset4"', "modeler": '"mod asset4"'},
-}
-comments_in_asset_5 = {
-    "comments": [
-        """/*
-     * MULTI-LINE
-     */"""
-    ],
-    "meta": {"developer": '"dev asset5"', "modeler": '"mod asset5"'},
-}
-comments_in_attack_step3 = {
-    "comments": ["// attack_step comment3"],
-    "meta": {"developer": '"dev attack_step_5"', "modeler": '"mod attack_step_5"'},
-}
-comments_in_association = {
-    "comments": ["// association1 comment"],
-    "meta": {
-        "developer": '"some info"',
-    },
-}
-comments_in_association2 = {"comments": ["// association2 comment"], "meta": {}}
-
 parameters = [
-    ((6, 11), comments_in_category),
-    ((13, 20), comments_in_asset_1),
-    ((19, 15), comments_in_attack_step1),
-    ((25, 12), comments_in_attack_step2),
-    ((33, 7), comments_in_asset_3),
-    ((41, 13), comments_in_asset_2),
-    ((46, 13), comments_in_asset_4),
-    ((56, 13), comments_in_asset_5),
-    ((61, 13), comments_in_attack_step3),
-    ((71, 21), comments_in_association),
-    ((73, 21), comments_in_association2),
+    (6, 11),
+    (13, 20),
+    (19, 15),
+    (25, 12),
+    (33, 7),
+    (41, 13),
+    (46, 13),
+    (56, 13),
+    (61, 13),
+    (71, 21),
+    (73, 21),
 ]
 
 parameter_names = [
@@ -79,9 +32,6 @@ parameter_names = [
     "comments_in_association",
     "comments_in_association2",
 ]
-
-pytest_plugins = ["tests.fixtures.mal"]
-
 
 def sanitize_comment(comment: str):
     sanitized_comment = ""
@@ -175,12 +125,14 @@ def hover_client_messages(
     return make
 
 
-@pytest.mark.parametrize("location,comments", parameters, ids=parameter_names)
+@pytest.mark.parametrize("location,markdown_file", zip(parameters,parameter_names), ids=parameter_names)
 def test_hover(
+    request: pytest.FixtureRequest,
     location: (int, int),
-    comments: dict,
+    markdown_file: str,
     hover_client_messages: typing.Callable[[(int, int)], io.BytesIO],
 ):
+    file_fixture: typing.BinaryIO = request.getfixturevalue(f"markdown_{markdown_file}")
     # send to server
     fixture = hover_client_messages(location)
     output, *_ = server_output(fixture)
@@ -189,6 +141,6 @@ def test_hover(
     response = get_lsp_json(output)
     response = get_lsp_json(output)
 
-    assert build_comment(comments) == response["result"]["contents"]["value"]
+    assert file_fixture.read().decode() == response["result"]["contents"]["value"]
 
     output.close()
