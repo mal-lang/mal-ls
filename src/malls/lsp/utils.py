@@ -129,7 +129,7 @@ def get_completion_list(doc: Document, pos: Position) -> list:
 
 
 def build_markdown_meta_comments(meta_comments: list[Node]):
-    markdown = "## **Meta comments**\n"
+    markdown = ""
     for meta_comment in meta_comments:
         meta_id = meta_comment.child_by_field_name("id").text.decode()
         meta_info = meta_comment.child_by_field_name("info").text.decode()
@@ -149,7 +149,7 @@ def sanitize_comment(comment: str):
 
 
 def build_markdown_comments(comments: list[Node]):
-    markdown = "## **Comments**\n"
+    markdown = ""
     for comment in comments:
         markdown += f"- {sanitize_comment(comment.text.decode())}\n"
     return markdown
@@ -169,16 +169,19 @@ def get_hover_info(doc: Document, pos: Position, storage: dict) -> str:
         return ""  # we can only find comments for identifiers
 
     # TODO write better hover info
-    markdown = "\n# Symbol Info\n"
 
     # get meta comments
+    meta_title = "## **Meta comments**\n"
     meta_comments = find_meta_comment_function(node, node.text, doc.uri, storage)
-    markdown += build_markdown_meta_comments(meta_comments)
+    meta_markdown = build_markdown_meta_comments(meta_comments)
 
-    markdown += "---\n"
 
     # get regular comments
+    comments_title = "## **Comments**\n"
     comments = find_comments_function(node, node.text, doc.uri, storage)
-    markdown += build_markdown_comments(comments)
+    comments_markdown = build_markdown_comments(comments)
 
-    return markdown
+    if meta_markdown and comments_markdown:
+        return meta_title+meta_markdown+"---\n"+comments_title+comments_markdown
+
+    return meta_title+meta_markdown if meta_markdown else comments_title+comments_markdown
