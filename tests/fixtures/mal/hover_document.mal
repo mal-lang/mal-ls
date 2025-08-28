@@ -1,0 +1,77 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+// should be ignored
+
+// category comment
+category Example 
+developer info: "dev cat"
+modeler info: "mod cat"
+{
+    //should be ignored
+
+    // asset1 comment
+    abstract asset Asset1 
+    developer info: "dev asset"
+    modeler info: "mod asset"
+    {
+      let var = c.b
+      // attack_step comment
+        | compromise
+        developer info: "dev attack_step"
+        modeler info: "mod attack_step"
+        -> var().destroy
+
+        // attack_step comment2
+        | attack
+        -> c.b.h.attack4,
+           c.b.h[Asset5].attack5
+    }
+
+    // should be ignored
+    abstract asset 
+    // asset3 comment
+    Asset3
+    developer info: "dev asset3"
+    modeler info: "mod asset3"
+    {
+    
+      }
+
+    // asset2 comment
+    asset Asset2 extends Asset3
+    {
+        | destroy
+    }
+
+    asset Asset4
+    developer info: "dev asset4"
+    modeler info: "mod asset4"
+    {
+        & attack4
+      }
+
+    /*
+     * MULTI-LINE
+     */
+    asset Asset5 extends Asset4
+    developer info: "dev asset5"
+    modeler info: "mod asset5"
+    {
+        // attack_step comment3
+        & attack5
+        developer info: "dev attack_step_5"
+        modeler info: "mod attack_step_5"
+        // should be ignored
+      }
+
+}
+associations 
+{
+    // association1 comment
+    Asset1 [a] * <-- L --> * [c] Asset2 developer info: "some info"
+    // association2 comment
+    Asset2 [d] 1 <-- M --> 1 [e] Asset2
+    Asset3 [b] 1 <-- N --> 1 [f] Asset2
+    Asset3 [g] 1 <-- O --> 1 [h] Asset4
+}
