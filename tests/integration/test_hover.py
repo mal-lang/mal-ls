@@ -33,6 +33,7 @@ parameter_names = [
     "comments_in_association2",
 ]
 
+
 def sanitize_comment(comment: str):
     sanitized_comment = ""
     for line in comment:
@@ -125,7 +126,9 @@ def hover_client_messages(
     return make
 
 
-@pytest.mark.parametrize("location,markdown_file", zip(parameters,parameter_names), ids=parameter_names)
+@pytest.mark.parametrize(
+    "location,markdown_file", zip(parameters, parameter_names), ids=parameter_names
+)
 def test_hover(
     request: pytest.FixtureRequest,
     location: (int, int),
