@@ -25,6 +25,7 @@ from .ts.utils import (
     run_query,
     tree_sitter_to_lsp_position,
 )
+from .lsp.capabilities import process_client_capabilities
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
@@ -91,40 +92,16 @@ class MALLSPServer(MethodDispatcher):
         log.info("Starting MAL LSP language server.")
         self.__jsonrpc_stream_reader.listen(self.__endpoint.consume)
 
-    def _process_encoding(self, encodings: list[PositionEncodingKind]):
-        # According to documentation, if utf-16 is missing, the server should
-        # assume that this encoding is supported and should be used.
-        #
-        # Therefore, only if the UTF-16 is present can we choose another
-        # encoding
-        #
-        # TODO decide which encoding to choose
-        if PositionEncodingKind.UTF16 in encodings:
-            # TODO change encoding
-            # self.__encoding = ???
-            pass
-
-    # Auxiliary method to process and react to client capabilities
-    def _process_client_capabilities(self, client_capabilities: models.ClientCapabilities) -> None:
-        if client_capabilities.general:
-            general = client_capabilities.general
-            if general.position_encodings:
-                self._process_encoding(general.position_encodings)
+    def adapt_to_capabilities(self, capabilities: dict):
+        """
+        Adapts the server to the given server capabilities.
+        """
+        self.__encoding = capabilities["positionEncoding"]
 
     # leave capabilities as dict for now, replace with explicit class/type later
-    def capabilities(self, client_capabilities: models.ClientCapabilities | None = None):
-        if client_capabilities:
-            self._process_client_capabilities(client_capabilities)
-
-        capabilities = {
-            "positionEncoding": self.__encoding,
-            "textDocumentSync": {
-                "openClose": True,
-                "change": 1,
-            },
-            "definitionProvider": True,
-            "completionProvider": {},
-        }
+    def server_capabilities(self, client_capabilities: models.ClientCapabilities | None = None):
+        capabilities = process_client_capabilities(client_capabilities)
+        self.adapt_to_capabilities(capabilities)
 
         log.debug("Server capabilities: %s", capabilities)
         return capabilities
@@ -174,7 +151,7 @@ class MALLSPServer(MethodDispatcher):
                 self._process_initialize_parameters(parameters)
 
             return {
-                "capabilities": self.capabilities(parameters.capabilities),
+                "capabilities": self.server_capabilities(parameters.capabilities),
                 "serverInfo": {"name": "mal-ls"},
             }
         except MALLSPException as e:
