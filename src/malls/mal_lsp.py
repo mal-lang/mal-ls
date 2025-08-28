@@ -66,6 +66,22 @@ class MALLSPServer(MethodDispatcher):
         self.__files = {}
         self.__diagnostics = {}
 
+    @property
+    def state(self) -> LifecycleFSM:
+        return self.__lifecycle
+
+    @property
+    def trace_value(self) -> TraceValue:
+        return self.__trace_value
+
+    @property
+    def files(self) -> dict:
+        return self.__files
+
+    @property
+    def diagnostics(self) -> dict:
+        return self.__diagnostics
+
     def start(self) -> None:
         """Starts the language server."""
         log.info("Starting MAL LSP language server.")
@@ -121,22 +137,6 @@ class MALLSPServer(MethodDispatcher):
             # Log and rethrow, cannot do anything if the method isn't known
             log.error(f"Error attempting to reach method `{item}`:", str(e))
             raise e
-
-    @property
-    def state(self) -> LifecycleFSM:
-        return self.__lifecycle
-
-    @property
-    def trace_value(self) -> TraceValue:
-        return self.__trace_value
-
-    @property
-    def files(self) -> dict:
-        return self.__files
-
-    @property
-    def diagnostics(self) -> dict:
-        return self.__diagnostics
 
     # Helper function to change the traceValue.
     # Log an error if the traceValue is not recognized.
