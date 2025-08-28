@@ -6,6 +6,7 @@ from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from .lsp import enums, models
+from .lsp.capabilities import process_client_capabilities
 from .lsp.classes import Document
 from .lsp.enums import ErrorCodes, PositionEncodingKind, TraceValue
 from .lsp.fsm import LifecycleFSM
@@ -25,10 +26,10 @@ from .ts.utils import (
     run_query,
     tree_sitter_to_lsp_position,
 )
-from .lsp.capabilities import process_client_capabilities
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
+
 
 class MALLSPException(Exception):
     def __init__(self, code, message):
