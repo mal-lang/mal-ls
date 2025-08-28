@@ -1,5 +1,3 @@
-
-# Symbol Info
 ## **Meta comments**
 - **developer**: "dev asset3"
 - **modeler**: "mod asset3"

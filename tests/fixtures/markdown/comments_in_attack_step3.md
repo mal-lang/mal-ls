@@ -1,5 +1,3 @@
-
-# Symbol Info
 ## **Meta comments**
 - **developer**: "dev attack_step_5"
 - **modeler**: "mod attack_step_5"
