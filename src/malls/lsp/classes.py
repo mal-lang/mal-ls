@@ -1,13 +1,9 @@
 import logging
 
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser, Point, Tree
+from tree_sitter import Point, Tree
 
-from ..ts.utils import lsp_to_tree_sitter_position
+from ..ts.utils import PARSER, lsp_to_tree_sitter_position
 from .models import Position
-
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
 log = logging.getLogger(__name__)
 

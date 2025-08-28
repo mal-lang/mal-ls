@@ -2,7 +2,7 @@ import copy
 import logging
 
 import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Node, Point, Query, QueryCursor, Tree, TreeCursor
+from tree_sitter import Language, Node, Parser, Point, Query, QueryCursor, Tree, TreeCursor
 
 from ..lsp.enums import DiagnosticSeverity
 from ..lsp.models import Position
@@ -10,6 +10,7 @@ from ..lsp.models import Position
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
 MAL_LANGUAGE = Language(ts_mal.language())
+PARSER = Parser(MAL_LANGUAGE)
 
 # Pre-made queries
 

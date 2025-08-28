@@ -2,13 +2,12 @@ import logging
 import os
 from pathlib import Path
 
-import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.endpoint import Endpoint
-from tree_sitter import Language, Parser
 from uritools import urisplit
 
 from ..ts.utils import (
     INCLUDED_FILES_QUERY,
+    PARSER,
     find_symbols_in_current_scope,
     lsp_to_tree_sitter_position,
     query_for_error_nodes,
@@ -16,9 +15,6 @@ from ..ts.utils import (
 )
 from .classes import Document
 from .models import Position
-
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 
 log = logging.getLogger(__name__)
 

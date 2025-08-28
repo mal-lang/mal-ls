@@ -3,15 +3,11 @@ import typing
 from pathlib import Path
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
 
 from ..util import build_rpc_message_stream, get_lsp_json, server_output
 
 pytest_plugins = ["tests.fixtures.lsp.conftest"]
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
 
 simplified_file_path = FILE_PATH + "main.mal"

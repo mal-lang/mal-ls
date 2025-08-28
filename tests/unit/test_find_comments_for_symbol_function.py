@@ -1,15 +1,11 @@
 from pathlib import Path
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
-from malls.ts.utils import INCLUDED_FILES_QUERY, find_comments_function, run_query
+from malls.ts.utils import INCLUDED_FILES_QUERY, PARSER, find_comments_function, run_query
 
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
 FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
 
 parameters = [

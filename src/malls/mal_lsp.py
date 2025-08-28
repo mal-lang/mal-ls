@@ -1,11 +1,9 @@
 import logging
 import typing
 
-import tree_sitter_mal as ts_mal
 from pylsp_jsonrpc.dispatchers import MethodDispatcher, _method_to_string
 from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
-from tree_sitter import Language, Parser
 
 from .lsp import enums, models
 from .lsp.classes import Document
@@ -20,6 +18,7 @@ from .lsp.utils import (
 )
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
+    PARSER,
     find_symbol_definition,
     position_to_node,
     query_for_error_nodes,
@@ -29,9 +28,6 @@ from .ts.utils import (
 
 log = logging.getLogger(__name__)
 MAL_FILETYPES = (".mal",)
-MAL_LANGUAGE = Language(ts_mal.language())
-PARSER = Parser(MAL_LANGUAGE)
-
 
 class MALLSPException(Exception):
     def __init__(self, code, message):
