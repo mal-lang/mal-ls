@@ -3,7 +3,7 @@ name = "malls"
 version = "0.1.0"
 description = "Language server for MAL"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 
 authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
 urls = { github = "https://github.com/Tobiky/mal-ls" }

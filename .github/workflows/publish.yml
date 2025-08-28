@@ -1,0 +1,27 @@
+
+name: Language Server Package Distribution
+
+on:
+  push:
+    tags: ["*"]
+  
+jobs:
+  language-server-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        # Actions use only the folder name (with an action.yml inside)
+        # https://github.com/orgs/community/discussions/26245#discussioncomment-5962450
+        # https://docs.github.com/en/actions/tutorials/creating-a-composite-action#creating-an-action-metadata-file
+        uses: ./.github/actions/py-setup
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish package
+        run: uv publish
+        secrets:
+          UV_PUBLISH_TOKEN: ${{secrets.PYPI_API_TOKEN}}

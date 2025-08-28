@@ -42,3 +42,9 @@ Other start-up arguments, namely related to logging, can be found using `uv run 
     ```
     > [!NOTE]
     > Tested for NeoVim v0.11.1
+
+## CI/CD
+
+Packages are published via UV on ubuntu to PyPI on tags pushed to the repository.
+
+Tests are ran with pytest and pytest-xdist on ubuntu and macos. Additionally formatting and linting checks are ran with ruff.
