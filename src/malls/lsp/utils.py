@@ -166,7 +166,7 @@ def get_hover_info(doc: Document, pos: Position, storage: dict) -> str:
 
     node = cursor.node
     if node.type != "identifier":
-        return "" # we can only find comments for identifiers
+        return ""  # we can only find comments for identifiers
 
     # TODO write better hover info
     markdown = "\n# Symbol Info\n"

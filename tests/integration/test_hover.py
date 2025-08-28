@@ -1,10 +1,7 @@
 import io
 import typing
-from pathlib import Path
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
 
 from ..util import build_rpc_message_stream, get_lsp_json, server_output
 
@@ -13,77 +10,47 @@ pytest_plugins = ["tests.fixtures.lsp.conftest"]
 comments_in_category = {
     "comments": ["// category comment"],
     "meta": {
-        "developer": "\"dev cat\"",
-        "modeler": "\"mod cat\"",
-    }
+        "developer": '"dev cat"',
+        "modeler": '"mod cat"',
+    },
 }
 comments_in_asset_1 = {
     "comments": ["// asset1 comment"],
-    "meta": {
-        "developer": "\"dev asset\"",
-        "modeler": "\"mod asset\""
-    }
+    "meta": {"developer": '"dev asset"', "modeler": '"mod asset"'},
 }
 comments_in_attack_step1 = {
     "comments": ["// attack_step comment"],
-    "meta": {
-        "developer": "\"dev attack_step\"",
-        "modeler": "\"mod attack_step\""
-    }
+    "meta": {"developer": '"dev attack_step"', "modeler": '"mod attack_step"'},
 }
-comments_in_attack_step2 = {
-    "comments": ["// attack_step comment2"],
-    "meta": {
-    }
-}
+comments_in_attack_step2 = {"comments": ["// attack_step comment2"], "meta": {}}
 comments_in_asset_3 = {
     "comments": ["// asset3 comment"],
-    "meta": {
-        "developer": "\"dev asset3\"",
-        "modeler": "\"mod asset3\""
-    }
+    "meta": {"developer": '"dev asset3"', "modeler": '"mod asset3"'},
 }
-comments_in_asset_2 = {
-    "comments": ["// asset2 comment"],
-    "meta": {
-    }
-}
+comments_in_asset_2 = {"comments": ["// asset2 comment"], "meta": {}}
 comments_in_asset_4 = {
     "comments": [],
-    "meta": {
-        "developer": "\"dev asset4\"",
-        "modeler": "\"mod asset4\""
-    }
+    "meta": {"developer": '"dev asset4"', "modeler": '"mod asset4"'},
 }
 comments_in_asset_5 = {
     "comments": [
-    """/*
+        """/*
      * MULTI-LINE
      */"""
     ],
-    "meta": {
-        "developer": "\"dev asset5\"",
-        "modeler": "\"mod asset5\""
-    }
+    "meta": {"developer": '"dev asset5"', "modeler": '"mod asset5"'},
 }
 comments_in_attack_step3 = {
     "comments": ["// attack_step comment3"],
-    "meta": {
-        "developer": "\"dev attack_step_5\"",
-        "modeler": "\"mod attack_step_5\""
-    }
+    "meta": {"developer": '"dev attack_step_5"', "modeler": '"mod attack_step_5"'},
 }
 comments_in_association = {
     "comments": ["// association1 comment"],
     "meta": {
-        "developer": "\"some info\"",
-    }
+        "developer": '"some info"',
+    },
 }
-comments_in_association2 = {
-    "comments": ["// association2 comment"],
-    "meta": {
-    }
-}
+comments_in_association2 = {"comments": ["// association2 comment"], "meta": {}}
 
 parameters = [
     ((6, 11), comments_in_category),
@@ -115,6 +82,7 @@ parameter_names = [
 
 pytest_plugins = ["tests.fixtures.mal"]
 
+
 def sanitize_comment(comment: str):
     sanitized_comment = ""
     for line in comment:
@@ -125,14 +93,15 @@ def sanitize_comment(comment: str):
         sanitized_comment += line if line != "\n" else ""
     return sanitized_comment
 
+
 def build_comment(comments: dict):
     markdown = "\n# Symbol Info\n"
     markdown += "## **Meta comments**\n"
-    for meta_id, meta_info in comments['meta'].items():
+    for meta_id, meta_info in comments["meta"].items():
         markdown += f"- **{meta_id}**: {meta_info}\n"
     markdown += "---\n"
     markdown += "## **Comments**\n"
-    for comment in comments['comments']:
+    for comment in comments["comments"]:
         markdown += f"- {sanitize_comment(comment)}\n"
     return markdown
 
@@ -220,6 +189,6 @@ def test_hover(
     response = get_lsp_json(output)
     response = get_lsp_json(output)
 
-    assert build_comment(comments) == response['result']['contents']['value']
+    assert build_comment(comments) == response["result"]["contents"]["value"]
 
     output.close()
