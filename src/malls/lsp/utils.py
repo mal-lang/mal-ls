@@ -175,13 +175,12 @@ def get_hover_info(doc: Document, pos: Position, storage: dict) -> str:
     meta_comments = find_meta_comment_function(node, node.text, doc.uri, storage)
     meta_markdown = build_markdown_meta_comments(meta_comments)
 
-
     # get regular comments
     comments_title = "## **Comments**\n"
     comments = find_comments_function(node, node.text, doc.uri, storage)
     comments_markdown = build_markdown_comments(comments)
 
     if meta_markdown and comments_markdown:
-        return meta_title+meta_markdown+"---\n"+comments_title+comments_markdown
+        return meta_title + meta_markdown + "---\n" + comments_title + comments_markdown
 
-    return meta_title+meta_markdown if meta_markdown else comments_title+comments_markdown
+    return meta_title + meta_markdown if meta_markdown else comments_title + comments_markdown
