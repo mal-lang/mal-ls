@@ -57,7 +57,7 @@ class MALLSPServer(MethodDispatcher):
 
         self.__endpoint = EndpointClass(self, self.__jsonrpc_stream_writer.write)
 
-        self.__encoding = "utf-16"
+        self.__encoding = PositionEncodingKind.UTF16
         self.__lifecycle = LifecycleClass()
 
         # By default, the value is Off
@@ -81,6 +81,10 @@ class MALLSPServer(MethodDispatcher):
     @property
     def diagnostics(self) -> dict:
         return self.__diagnostics
+
+    @property
+    def encoding(self) -> PositionEncodingKind:
+        return self.__encoding
 
     def start(self) -> None:
         """Starts the language server."""
