@@ -2,35 +2,22 @@ import logging
 import os
 import sys
 import typing
-from io import BytesIO
+from pathlib import Path
 
 import pytest
-
-from .util import (
-    BASE_OPEN_FILE,
-    CHANGE_FILE_1,
-    CHANGE_FILE_2,
-    CHANGE_FILE_3,
-    CHANGE_FILE_4,
-    CHANGE_FILE_5,
-    CHANGE_FILE_WITH_ERROR,
-    COMPLETION_PAYLOADS,
-    GOTO_DEFINITION_PAYLOADS,
-    OPEN_FILE_WITH_ERROR,
-    OPEN_FILE_WITH_FAKE_INCLUDE,
-    OPEN_FILE_WITH_INCLUDE_WITH_ERROR,
-    OPEN_FILE_WITH_INCLUDED_FILE,
-    OPEN_INCLUDED_FILE_WITH_ERROR,
-    build_payload,
-)
+import tree_sitter_mal as ts_mal
+from tree_sitter import Language, Parser
 
 logging.getLogger().setLevel(logging.DEBUG)
-log = logging.getLogger(__name__)
 
 module = sys.modules[__name__]
 # Generate pytest fixtures from all fixture files in 'fixtures' and its subdirectories
 for directory, _, files in os.walk("tests/fixtures"):
+    if "__pycache__" in directory:
+        continue
     for file_name in files:
+        if file_name.endswith(".py") or file_name == "__pycache__":
+            continue
         # Remove extension, e.g: .http/.lsp/.mal
         fixture_name = file_name[: file_name.rindex(".")]
         # Replace dots with underscore, e.g: empty.out -> empty_out
@@ -47,64 +34,66 @@ for directory, _, files in os.walk("tests/fixtures"):
         # Get full path of file so its usable by `open`
         file_path = os.path.join(directory, file_name)
 
-        def open_fixture_for_writing(file: str, payload: bytes):
-            def template() -> typing.BinaryIO:
-                with open(file, "rb") as file_descriptor:
-                    bio = BytesIO(file_descriptor.read())
-
-                bio.seek(0, 2)
-                bio.write(payload)
-                bio.seek(0)
-                return bio
-
-            return template
-
         def open_fixture_file(file: str):
             def template() -> typing.BinaryIO:
-                """Opens a fixture in (r)ead (b)inary mode. See `open` for more details."""
-
                 with open(file, "rb") as file_descriptor:
                     yield file_descriptor
 
+            file_name = Path(file).name
+            template.__doc__ = f"Opens {file_name} in (r)ead (b)inary mode and returns the reader."
+
             return template
 
-        open_fixture_file.__doc__ = open.__doc__
+        fixture = pytest.fixture(
+            open_fixture_file(file_path),
+            name=fixture_name,
+        )
+        # Bind `fixture` as `fixture_name` inside this module so it gets exported
+        setattr(module, fixture_name, fixture)
 
-        # Define the fixture from `open_file` on `file_path` as `fixture_name`
-        if directory == "tests/fixtures/writeable_fixtures":
-            # create different fixtures from the sabe base file
-            payloads = (
-                [
-                    ([BASE_OPEN_FILE], fixture_name + "_base_open_file"),
-                    ([OPEN_FILE_WITH_INCLUDED_FILE], fixture_name + "_with_included_file"),
-                    ([OPEN_FILE_WITH_FAKE_INCLUDE], fixture_name + "_with_fake_include"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_1], "change_middle_of_file_single_line"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_2], "change_middle_of_file_multiple_lines"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_3], "change_end_of_file"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_4], "change_middle_of_file_twice"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_5], "change_whole_file"),
-                    ([OPEN_FILE_WITH_ERROR], "open_file_with_error"),
-                    ([OPEN_FILE_WITH_INCLUDE_WITH_ERROR], "open_file_with_include_error"),
-                    ([BASE_OPEN_FILE, CHANGE_FILE_WITH_ERROR], "change_file_with_error"),
-                    (
-                        [OPEN_FILE_WITH_INCLUDE_WITH_ERROR, OPEN_INCLUDED_FILE_WITH_ERROR],
-                        "open_file_with_include_error_and_open_file",
-                    ),
-                ]
-                + GOTO_DEFINITION_PAYLOADS
-                + COMPLETION_PAYLOADS
-            )
-            for payload, new_name in payloads:
-                fixture = pytest.fixture(
-                    open_fixture_for_writing(file_path, build_payload(payload)),
-                    name=new_name,
-                )
-                # Bind `fixture` as `fixture_name` inside this module so it gets exported
-                setattr(module, new_name, fixture)
-        else:
-            fixture = pytest.fixture(
-                open_fixture_file(file_path),
-                name=fixture_name,
-            )
-            # Bind `fixture` as `fixture_name` inside this module so it gets exported
-            setattr(module, fixture_name, fixture)
+        def fixture_uri(file: str):
+            path = Path(file)
+            file_path = path.resolve()
+            uri = str(file_path.as_uri())
+
+            def template() -> str:
+                return uri
+
+            file_name = path.name
+            template.__doc__ = f"Returns the URI for {file_name} using file scheme."
+
+            return template
+
+        uri_fixture = pytest.fixture(
+            fixture_uri(file_path),
+            name=fixture_name + "_uri",
+        )
+
+        setattr(module, fixture_name + "_uri", uri_fixture)
+
+TESTS_ROOT = Path(__file__).parent
+
+
+@pytest.fixture
+def tests_root() -> Path:
+    return TESTS_ROOT
+
+
+@pytest.fixture
+def mal_root(tests_root: Path) -> Path:
+    return tests_root.joinpath("fixtures", "mal")
+
+
+@pytest.fixture
+def mal_root_str(mal_root: Path) -> str:
+    return str(mal_root)
+
+
+@pytest.fixture
+def mal_language() -> Language:
+    return Language(ts_mal.language())
+
+
+@pytest.fixture
+def utf8_mal_parser(mal_language: Language) -> Parser:
+    return Parser(mal_language)

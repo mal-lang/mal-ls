@@ -166,7 +166,7 @@ def query_and_compare_scope_pos(query_node_type: str, cursor: TreeCursor, point:
     return compare_points(start_point, point)
 
 
-def find_current_scope(cursor: TreeCursor, point: Point):
+def find_current_scope(cursor: TreeCursor, point: Point) -> Node:
     """
     Given a cursor and a document position, return the node that
     "owns" the scope. Scopes are separated by curly brackets - {}

@@ -1,0 +1,9 @@
+#id: "org.mal-lang.testAnalyzer"
+#version:"0.0.0"
+
+include "find_current_scope_function.mal"
+category System
+{
+    abstract asset Foo {}
+    asset Bar extends Foo {}
+}
