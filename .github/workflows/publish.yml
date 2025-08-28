@@ -1,5 +1,5 @@
 
-name: Language Server Tests
+name: Language Server Package Distribution
 
 on:
   push:
