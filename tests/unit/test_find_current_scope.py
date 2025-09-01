@@ -1,16 +1,16 @@
 import typing
 
 import pytest
-from tree_sitter import Parser, Tree, TreeCursor
+from tree_sitter import Tree, TreeCursor
 
-from malls.ts.utils import find_current_scope
+from malls.ts.utils import PARSER, find_current_scope
 
 
 @pytest.fixture
 def find_current_scope_function_tree(
-    utf8_mal_parser: Parser, mal_find_current_scope_function: typing.BinaryIO
+    mal_find_current_scope_function: typing.BinaryIO
 ) -> Tree:
-    return utf8_mal_parser.parse(mal_find_current_scope_function.read())
+    return PARSER.parse(mal_find_current_scope_function.read())
 
 
 @pytest.fixture

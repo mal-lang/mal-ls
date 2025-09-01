@@ -1,7 +1,8 @@
 import typing
 
 import pytest
-from tree_sitter import Parser
+
+from malls.ts.utils import PARSER
 
 from ..util import server_output
 
@@ -25,7 +26,6 @@ parameter_ids = (args[0] for args in parameters)
 )
 def test_changes(
     request: pytest.FixtureRequest,
-    utf8_mal_parser: Parser,
     mal_base_open_uri: str,
     client_messages_fixture_name: str,
     expected_file_fixture_name: str,
@@ -42,7 +42,7 @@ def test_changes(
     # Ensure LSP stored everything correctly
     assert ls.files[uri].text == new_text
     # we have to parse the file to check if the end result is the same
-    tree = utf8_mal_parser.parse(new_text)
+    tree = PARSER.parse(new_text)
     assert str(ls.files[uri].tree.root_node) == str(tree.root_node)
 
     output.close()

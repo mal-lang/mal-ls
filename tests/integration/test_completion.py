@@ -1,16 +1,11 @@
 import io
 import typing
-from pathlib import Path
 
 import pytest
 
 from ..util import build_rpc_message_stream, get_lsp_json, server_output
 
 pytest_plugins = ["tests.fixtures.lsp.conftest"]
-
-FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
-
-simplified_file_path = FILE_PATH + "main.mal"
 
 symbols_in_category_hierarchy = [
     "Asset1",

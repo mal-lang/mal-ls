@@ -32,7 +32,7 @@ def uri_to_path(uri: str) -> Path:
 
 
 def recursive_parsing(
-    uri_prec: str, captures: list, storage: dict, cur_file: str, diagnostics_storage: list
+    uri_prec: str, captures: list, storage: dict, cur_file: str, diagnostics_storage: list, tree_sitter_encoding: str = "utf8"
 ) -> None:
     """
     Auxiliary method to parse included files recursively
@@ -56,7 +56,7 @@ def recursive_parsing(
         with open(file_name, "rb") as file:
             source = file.read()
 
-        tree = PARSER.parse(source)
+        tree = PARSER.parse(source, encoding=tree_sitter_encoding)
 
         # save parsed file
         storage[file_name] = Document(tree, source, file_name)
@@ -74,7 +74,7 @@ def recursive_parsing(
         new_captures = run_query(included_file_node, INCLUDED_FILES_QUERY)
         if new_captures:
             recursive_parsing(
-                uri_prec, new_captures["file_name"], storage, included_file_uri, diagnostics_storage
+                uri_prec, new_captures["file_name"], storage, included_file_uri, diagnostics_storage, tree_sitter_encoding
             )
 
     return storage
@@ -107,7 +107,7 @@ def send_diagnostics(diagnostics: list, file_uri: str, endpoint: Endpoint) -> No
 
 def get_completion_list(doc: Document, pos: Position) -> list:
     # convert LSP position to TS point
-    point = lsp_to_tree_sitter_position(doc.text, pos)
+    point = lsp_to_tree_sitter_position(pos)
 
     # get completion items
     user_symbols, keywords = find_symbols_in_current_scope(doc.tree.walk(), point)

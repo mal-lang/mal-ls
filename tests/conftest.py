@@ -5,8 +5,6 @@ import typing
 from pathlib import Path
 
 import pytest
-import tree_sitter_mal as ts_mal
-from tree_sitter import Language, Parser
 
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -87,13 +85,3 @@ def mal_root(tests_root: Path) -> Path:
 @pytest.fixture
 def mal_root_str(mal_root: Path) -> str:
     return str(mal_root)
-
-
-@pytest.fixture
-def mal_language() -> Language:
-    return Language(ts_mal.language())
-
-
-@pytest.fixture
-def utf8_mal_parser(mal_language: Language) -> Parser:
-    return Parser(mal_language)

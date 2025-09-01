@@ -20,6 +20,7 @@ from .lsp.utils import (
 from .ts.utils import (
     INCLUDED_FILES_QUERY,
     PARSER,
+    lsp_to_tree_sitter_encoding,
     find_symbol_definition,
     position_to_node,
     query_for_error_nodes,
@@ -265,7 +266,7 @@ class MALLSPServer(MethodDispatcher):
 
         # otherwise, parse it
         source_encoded = doc_text.encode()
-        tree = PARSER.parse(source_encoded)
+        tree = PARSER.parse(source_encoded, encoding=lsp_to_tree_sitter_encoding(self.__encoding))
 
         # The given file might include other files, which must also
         # be parsed, as they could contain information that will be
@@ -337,7 +338,7 @@ class MALLSPServer(MethodDispatcher):
         # obtain node and position in TS from the LSP position
         # (we assume that the document is in the open/parsed files)
         document = self.__files[document_uri]
-        node, point, symbol = position_to_node(document.tree, document.text, position_lsp)
+        node, point, symbol = position_to_node(document.tree, position_lsp)
 
         if node.type != "identifier":
             return None  # we only care about identifiers
@@ -352,12 +353,8 @@ class MALLSPServer(MethodDispatcher):
         # otherwise, we have to convert back to LSP positions and return the
         # results to the user
         result_doc = self.__files[result_doc]
-        result_lsp_position_start = tree_sitter_to_lsp_position(
-            result_doc.text, result_node.start_point
-        )
-        result_lsp_position_end = tree_sitter_to_lsp_position(
-            result_doc.text, result_node.end_point
-        )
+        result_lsp_position_start = tree_sitter_to_lsp_position(result_node.start_point)
+        result_lsp_position_end = tree_sitter_to_lsp_position(result_node.end_point)
 
         # build response
         result_range = models.Range(start=result_lsp_position_start, end=result_lsp_position_end)

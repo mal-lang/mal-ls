@@ -4,7 +4,7 @@ import logging
 import tree_sitter_mal as ts_mal
 from tree_sitter import Language, Node, Parser, Point, Query, QueryCursor, Tree, TreeCursor
 
-from ..lsp.enums import DiagnosticSeverity
+from ..lsp.enums import DiagnosticSeverity, PositionEncodingKind
 from ..lsp.models import Position
 
 log = logging.getLogger(__name__)
@@ -218,78 +218,31 @@ def find_current_scope(cursor: TreeCursor, point: Point) -> Node:
     return owner
 
 
-def lsp_to_tree_sitter_position(text: str, pos: Position, new_text: str = None) -> Point:
+def lsp_to_tree_sitter_position(pos: Position) -> Point:
     """
-    Converts an LSP position (UTF-16 character index) to a Tree-sitter position (UTF-8 byte offset).
+    Converts an LSP position (character index) to a Tree-sitter position (byte offset).
     """
     lsp_line, lsp_char = pos.line, pos.character
 
-    lines = text.splitlines(keepends=True)
-
-    if lsp_line >= len(lines):
-        # there is an extension to the text itself (didChange)
-        # so we have to consider the line being written
-        line_text = new_text.splitlines(keepends=True)[lsp_line - len(lines)]
-    else:
-        # Get correct line
-        line_text = lines[lsp_line]
-
-    # The idea is to conver the string to UTF-16.
-    # Since UTF-16 characters correspond to 2 bytes,
-    # if we multiply the character position by 2
-    # and then encode back to UTF-8, we effectively
-    # cut back to the byte number
-
-    # Convert to UTF-16 (each UTF-16 code unit is 2 bytes)
-    # https://en.wikipedia.org/wiki/UTF-16#Byte-order_encoding_schemes
-    line_utf16 = line_text.decode().encode("utf-16")
-
-    # check for BOM
-    bom_size = 0
-    if line_utf16.startswith(b"\xff\xfe") or line_utf16.startswith(b"\xfe\xff"):
-        bom_size = 2
-
-    # lsp_char * 2 gives us the byte offset in the UTF-16 string
-    # UTF-16 chars are 2 bytes long
-    # We need to take into account possible BOM
-    #
-    # lsp_char refers to the position according to the source encoding,
-    # decided by the server and client. For now, it is only UTF-16
-    utf16_slice = line_utf16[bom_size : bom_size + lsp_char * 2]
-
-    # return to unicode
-    string_slice = utf16_slice.decode("utf-16")
-
-    # Encode the string slice to UTF-8 and get its byte length
-    byte_offset = len(string_slice.encode("utf-8"))
-
-    return Point(lsp_line, byte_offset)
+    return Point(lsp_line, lsp_char)
 
 
-def tree_sitter_to_lsp_position(text: str, pos: Point, new_text: str = None) -> Position:
+def tree_sitter_to_lsp_position(pos: Point) -> Position:
     """
-    Converts a Tree-sitter position (UTF-8 byte offset) to an LSP position (UTF-16 character index).
+    Converts a Tree-sitter position (byte offset) to an LSP position (character index).
     """
     ts_line, ts_byte_offset = pos.row, pos.column
 
-    lines = text.splitlines(keepends=True)
+    return Position(line=ts_line, character=ts_byte_offset)
 
-    if len(lines) > ts_line:
-        line_text = lines[ts_line]
-
-        # Decode the line text from UTF-8 to a string
-        line_string = line_text.decode("utf-8")
-
-        # Get the slice of the string up to the byte offset
-        string_slice = line_string.encode("utf-8")[:ts_byte_offset].decode("utf-8")
-
-        # The length of this slice in UTF-16 code units is the LSP character position
-        lsp_char = len(string_slice.encode("utf-16-le")) // 2
-    else:
-        lsp_char = 0
-
-    return Position(line=ts_line, character=lsp_char)
-
+def lsp_to_tree_sitter_encoding(encoding: PositionEncodingKind) -> str:
+    match encoding:
+        case PositionEncodingKind.UTF8:
+            return "utf8"
+        case PositionEncodingKind.UTF16:
+            return "utf16"
+        case _:
+            raise ValueError("Tree sitter only accepts 'utf-8' and 'utf-16', received ", encoding)
 
 def find_symbols_category_declaration(owner: Node) -> (dict, dict):
     """
@@ -1092,14 +1045,14 @@ def find_symbol_definition(
             return (None, document_uri)
 
 
-def position_to_node(tree: Tree, text: str, position: Position):
+def position_to_node(tree: Tree, position: Position):
     """
     Given a tree and an LSP position, this function will obtain the innermost
     node in that position
     """
 
     # convert position
-    point = lsp_to_tree_sitter_position(text, position)
+    point = lsp_to_tree_sitter_position(position)
     cursor = tree.walk()
     while cursor.goto_first_child_for_point(point) is not None:
         continue
@@ -1112,8 +1065,8 @@ def build_diagnostic(node: Node, text: str, error: bool) -> dict:
     so it can be sent to the Client as is
     """
     # start by converting the position
-    start_position = tree_sitter_to_lsp_position(text, node.start_point)
-    end_position = tree_sitter_to_lsp_position(text, node.end_point)
+    start_position = tree_sitter_to_lsp_position(node.start_point)
+    end_position = tree_sitter_to_lsp_position(node.end_point)
 
     # TODO find better messages and information about error/missing nodes
     return {

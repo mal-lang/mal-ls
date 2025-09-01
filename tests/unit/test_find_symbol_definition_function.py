@@ -1,11 +1,11 @@
 from itertools import chain, repeat
 
 import pytest
-from tree_sitter import Parser, TreeCursor
+from tree_sitter import TreeCursor
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
-from malls.ts.utils import INCLUDED_FILES_QUERY, find_symbol_definition, run_query
+from malls.ts.utils import INCLUDED_FILES_QUERY, PARSER, find_symbol_definition, run_query
 
 pytest_plugins = ["tests.unit.test_find_symbols_in_scope"]
 
@@ -21,7 +21,7 @@ mal_find_symbols_in_scope_points = zip(
 
 
 @pytest.mark.parametrize("point,expected_result", mal_find_symbols_in_scope_points)
-def test_symbol_definition_withouth_building_storage(
+def test_symbol_definition_without_building_storage(
     request: pytest.FixtureRequest,
     point: (int, int),
     expected_result: (int, int),
@@ -102,7 +102,6 @@ parameters = chain(
 @pytest.mark.parametrize("fixture_name,point,expected_result", parameters)
 def test_symbol_definition_with_storage(
     request: pytest.FixtureRequest,
-    utf8_mal_parser: Parser,
     mal_root_str: str,
     fixture_name: str,
     point: (int, int),
@@ -114,7 +113,7 @@ def test_symbol_definition_with_storage(
     doc_uri = request.getfixturevalue(fixture_name + "_uri")
     file = request.getfixturevalue(fixture_name)
     source_encoded = file.read()
-    tree = utf8_mal_parser.parse(source_encoded)
+    tree = PARSER.parse(source_encoded)
 
     storage[doc_uri] = Document(tree, source_encoded, doc_uri)
 

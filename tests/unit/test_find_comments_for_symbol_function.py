@@ -1,12 +1,10 @@
-from pathlib import Path
+import typing
 
 import pytest
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
 from malls.ts.utils import INCLUDED_FILES_QUERY, PARSER, find_comments_function, run_query
-
-FILE_PATH = str(Path(__file__).parent.parent.resolve()) + "/fixtures/mal/"
 
 parameters = [
     ((9, 13), [b"// category comment"]),
@@ -23,11 +21,15 @@ parameters = [
     "point,comments",
     parameters,
 )
-def test_find_comments_for_symbol_function(mal_find_comments_for_symbol_function, point, comments):
+def test_find_comments_for_symbol_function(mal_find_comments_for_symbol_function: typing.BinaryIO,
+                                           mal_find_comments_for_symbol_function_uri: str,
+                                           mal_root_str: str,
+                                           point: (int, int),
+                                           comments: list[bytes]):
     # build the storage (mimicks the file parsing in the server)
     storage = {}
 
-    doc_uri = FILE_PATH + "find_comments_for_symbol_function.mal"
+    doc_uri = mal_find_comments_for_symbol_function_uri
     source_encoded = mal_find_comments_for_symbol_function.read()
     tree = PARSER.parse(source_encoded)
 
@@ -38,7 +40,7 @@ def test_find_comments_for_symbol_function(mal_find_comments_for_symbol_function
 
     captures = run_query(root_node, INCLUDED_FILES_QUERY)
     if "file_name" in captures:
-        recursive_parsing(FILE_PATH, captures["file_name"], storage, doc_uri, [])
+        recursive_parsing(mal_root_str, captures["file_name"], storage, doc_uri, [])
 
     ###################################
 

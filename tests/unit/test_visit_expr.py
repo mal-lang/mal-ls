@@ -1,14 +1,14 @@
 import typing
 
 import pytest
-from tree_sitter import Parser, Tree, TreeCursor
+from tree_sitter import Tree, TreeCursor
 
-from malls.ts.utils import visit_expr
+from malls.ts.utils import PARSER, visit_expr
 
 
 @pytest.fixture
-def tree(utf8_mal_parser: Parser, mal_visit_expr: typing.BinaryIO) -> Tree:
-    return utf8_mal_parser.parse(mal_visit_expr.read())
+def tree(mal_visit_expr: typing.BinaryIO) -> Tree:
+    return PARSER.parse(mal_visit_expr.read())
 
 
 @pytest.fixture

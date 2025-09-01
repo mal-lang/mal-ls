@@ -3,6 +3,7 @@ import typing
 import pytest
 
 from malls.lsp.enums import ErrorCodes
+from malls.lsp.capabilities import process_client_capabilities
 
 from ...util import CONTENT_TYPE_HEADER, build_rpc_message_stream, find_last_request
 
@@ -101,6 +102,9 @@ def initalize_request(client_requests: list[dict], client_messages: list[dict]) 
                 "textDocument": {
                     "definition": {"dynamicRegistration": False},
                     "synchronization": {"dynamicRegistration": False},
+                },
+                "general": {
+                    "positionEncodings": ["utf-8"]
                 }
             },
             "trace": "off",

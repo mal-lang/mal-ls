@@ -15,11 +15,12 @@ class Document:
     edited by TreeSitter
     """
 
-    def __init__(self, tree: Tree, text: str, uri: str):
+    def __init__(self, tree: Tree, text: str, uri: str, tree_sitter_encoding="utf16"):
         self.text = text  # text is in bytes
         self.tree = tree
         self.uri = uri
         self.included_files = []
+        self.__encoding = tree_sitter_encoding
 
     def _pos_to_byte(self, point: Point):
         line, column = point.row, point.column
@@ -74,8 +75,8 @@ class Document:
             line=change_range.end.line, character=change_range.end.character
         )
 
-        start_position = lsp_to_tree_sitter_position(self.text, start_position_lsp, text)
-        end_position = lsp_to_tree_sitter_position(self.text, end_position_lsp, text)
+        start_position = lsp_to_tree_sitter_position(start_position_lsp)
+        end_position = lsp_to_tree_sitter_position(end_position_lsp)
 
         # change text
         start_byte, end_byte, old_end_byte = self._change_text(start_position, end_position, text)
@@ -91,7 +92,7 @@ class Document:
         )
 
         # reparse
-        self.tree = PARSER.parse(self.text, self.tree)
+        self.tree = PARSER.parse(self.text, self.tree, encoding=self.__encoding)
 
     def change_whole_file(self, text: str) -> None:
         """
@@ -100,4 +101,4 @@ class Document:
         """
 
         self.text = text
-        self.tree = PARSER.parse(self.text)
+        self.tree = PARSER.parse(self.text, encoding=self.__encoding)

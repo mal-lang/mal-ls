@@ -1,11 +1,11 @@
 import typing
 
 import pytest
-from tree_sitter import Parser, Tree
+from tree_sitter import Tree
 
 from malls.lsp.classes import Document
 from malls.lsp.utils import recursive_parsing
-from malls.ts.utils import INCLUDED_FILES_QUERY, find_meta_comment_function, run_query
+from malls.ts.utils import INCLUDED_FILES_QUERY, PARSER, find_meta_comment_function, run_query
 
 parameters = [
     ((3, 12), {b"dev cat", b"mod cat"}),
@@ -28,8 +28,8 @@ def find_meta_comment_data(mal_find_meta_comment_function: typing.BinaryIO) -> b
 
 
 @pytest.fixture
-def find_meta_comment_tree(utf8_mal_parser: Parser, find_meta_comment_data: bytes) -> Tree:
-    return utf8_mal_parser.parse(find_meta_comment_data)
+def find_meta_comment_tree(find_meta_comment_data: bytes) -> Tree:
+    return PARSER.parse(find_meta_comment_data)
 
 
 @pytest.mark.parametrize(

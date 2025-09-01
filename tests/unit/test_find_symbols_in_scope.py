@@ -3,14 +3,14 @@ import typing
 import pytest
 import tree_sitter
 
-from malls.ts.utils import find_symbols_in_current_scope
+from malls.ts.utils import PARSER, find_symbols_in_current_scope
 
 
 @pytest.fixture
 def find_symbols_in_scope_tree(
-    utf8_mal_parser: tree_sitter.Parser, mal_find_symbols_in_scope: typing.BinaryIO
+    mal_find_symbols_in_scope: typing.BinaryIO
 ) -> tree_sitter.Tree:
-    return utf8_mal_parser.parse(mal_find_symbols_in_scope.read())
+    return PARSER.parse(mal_find_symbols_in_scope.read())
 
 
 @pytest.fixture
