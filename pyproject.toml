@@ -1,5 +1,5 @@
 [project]
-name = "malls"
+name = "mal-language-server"
 version = "0.1.0"
 description = "Language server for MAL"
 readme = "README.md"
