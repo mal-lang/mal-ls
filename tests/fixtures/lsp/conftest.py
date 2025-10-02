@@ -132,7 +132,7 @@ def initalize_response(
                 "hoverProvider": True,
             },
             # TODO: Replace with values from an actual server instance (e.g. via instance.server_info())  # noqa: E501
-            "serverInfo": {"name": "mal-ls"},
+            "serverInfo": {"name": "mal-language-server"},
         },
     }
     server_responses.append(message)
