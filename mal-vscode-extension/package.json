@@ -1,0 +1,27 @@
+{
+  "name": "mal-lang-client",
+  "publisher": "you",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.90.0" },
+  "activationEvents": ["onLanguage:mal"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "mal",
+        "aliases": ["MAL", "mal-lang"],
+        "extensions": [".mal"]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./"
+  },
+    "devDependencies": {
+        "typescript": "^5.0.0",
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.90.0",
+        "vscode-languageclient": "^9.0.1"
+    }
+}
