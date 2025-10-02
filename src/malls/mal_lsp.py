@@ -177,7 +177,7 @@ class MALLSPServer(MethodDispatcher):
 
             return {
                 "capabilities": self.capabilities(parameters.capabilities),
-                "serverInfo": {"name": "mal-ls"},
+                "serverInfo": {"name": "mal-language-server"},
             }
         except MALLSPException as e:
             return MALLSPServer.__respond_with_error(e.error_msg, e.code)

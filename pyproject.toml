@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 authors = [{ name = "Tobiky", email = "me@tobiky.dev" }]
-urls = { github = "https://github.com/Tobiky/mal-ls" }
+urls = { github = "https://github.com/mal-lang/mal-ls" }
 
 dependencies = [
     "pydantic>=2.11.7",
@@ -34,6 +34,9 @@ build-backend = "hatchling.build"
 exclude = [
     "mise.toml",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/malls"]
 
 [tool.pytest.ini_options]
 addopts = [
