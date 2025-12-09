@@ -1,7 +1,7 @@
 # MAL Language Server
 `mal-language-server` is a language server for [MAL](https://github.com/mal-lang).
 
-Requires python version >3.11.
+Requires python version 3.11 or higher.
 
 ## PyPi
 
